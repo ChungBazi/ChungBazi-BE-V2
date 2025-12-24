@@ -36,7 +36,6 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Setter
     @Column(nullable = false, unique = true)
     private String name;
 
@@ -63,13 +62,11 @@ public class User {
     @Column(nullable = false)
     private boolean isDeleted;
 
-    @Setter
     @ColumnDefault("false")
     private boolean surveyStatus;
 
     // 캐릭터 관련
     @Enumerated(EnumType.STRING)
-    @Setter
     @Builder.Default
     private RewardLevel characterImg = RewardLevel.LEVEL_1;
 
@@ -183,5 +180,4 @@ public class User {
                     .toList();
         }
     }
-
 }
