@@ -62,8 +62,7 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom{
                         qNotification.isRead,
                         qNotification.message,
                         qNotification.type,
-                        qNotification.policy.id,
-                        qNotification.post.id,
+                        qNotification.targetId,
                         qNotification.createdAt
                 ))
                 .from(qNotification)

@@ -174,9 +174,9 @@ public class CartService {
 
                 NotificationRequest request = NotificationRequest.builder()
                         .user(user)
-                        .type(NotificationType.POLICY_ALARM)
+                        .type(NotificationType.POLICY)
                         .message(message)
-                        .policy(policy)
+                        .targetId(policy.getId())
                         .build();
 
                 notificationService.sendNotification(request);

@@ -181,8 +181,8 @@ public class CommunityService {
                 String message = user.getName() + "님이 회원님의 댓글에 답글을 달았습니다.";
                 NotificationRequest request = NotificationRequest.builder()
                         .user(user)
-                        .type(NotificationType.COMMUNITY_ALARM)
-                        .post(post)
+                        .type(NotificationType.POST)
+                        .targetId(post.getId())
                         .build();
 
                 notificationService.sendNotification(request);
@@ -289,9 +289,9 @@ public class CommunityService {
 
         NotificationRequest request = NotificationRequest.builder()
                 .user(author)
-                .type(NotificationType.COMMUNITY_ALARM)
+                .type(NotificationType.COMMENT)
                 .message(message)
-                .post(post)
+                .targetId(post.getId())
                 .build();
 
         notificationService.sendNotification(request);
@@ -307,9 +307,9 @@ public class CommunityService {
 
         NotificationRequest request = NotificationRequest.builder()
                 .user(author)
-                .type(NotificationType.COMMUNITY_ALARM)
+                .type(NotificationType.POST)
                 .message(message)
-                .post(post)
+                .targetId(postId)
                 .build();
 
         notificationService.sendNotification(request);
@@ -326,10 +326,9 @@ public class CommunityService {
 
         NotificationRequest request = NotificationRequest.builder()
                 .user(author)
-                .type(NotificationType.COMMUNITY_ALARM)
+                .type(NotificationType.COMMENT)
                 .message(message)
-                .post(post)
-                .comment(comment)
+                .targetId(post.getId())
                 .build();
 
         notificationService.sendNotification(request);

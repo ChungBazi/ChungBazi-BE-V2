@@ -32,7 +32,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -135,9 +134,9 @@ public class ChatService {
 
             NotificationRequest request = NotificationRequest.builder()
                     .user(receiver)
-                    .type(NotificationType.CHAT_ALARM)
+                    .type(NotificationType.CHAT)
                     .message(message)
-                    .chat(chat)
+                    .targetId(chat.getId())
                     .build();
 
             notificationService.sendNotification(request);

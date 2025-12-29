@@ -24,10 +24,6 @@ public class QNotification extends EntityPathBase<Notification> {
 
     public final chungbazi.chungbazi_be.global.entity.QBaseTimeEntity _super = new chungbazi.chungbazi_be.global.entity.QBaseTimeEntity(this);
 
-    public final chungbazi.chungbazi_be.domain.chat.entity.QMessage chat;
-
-    public final chungbazi.chungbazi_be.domain.community.entity.QComment comment;
-
     //inherited
     public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
 
@@ -37,9 +33,7 @@ public class QNotification extends EntityPathBase<Notification> {
 
     public final StringPath message = createString("message");
 
-    public final chungbazi.chungbazi_be.domain.policy.entity.QPolicy policy;
-
-    public final chungbazi.chungbazi_be.domain.community.entity.QPost post;
+    public final NumberPath<Long> targetId = createNumber("targetId", Long.class);
 
     public final EnumPath<chungbazi.chungbazi_be.domain.notification.entity.enums.NotificationType> type = createEnum("type", chungbazi.chungbazi_be.domain.notification.entity.enums.NotificationType.class);
 
@@ -66,10 +60,6 @@ public class QNotification extends EntityPathBase<Notification> {
 
     public QNotification(Class<? extends Notification> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.chat = inits.isInitialized("chat") ? new chungbazi.chungbazi_be.domain.chat.entity.QMessage(forProperty("chat"), inits.get("chat")) : null;
-        this.comment = inits.isInitialized("comment") ? new chungbazi.chungbazi_be.domain.community.entity.QComment(forProperty("comment"), inits.get("comment")) : null;
-        this.policy = inits.isInitialized("policy") ? new chungbazi.chungbazi_be.domain.policy.entity.QPolicy(forProperty("policy")) : null;
-        this.post = inits.isInitialized("post") ? new chungbazi.chungbazi_be.domain.community.entity.QPost(forProperty("post"), inits.get("post")) : null;
         this.user = inits.isInitialized("user") ? new chungbazi.chungbazi_be.domain.user.entity.QUser(forProperty("user"), inits.get("user")) : null;
     }
 

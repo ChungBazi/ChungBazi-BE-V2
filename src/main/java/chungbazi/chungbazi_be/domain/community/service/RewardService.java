@@ -62,7 +62,7 @@ public class RewardService {
 
         NotificationRequest request = NotificationRequest.builder()
                 .user(user)
-                .type(NotificationType.REWARD_ALARM)
+                .type(NotificationType.REWARD)
                 .message(message)
                 .build();
 

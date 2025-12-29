@@ -1,5 +1,6 @@
 package chungbazi.chungbazi_be.domain.notification.entity;
 
+import chungbazi.chungbazi_be.domain.notification.dto.NotificationSettingReqDto;
 import chungbazi.chungbazi_be.domain.user.entity.User;
 import chungbazi.chungbazi_be.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
@@ -34,13 +35,10 @@ public class NotificationSetting extends BaseTimeEntity {
         this.user = user;
     }
 
-    public void updatePolicyAlarm(boolean policyAlarm) {this.policyAlarm = policyAlarm;}
-
-    public void updateCommunityAlarm(boolean communityAlarm) {this.communityAlarm = communityAlarm;}
-
-    public void updateRewardAlarm(boolean rewardAlarm) {this.rewardAlarm = rewardAlarm;}
-
-    public void updateNoticeAlarm(boolean noticeAlarm) {this.noticeAlarm = noticeAlarm;}
-
-
+    public void updateNotificationSetting(NotificationSettingReqDto dto) {
+        this.policyAlarm=dto.isPolicyAlarm();
+        this.communityAlarm=dto.isCommunityAlarm();
+        this.rewardAlarm=dto.isRewardAlarm();
+        this.noticeAlarm=dto.isNoticeAlarm();
+    }
 }

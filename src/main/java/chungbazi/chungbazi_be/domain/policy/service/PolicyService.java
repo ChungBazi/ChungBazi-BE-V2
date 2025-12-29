@@ -41,7 +41,6 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -85,7 +84,7 @@ public class PolicyService {
             int pageIndex = 1;
             String srchPolyBizSecd = "003002001";
 
-            LocalDate twoMonthAgo = LocalDate.now().minusMonths(2);
+            LocalDate twoMonthAgo = LocalDate.now().minusMonths(1);
 
             while (true) {
                 try {

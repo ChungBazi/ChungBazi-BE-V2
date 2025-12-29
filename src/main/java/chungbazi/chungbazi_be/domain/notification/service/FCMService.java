@@ -41,18 +41,19 @@ public class FCMService {
                             .build();
 
             Map<String, String> data = new HashMap<>();
-            if (fcmPushData.policyId() != null) {
-                data.put("policyId", fcmPushData.policyId().toString());
-            }
-            if (fcmPushData.postId() != null) {
-                data.put("postId", fcmPushData.postId().toString());
-            }
-            if (fcmPushData.chatId() != null) {
-                data.put("chatId", fcmPushData.chatId().toString());
-            }
-            if (fcmPushData.commentId() != null) {
-                data.put("commentId", fcmPushData.commentId().toString());
-            }
+//            if (fcmPushData.policyId() != null) {
+//                data.put("policyId", fcmPushData.policyId().toString());
+//            }
+//            if (fcmPushData.postId() != null) {
+//                data.put("postId", fcmPushData.postId().toString());
+//            }
+//            if (fcmPushData.chatId() != null) {
+//                data.put("chatId", fcmPushData.chatId().toString());
+//            }
+//            if (fcmPushData.commentId() != null) {
+//                data.put("commentId", fcmPushData.commentId().toString());
+//            }
+            data.put("targetId", fcmPushData.targetId().toString());
             data.put("notificationType", fcmPushData.type().toString());
 
             Message firebaseMessage = Message.builder()

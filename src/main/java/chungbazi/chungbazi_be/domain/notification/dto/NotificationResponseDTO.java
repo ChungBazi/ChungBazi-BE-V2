@@ -30,8 +30,7 @@ public class NotificationResponseDTO {
         private boolean isRead;
         private String message;
         private NotificationType type;
-        private Long policyId;
-        private Long postId;
+        private Long targetId;
         private LocalDateTime formattedCreatedAt;
     }
 
@@ -44,8 +43,7 @@ public class NotificationResponseDTO {
         private boolean isRead;
         private String message;
         private NotificationType type;
-        private Long policyId;
-        private Long postId;
+        private Long targetId;
         private String formattedCreatedAt;
     }
 

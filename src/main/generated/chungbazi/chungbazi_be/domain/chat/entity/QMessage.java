@@ -35,8 +35,6 @@ public class QMessage extends EntityPathBase<Message> {
 
     public final BooleanPath isRead = createBoolean("isRead");
 
-    public final chungbazi.chungbazi_be.domain.notification.entity.QNotification notification;
-
     public final chungbazi.chungbazi_be.domain.user.entity.QUser sender;
 
     //inherited
@@ -61,7 +59,6 @@ public class QMessage extends EntityPathBase<Message> {
     public QMessage(Class<? extends Message> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
         this.chatRoom = inits.isInitialized("chatRoom") ? new QChatRoom(forProperty("chatRoom"), inits.get("chatRoom")) : null;
-        this.notification = inits.isInitialized("notification") ? new chungbazi.chungbazi_be.domain.notification.entity.QNotification(forProperty("notification"), inits.get("notification")) : null;
         this.sender = inits.isInitialized("sender") ? new chungbazi.chungbazi_be.domain.user.entity.QUser(forProperty("sender"), inits.get("sender")) : null;
     }
 

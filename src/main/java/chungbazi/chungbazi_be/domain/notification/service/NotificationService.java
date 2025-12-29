@@ -1,6 +1,5 @@
 package chungbazi.chungbazi_be.domain.notification.service;
 
-import chungbazi.chungbazi_be.domain.notification.converter.NotificationFactory;
 import chungbazi.chungbazi_be.domain.notification.dto.*;
 import chungbazi.chungbazi_be.domain.notification.entity.Notification;
 import chungbazi.chungbazi_be.domain.notification.entity.enums.NotificationType;
@@ -30,10 +29,16 @@ public class NotificationService {
 
     @Transactional
     public NotificationResponseDTO.responseDto sendNotification(NotificationRequest request) {
-        request.validate();
 
         //알림 생성
-        Notification notification= NotificationFactory.from(request);
+        Notification notification= Notification.builder()
+                .user(request.getUser())
+                .message(request.getMessage())
+                .targetId(request.getTargetId())
+                .isRead(false)
+                .type(request.getType())
+                .build();
+
         notificationRepository.save(notification);
 
         //FCM 푸시 전송
