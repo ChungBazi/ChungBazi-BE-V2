@@ -116,7 +116,6 @@ public class UserService {
         }
     }
 
-
     private void updateInterests(User user, List<String> interests) {
         userInterestRepository.deleteByUser(user);
         for (String interestName : interests) {
