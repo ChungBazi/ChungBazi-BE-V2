@@ -1,6 +1,6 @@
 package chungbazi.chungbazi_be.domain.notification.service;
 
-import chungbazi.chungbazi_be.domain.notification.dto.FcmPushData;
+import chungbazi.chungbazi_be.domain.notification.dto.internal.FcmPushData;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
@@ -41,18 +41,6 @@ public class FCMService {
                             .build();
 
             Map<String, String> data = new HashMap<>();
-//            if (fcmPushData.policyId() != null) {
-//                data.put("policyId", fcmPushData.policyId().toString());
-//            }
-//            if (fcmPushData.postId() != null) {
-//                data.put("postId", fcmPushData.postId().toString());
-//            }
-//            if (fcmPushData.chatId() != null) {
-//                data.put("chatId", fcmPushData.chatId().toString());
-//            }
-//            if (fcmPushData.commentId() != null) {
-//                data.put("commentId", fcmPushData.commentId().toString());
-//            }
             data.put("targetId", fcmPushData.targetId().toString());
             data.put("notificationType", fcmPushData.type().toString());
 
@@ -63,7 +51,6 @@ public class FCMService {
                     .build();
 
             String response = FirebaseMessaging.getInstance().send(firebaseMessage);
-            System.out.println("FCM 전송 성공: " + response);
         }catch(FirebaseMessagingException e){
             e.printStackTrace();
         }

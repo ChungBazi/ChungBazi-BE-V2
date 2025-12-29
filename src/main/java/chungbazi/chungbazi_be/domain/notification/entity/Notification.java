@@ -25,7 +25,7 @@ public class Notification extends BaseTimeEntity {
     @Column(nullable = false)
     private NotificationType type;
 
-    @Column(length = 1000)
+    @Column(length = 1000, nullable = false)
     private String message;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -35,12 +35,7 @@ public class Notification extends BaseTimeEntity {
     @Column(name = "target_id")
     private Long targetId;
 
-
     public void markAsRead() {
         this.isRead = true;
-    }
-
-    public String getFormattedCreatedAt(){
-        return TimeFormatter.formatCreatedAt(this.getCreatedAt());
     }
 }

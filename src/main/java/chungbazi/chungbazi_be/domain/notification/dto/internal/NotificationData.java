@@ -1,4 +1,4 @@
-package chungbazi.chungbazi_be.domain.notification.dto;
+package chungbazi.chungbazi_be.domain.notification.dto.internal;
 
 import chungbazi.chungbazi_be.domain.notification.entity.enums.NotificationType;
 import chungbazi.chungbazi_be.domain.user.entity.User;
@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class NotificationRequest {
+public class NotificationData {
     @NotNull
     private User user;
 

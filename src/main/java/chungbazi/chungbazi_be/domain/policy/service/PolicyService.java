@@ -306,10 +306,7 @@ public class PolicyService {
 
         User user = userHelper.getAuthenticatedUser();
 
-        //Education education = user.getEducation();
         Employment employment = user.getEmployment();
-        //Income income = user.getIncome();
-        //List<UserAddition> userAdditions = user.getUserAdditionList();
 
         Set<Category> userCategories = getUserInterests(user);
         List<Policy> policies = policyRepository.findByCategory(category, cursor, size, order);

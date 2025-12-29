@@ -1,4 +1,4 @@
-package chungbazi.chungbazi_be.domain.notification.dto;
+package chungbazi.chungbazi_be.domain.notification.dto.internal;
 
 import chungbazi.chungbazi_be.domain.notification.entity.Notification;
 import chungbazi.chungbazi_be.domain.notification.entity.enums.NotificationType;

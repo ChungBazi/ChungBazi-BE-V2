@@ -3,7 +3,7 @@ package chungbazi.chungbazi_be.domain.chat.controller;
 import chungbazi.chungbazi_be.domain.chat.dto.ChatRequestDTO;
 import chungbazi.chungbazi_be.domain.chat.dto.ChatResponseDTO;
 import chungbazi.chungbazi_be.domain.chat.service.ChatService;
-import chungbazi.chungbazi_be.domain.notification.service.ChatRoomSettingService;
+import chungbazi.chungbazi_be.domain.chat.service.ChatRoomSettingService;
 import chungbazi.chungbazi_be.global.apiPayload.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
