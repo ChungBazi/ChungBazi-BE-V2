@@ -124,8 +124,4 @@ public class UserService {
             userInterestRepository.save(UserInterest.builder().user(user).interest(interest).build());
         }
     }
-
-    public User findByUserId(Long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new NotFoundHandler(ErrorStatus.NOT_FOUND_USER));
-    }
 }
