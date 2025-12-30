@@ -172,24 +172,4 @@ public class User {
 
     // 알람 관련
     public void updateNotificationSetting(NotificationSetting notificationSetting) {this.notificationSetting = notificationSetting;}
-
-    @PostPersist
-    public void postPersistInitialization() {
-        // 알람 초기화
-        if (this.notificationSetting == null) {
-            this.notificationSetting = NotificationSetting.builder()
-                    .user(this)
-                    .build();
-        }
-        // 캐릭터 리스트 초기화
-        if (characters == null || characters.isEmpty()) {
-            this.characters = Arrays.stream(RewardLevel.values())
-                    .map(level -> Character.builder()
-                            .user(this)
-                            .rewardLevel(level)
-                            .open(level == RewardLevel.LEVEL_1)
-                            .build())
-                    .toList();
-        }
-    }
 }

@@ -13,34 +13,34 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserBlockService {
     private final UserHelper userHelper;
     private final UserRepository userRepository;
     private final UserBlockRepository userBlockRepository;
 
+    @Transactional
     public void blockUser(Long blockedUserId){
         User blocker = userHelper.getAuthenticatedUser();
+
         User blockedUser = userRepository.findById(blockedUserId)
                 .orElseThrow(() -> new NotFoundHandler(ErrorStatus.NOT_FOUND_USER));
 
-        if(blockedUserId.equals(blocker.getId())){
+        if (blockedUser.getId().equals(blocker.getId())){
             throw new GeneralException(ErrorStatus.INVALID_BLOCK);
         }
 
-        userBlockRepository.block(blocker.getId(),blockedUserId);
-
+        userBlockRepository.block(blocker.getId(), blockedUserId);
     }
 
+    @Transactional
     public void unblockUser(Long blockedUserId){
         User blocker = userHelper.getAuthenticatedUser();
         userBlockRepository.unblock(blocker.getId(), blockedUserId);
-
     }
 
-    @Transactional(readOnly = true)
     public boolean isUserBlocked(Long targetUserId){
         User currentUser = userHelper.getAuthenticatedUser();
         return userBlockRepository.existsBlockBetweenUsers(currentUser.getId(), targetUserId);
     }
-
 }

@@ -13,15 +13,15 @@ public class UserBlockController {
 
     @PostMapping("/block/{blockedUserId}")
     @Operation(summary = "유저 차단 API", description = "특정 유저를 차단하는 API입니다.")
-    public ApiResponse<Void> blockUser(@PathVariable Long blockedUserId){
+    public ApiResponse<String> blockUser(@PathVariable Long blockedUserId){
         userBlockService.blockUser(blockedUserId);
-        return ApiResponse.onSuccess(null);
+        return ApiResponse.onSuccess("사용자 차단이 성공적으로 실행되었습니다.");
     }
 
     @PatchMapping("/block/{blockedUserId}")
     @Operation(summary = "유저 차단 해제 API", description = "특정 유저의 차단을 해제하는 API입니다.")
-    public ApiResponse<Void> unblockUser(@PathVariable Long blockedUserId){
+    public ApiResponse<String> unblockUser(@PathVariable Long blockedUserId){
         userBlockService.unblockUser(blockedUserId);
-        return ApiResponse.onSuccess(null);
+        return ApiResponse.onSuccess("사용자 차단 해제가 성공적으로 실행되었습니다.");
     }
 }
