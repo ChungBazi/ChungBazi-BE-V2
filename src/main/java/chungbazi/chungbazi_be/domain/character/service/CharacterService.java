@@ -1,6 +1,5 @@
 package chungbazi.chungbazi_be.domain.character.service;
 
-import chungbazi.chungbazi_be.domain.auth.jwt.SecurityUtils;
 import chungbazi.chungbazi_be.domain.character.converter.CharacterConverter;
 import chungbazi.chungbazi_be.domain.character.dto.CharacterResponseDTO;
 import chungbazi.chungbazi_be.domain.character.dto.CharacterResponseDTO.NextLevelInfo;
@@ -9,8 +8,7 @@ import chungbazi.chungbazi_be.domain.character.repository.CharacterRepository;
 import chungbazi.chungbazi_be.domain.community.service.RewardService;
 import chungbazi.chungbazi_be.domain.user.entity.User;
 import chungbazi.chungbazi_be.domain.user.entity.enums.RewardLevel;
-import chungbazi.chungbazi_be.domain.user.repository.UserRepository;
-import chungbazi.chungbazi_be.domain.user.utils.UserHelper;
+import chungbazi.chungbazi_be.domain.user.support.UserHelper;
 import chungbazi.chungbazi_be.global.apiPayload.code.status.ErrorStatus;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.BadRequestHandler;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.NotFoundHandler;

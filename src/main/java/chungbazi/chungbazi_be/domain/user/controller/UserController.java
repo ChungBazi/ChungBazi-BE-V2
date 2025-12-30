@@ -22,11 +22,13 @@ public class UserController {
     public ApiResponse<UserResponseDTO.ProfileDto> getProfile() {
         return ApiResponse.onSuccess(userService.getProfile());
     }
+
     @GetMapping("/characterImg")
     @Operation(summary = "유저 캐릭터 이미지 조회 API", description = "유저 캐릭터 이미지 조회")
     public ApiResponse<UserResponseDTO.CharacterImgDto> getCharacterImg() {
         return ApiResponse.onSuccess(userService.getCharacterImg());
     }
+
     @PatchMapping(value = "/profile/update")
     @Operation(summary = "프로필 수정 API", description = "마이페이지 프로필 수정")
     public ApiResponse<Void> updateProfile(
@@ -50,7 +52,7 @@ public class UserController {
 
     @PatchMapping("/update")
     @Operation(summary = "사용자 정보 수정 API", description = "사용자 정보(지역, 취업상태, 소득, 추가사항, 관심사, 학력) 수정")
-    public ApiResponse<String> updateUserInfo( @RequestBody UserRequestDTO.UpdateDto updateDto) {
+    public ApiResponse<String> updateUserInfo(@RequestBody UserRequestDTO.UpdateDto updateDto) {
         userService.updateUserInfo(updateDto);
         return ApiResponse.onSuccess("User information updated successfully.");
     }

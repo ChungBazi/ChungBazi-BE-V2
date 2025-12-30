@@ -15,8 +15,7 @@ import chungbazi.chungbazi_be.domain.policy.entity.Category;
 import chungbazi.chungbazi_be.domain.policy.entity.Policy;
 import chungbazi.chungbazi_be.domain.policy.repository.PolicyRepository;
 import chungbazi.chungbazi_be.domain.user.entity.User;
-import chungbazi.chungbazi_be.domain.user.utils.UserHelper;
-import chungbazi.chungbazi_be.domain.user.utils.UserReader;
+import chungbazi.chungbazi_be.domain.user.support.UserHelper;
 import chungbazi.chungbazi_be.global.apiPayload.code.status.ErrorStatus;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.BadRequestHandler;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.NotFoundHandler;
@@ -41,7 +40,6 @@ public class CartService {
     private final ThreadPoolTaskScheduler taskScheduler;
     private final NotificationService notificationService;
     private final UserHelper userHelper;
-    private final UserReader userReader;
     private final CalendarDocumentRepository calendarDocumentRepository;
 
     // 장바구니에 담기
