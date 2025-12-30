@@ -85,13 +85,15 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundHandler(ErrorStatus.NOT_FOUND_USER));
 
-        user.updateRegion(registerDto.getRegion());
-        user.updateEmployment(registerDto.getEmployment());
-        user.updateIncome(registerDto.getIncome());
-        user.updateEducation(registerDto.getEducation());
+        user.saveUserOnboarding(
+                registerDto.getEducation(),
+                registerDto.getEmployment(),
+                registerDto.getIncome(),
+                registerDto.getRegion()
+        );
         updateInterests(user, registerDto.getInterests());
         updateAdditions(user, registerDto.getAdditionInfo());
-        user.setSurveyStatus(true);
+        user.updateUserSurveyStatus(true);
     }
 
     public void updateUserInfo(UserRequestDTO.UpdateDto updateDto) {

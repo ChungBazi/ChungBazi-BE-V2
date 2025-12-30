@@ -143,17 +143,21 @@ public class User {
     }
 
     // 유저 정보 관련
-    public void updateEducation(Education education) {
+    public void saveUserOnboarding(
+            Education education,
+            Employment employment,
+            Income income,
+            Region region
+    ) {
         this.education = education;
-    }
-    public void updateEmployment(Employment employment) {
         this.employment = employment;
-    }
-    public void updateIncome(Income income) {
         this.income = income;
+        this.region = region;
     }
-    public void updateRegion(Region region) { this.region = region;}
-    public void updateIsDeleted(Boolean isDeleted){this.isDeleted = isDeleted;}
+
+    public void updateUserSurveyStatus(boolean surveyStatus) {
+        this.surveyStatus = surveyStatus;
+    }
     public void updateRewardLevel(RewardLevel reward) {this.reward = reward;}
     public void updatePassword(String newPassword) {this.password = newPassword;}
     public void updateName(String newName){this.name = newName;}
