@@ -61,6 +61,7 @@ jobs:
       - name: Deploy to server with Docker
         uses: appleboy/ssh-action@master
         env:
+          ACTION: ${{ github.event.inputs.action || 'deploy' }}
           IMAGE_TAG: ${{ github.sha }}
         with:
           host: ${{ secrets.EC2_HOST_DEV }}
@@ -71,11 +72,11 @@ jobs:
             sudo docker pull ${{ secrets.DOCKER_REPO }}-dev:$IMAGE_TAG
             cd /root
             
-            if [ "${{ github.event.inputs.action }}" == "deploy" ]; then
+            if [ "$ACTION" == "deploy" ]; then
                 docker compose down --remove-orphans || true
                 IMAGE_TAG=$IMAGE_TAG docker compose up -d --force-recreate
             
-            elif [ "${{ github.event.inputs.action }}" == "stop" ]; then
+            elif [ "$ACTION" == "stop" ]; then
                 sudo docker compose -f down
                 echo "Dev Environment Stopped"
             fi
