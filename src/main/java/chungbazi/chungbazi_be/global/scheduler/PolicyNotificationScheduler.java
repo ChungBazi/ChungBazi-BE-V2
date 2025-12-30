@@ -20,7 +20,7 @@ public class PolicyNotificationScheduler {
     private final CartService cartService;
     private final NotificationService notificationService;
 
-    @Scheduled(cron = "0 10 19 * * *")
+    @Scheduled(cron = "0 0 9 * * *")
     @Transactional
     public void sendReminderNotifications() {
         LocalDate threeDaysLater = LocalDate.now().plusDays(3);
@@ -28,7 +28,7 @@ public class PolicyNotificationScheduler {
 
         List<LocalDate> targetDates = List.of(threeDaysLater, oneDayLater);
 
-        // 3일 뒤 마감되는 정책을 장바구니에 담은 사용자 목록 조회
+        // 1일, 3일 뒤 마감되는 정책을 장바구니에 담은 사용자 목록 조회
         List<Cart> carts = cartService.getCartsByEndDate(targetDates);
 
         // 알림 설정이 켜져 있는 사용자들에게 알림 발송

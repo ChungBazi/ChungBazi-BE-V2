@@ -160,7 +160,7 @@ public class CartService {
         return cartRepository.findById(cartId).orElseThrow(() -> new NotFoundHandler(ErrorStatus.NOT_FOUND_CART));
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<Cart> getCartsByEndDate(List<LocalDate> targetDates) {
         return cartRepository.findAllByPolicyEndDate(targetDates);
     }
