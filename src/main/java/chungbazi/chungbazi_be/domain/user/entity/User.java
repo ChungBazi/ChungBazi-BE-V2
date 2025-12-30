@@ -158,9 +158,17 @@ public class User {
     public void updateUserSurveyStatus(boolean surveyStatus) {
         this.surveyStatus = surveyStatus;
     }
+
+    // 사용자 프로필 수정 관련
+    public void updateName(String newName) {
+        this.name = newName;
+    }
+    public void updateImage(RewardLevel characterImg) {
+        this.characterImg = characterImg;
+    }
+
     public void updateRewardLevel(RewardLevel reward) {this.reward = reward;}
     public void updatePassword(String newPassword) {this.password = newPassword;}
-    public void updateName(String newName){this.name = newName;}
 
     // 알람 관련
     public void updateNotificationSetting(NotificationSetting notificationSetting) {this.notificationSetting = notificationSetting;}

@@ -13,14 +13,11 @@ import chungbazi.chungbazi_be.domain.user.entity.mapping.UserAddition;
 import chungbazi.chungbazi_be.domain.user.entity.mapping.UserInterest;
 import chungbazi.chungbazi_be.domain.user.repository.*;
 import chungbazi.chungbazi_be.domain.user.utils.UserHelper;
-import chungbazi.chungbazi_be.global.apiPayload.code.status.ErrorStatus;
-import chungbazi.chungbazi_be.global.apiPayload.exception.handler.BadRequestHandler;
+import chungbazi.chungbazi_be.domain.user.validator.UserValidator;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @Transactional
@@ -35,6 +32,7 @@ public class UserService {
     private final UserHelper userHelper;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final UserValidator userValidator;
 
     public UserResponseDTO.ProfileDto getProfile() {
         User user = userHelper.getAuthenticatedUser();
@@ -58,21 +56,19 @@ public class UserService {
         User user = userHelper.getAuthenticatedUser();
 
         // 유저 레벨보다 높은 캐릭터 선택 시 에러 핸들링
-        if (profileUpdateDto.getCharacterImg().getLevel() > user.getReward().getLevel()) {
-            throw new BadRequestHandler(ErrorStatus.INVALID_CHARACTER);
+        userValidator.validateCharacterLevel(user, profileUpdateDto);
+
+        // 닉네임 존재 여부 예외 처리
+        userValidator.validateNickname(user, profileUpdateDto);
+
+        // 기존 닉네임과 입력받은 닉네임이 다를 경우
+        if (!user.getName().equals(profileUpdateDto.getName())) {
+            user.updateName(profileUpdateDto.getName());
         }
 
-        // 닉네임 및 이미지 변경 여부 확인
-        if (!user.getName().equals(profileUpdateDto.getName())) { // 기존 닉네임과 입력받은 닉네임이 다를 경우
-            boolean isDuplicateName = userRepository.existsByName(profileUpdateDto.getName());
-            if (isDuplicateName) {
-                throw new BadRequestHandler(ErrorStatus.INVALID_NICKNAME);
-            }
-            user.setName(profileUpdateDto.getName());
-        }
-
-        if (!user.getCharacterImg().equals(profileUpdateDto.getCharacterImg())) { // 기존 이미지와 입력받은 이미지가 다를 경우
-            user.setCharacterImg(profileUpdateDto.getCharacterImg());
+        // 기존 이미지와 입력받은 이미지가 다를 경우
+        if (!user.getCharacterImg().equals(profileUpdateDto.getCharacterImg())) {
+            user.updateImage(profileUpdateDto.getCharacterImg());
         }
         userRepository.save(user);
     }
