@@ -143,16 +143,16 @@ public class User {
     }
 
     // 유저 정보 관련
-    public void saveUserOnboarding(
+    public void applyProfile(
             Education education,
             Employment employment,
             Income income,
             Region region
     ) {
-        this.education = education;
-        this.employment = employment;
-        this.income = income;
-        this.region = region;
+        if (education != null) this.education = education;
+        if (employment != null) this.employment = employment;
+        if (income != null) this.income = income;
+        if (region != null) this.region = region;
     }
 
     public void updateUserSurveyStatus(boolean surveyStatus) {

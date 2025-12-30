@@ -1,7 +1,5 @@
 package chungbazi.chungbazi_be.domain.user.service;
 
-
-import chungbazi.chungbazi_be.domain.auth.jwt.SecurityUtils;
 import chungbazi.chungbazi_be.domain.community.entity.ContentStatus;
 import chungbazi.chungbazi_be.domain.community.repository.CommentRepository;
 import chungbazi.chungbazi_be.domain.community.repository.PostRepository;
@@ -17,14 +15,12 @@ import chungbazi.chungbazi_be.domain.user.repository.*;
 import chungbazi.chungbazi_be.domain.user.utils.UserHelper;
 import chungbazi.chungbazi_be.global.apiPayload.code.status.ErrorStatus;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.BadRequestHandler;
-import chungbazi.chungbazi_be.global.apiPayload.exception.handler.NotFoundHandler;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-
 
 @Service
 @Transactional
@@ -44,10 +40,12 @@ public class UserService {
         User user = userHelper.getAuthenticatedUser();
         return UserConverter.toProfileDto(user);
     }
+
     public UserResponseDTO.CharacterImgDto getCharacterImg() {
         User user = userHelper.getAuthenticatedUser();
         return UserConverter.toCharacterImgDto(user);
     }
+
     public UserResponseDTO.RewardDto getReward() {
         User user = userHelper.getAuthenticatedUser();
         int rewardLevel = user.getReward().getLevel();
@@ -80,12 +78,9 @@ public class UserService {
     }
 
     public void registerUserInfo(UserRequestDTO.RegisterDto registerDto) {
-        Long userId = SecurityUtils.getUserId();
+        User user = userHelper.getAuthenticatedUser();
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundHandler(ErrorStatus.NOT_FOUND_USER));
-
-        user.saveUserOnboarding(
+        user.applyProfile(
                 registerDto.getEducation(),
                 registerDto.getEmployment(),
                 registerDto.getIncome(),
@@ -97,16 +92,22 @@ public class UserService {
     }
 
     public void updateUserInfo(UserRequestDTO.UpdateDto updateDto) {
-        Long userId = SecurityUtils.getUserId();
+        User user = userHelper.getAuthenticatedUser();
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundHandler(ErrorStatus.NOT_FOUND_USER));
-        Optional.ofNullable(updateDto.getRegion()).ifPresent(user::updateRegion);
-        Optional.ofNullable(updateDto.getEmployment()).ifPresent(user::updateEmployment);
-        Optional.ofNullable(updateDto.getIncome()).ifPresent(user::updateIncome);
-        Optional.ofNullable(updateDto.getEducation()).ifPresent(user::updateEducation);
-        Optional.ofNullable(updateDto.getInterests()).ifPresent(interests -> updateInterests(user, interests));
-        Optional.ofNullable(updateDto.getAdditionInfo()).ifPresent(additions -> updateAdditions(user, additions));
+        user.applyProfile(
+                updateDto.getEducation(),
+                updateDto.getEmployment(),
+                updateDto.getIncome(),
+                updateDto.getRegion()
+        );
+
+        if (updateDto.getInterests() != null) {
+            updateInterests(user, updateDto.getInterests());
+        }
+
+        if (updateDto.getAdditionInfo() != null) {
+            updateAdditions(user, updateDto.getAdditionInfo());
+        }
     }
 
     private void updateAdditions(User user, List<String> additionalInfo) {
