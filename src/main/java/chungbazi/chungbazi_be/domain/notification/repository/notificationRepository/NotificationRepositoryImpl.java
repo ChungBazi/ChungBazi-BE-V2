@@ -67,7 +67,7 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
                 ))
                 .from(qNotification)
                 .where(booleanBuilder)
-                .orderBy(qNotification.createdAt.desc(), qNotification.id.desc())
+                .orderBy(qNotification.id.desc())
                 .limit(limit + 1)
                 .fetch();
 
