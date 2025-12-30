@@ -2,11 +2,10 @@ package chungbazi.chungbazi_be.domain.user.service;
 
 import chungbazi.chungbazi_be.domain.user.entity.User;
 import chungbazi.chungbazi_be.domain.user.repository.UserBlockRepository.UserBlockRepository;
-import chungbazi.chungbazi_be.domain.user.repository.UserRepository;
 import chungbazi.chungbazi_be.domain.user.support.UserHelper;
+import chungbazi.chungbazi_be.domain.user.support.UserReader;
 import chungbazi.chungbazi_be.global.apiPayload.code.status.ErrorStatus;
 import chungbazi.chungbazi_be.global.apiPayload.exception.GeneralException;
-import chungbazi.chungbazi_be.global.apiPayload.exception.handler.NotFoundHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,21 +14,20 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class UserBlockService {
+
     private final UserHelper userHelper;
-    private final UserRepository userRepository;
+    private final UserReader userReader;
     private final UserBlockRepository userBlockRepository;
 
     @Transactional
     public void blockUser(Long blockedUserId){
         User blocker = userHelper.getAuthenticatedUser();
 
-        User blockedUser = userRepository.findById(blockedUserId)
-                .orElseThrow(() -> new NotFoundHandler(ErrorStatus.NOT_FOUND_USER));
+        User blockedUser = userReader.getUser(blockedUserId);
 
         if (blockedUser.getId().equals(blocker.getId())){
             throw new GeneralException(ErrorStatus.INVALID_BLOCK);
         }
-
         userBlockRepository.block(blocker.getId(), blockedUserId);
     }
 
