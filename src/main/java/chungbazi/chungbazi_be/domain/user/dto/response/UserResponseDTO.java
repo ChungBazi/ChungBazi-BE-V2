@@ -1,8 +1,6 @@
-package chungbazi.chungbazi_be.domain.user.dto;
+package chungbazi.chungbazi_be.domain.user.dto.response;
 
-import chungbazi.chungbazi_be.domain.user.entity.User;
 import chungbazi.chungbazi_be.domain.user.entity.enums.RewardLevel;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,12 +16,14 @@ public class UserResponseDTO {
         String email;
         RewardLevel characterImg;
     }
+
     @Getter
     @Builder
     @AllArgsConstructor
     public static class CharacterImgDto {
         RewardLevel characterImg;
     }
+
     @Getter
     @Builder
     @AllArgsConstructor

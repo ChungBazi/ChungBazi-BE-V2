@@ -1,6 +1,6 @@
 package chungbazi.chungbazi_be.domain.user.validator;
 
-import chungbazi.chungbazi_be.domain.user.dto.UserRequestDTO;
+import chungbazi.chungbazi_be.domain.user.dto.request.UserRequestDTO;
 import chungbazi.chungbazi_be.domain.user.entity.User;
 import chungbazi.chungbazi_be.domain.user.repository.UserRepository;
 import chungbazi.chungbazi_be.global.apiPayload.code.status.ErrorStatus;

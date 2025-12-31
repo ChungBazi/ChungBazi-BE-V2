@@ -1,15 +1,13 @@
 package chungbazi.chungbazi_be.domain.user.controller;
 
-import chungbazi.chungbazi_be.domain.user.dto.UserRequestDTO;
-import chungbazi.chungbazi_be.domain.user.dto.UserResponseDTO;
+import chungbazi.chungbazi_be.domain.user.dto.request.UserRequestDTO;
+import chungbazi.chungbazi_be.domain.user.dto.response.UserResponseDTO;
 import chungbazi.chungbazi_be.domain.user.service.UserService;
 import chungbazi.chungbazi_be.global.apiPayload.ApiResponse;
-import com.google.protobuf.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
