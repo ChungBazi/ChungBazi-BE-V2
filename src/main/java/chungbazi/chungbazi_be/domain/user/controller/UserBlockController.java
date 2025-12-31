@@ -3,9 +3,11 @@ package chungbazi.chungbazi_be.domain.user.controller;
 import chungbazi.chungbazi_be.domain.user.service.UserBlockService;
 import chungbazi.chungbazi_be.global.apiPayload.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "[차단]", description = "사용자 차단 관련 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/block/{blockedUserId}")
