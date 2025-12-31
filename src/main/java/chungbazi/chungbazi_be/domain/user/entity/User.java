@@ -10,23 +10,17 @@ import chungbazi.chungbazi_be.domain.notification.entity.NotificationSetting;
 import chungbazi.chungbazi_be.domain.user.entity.enums.*;
 import chungbazi.chungbazi_be.domain.user.entity.mapping.UserAddition;
 import chungbazi.chungbazi_be.domain.user.entity.mapping.UserInterest;
-import chungbazi.chungbazi_be.global.entity.Uuid;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
-@DynamicUpdate
-@DynamicInsert
 @Builder
 @NoArgsConstructor(access= AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -77,11 +71,6 @@ public class User {
     @Builder.Default
     private RewardLevel reward = RewardLevel.LEVEL_1;
 
-    // 삭제 예정
-    @OneToOne
-    @JoinColumn(name = "uuid_id")
-    private Uuid uuid;
-
     // 커뮤니티 관련
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> posts = new ArrayList<>();
@@ -112,7 +101,7 @@ public class User {
     //채팅 관련
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<Message> messages= new ArrayList<>();
+    private List<Message> messages = new ArrayList<>();
 
     //신고 관련
     @Column(columnDefinition = "integer default 0")

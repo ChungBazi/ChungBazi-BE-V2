@@ -4,6 +4,7 @@ import chungbazi.chungbazi_be.domain.user.dto.request.UserRequestDTO;
 import chungbazi.chungbazi_be.domain.user.entity.User;
 import chungbazi.chungbazi_be.domain.user.repository.UserRepository;
 import chungbazi.chungbazi_be.global.apiPayload.code.status.ErrorStatus;
+import chungbazi.chungbazi_be.global.apiPayload.exception.GeneralException;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.BadRequestHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -27,6 +28,12 @@ public class UserValidator {
 
         if (userRepository.existsByName(dto.getName())) {
             throw new BadRequestHandler(ErrorStatus.INVALID_NICKNAME);
+        }
+    }
+
+    public void validateBlockedUser(User blocker, User blockedUser) {
+        if (blockedUser.getId().equals(blocker.getId())){
+            throw new GeneralException(ErrorStatus.INVALID_BLOCK);
         }
     }
 }

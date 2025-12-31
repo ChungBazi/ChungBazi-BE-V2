@@ -4,8 +4,7 @@ import chungbazi.chungbazi_be.domain.user.entity.User;
 import chungbazi.chungbazi_be.domain.user.repository.UserBlockRepository.UserBlockRepository;
 import chungbazi.chungbazi_be.domain.user.support.UserHelper;
 import chungbazi.chungbazi_be.domain.user.support.UserReader;
-import chungbazi.chungbazi_be.global.apiPayload.code.status.ErrorStatus;
-import chungbazi.chungbazi_be.global.apiPayload.exception.GeneralException;
+import chungbazi.chungbazi_be.domain.user.validator.UserValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +16,7 @@ public class UserBlockService {
 
     private final UserHelper userHelper;
     private final UserReader userReader;
+    private final UserValidator userValidator;
     private final UserBlockRepository userBlockRepository;
 
     @Transactional
@@ -25,9 +25,8 @@ public class UserBlockService {
 
         User blockedUser = userReader.getUser(blockedUserId);
 
-        if (blockedUser.getId().equals(blocker.getId())){
-            throw new GeneralException(ErrorStatus.INVALID_BLOCK);
-        }
+        userValidator.validateBlockedUser(blocker, blockedUser);
+
         userBlockRepository.block(blocker.getId(), blockedUserId);
     }
 
