@@ -22,7 +22,7 @@ public class UserValidator {
     }
 
     public void validateNickname(User user, UserRequestDTO.ProfileUpdateDto dto) {
-        if (user.getName().equals(dto.getName())) {
+        if (dto.getName().equals(user.getName())) {
             return;
         }
 

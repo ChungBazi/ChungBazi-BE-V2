@@ -6,6 +6,7 @@ import chungbazi.chungbazi_be.domain.user.entity.UserBlock;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,13 +46,29 @@ public class UserBlockRepositoryCustomImpl implements UserBlockRepositoryCustom 
                 )
                 .execute();
 
-        if (updated == 0) {
+        if (updated > 0) {
+            return;
+        }
+
+        try {
             UserBlock userBlock = UserBlock.builder()
                     .blocker(em.getReference(User.class, blockerId))
                     .blocked(em.getReference(User.class, blockedId))
                     .isActive(true)
                     .build();
+
             em.persist(userBlock);
+            em.flush();
+        } catch (DataIntegrityViolationException e) {
+            // 동시에 다른 트랜잭션이 insert -> update로 복구
+            queryFactory
+                    .update(qUserBlock)
+                    .set(qUserBlock.isActive, true)
+                    .where(
+                            qUserBlock.blocker.id.eq(blockerId),
+                            qUserBlock.blocked.id.eq(blockedId)
+                    )
+                    .execute();
         }
     }
 
