@@ -72,8 +72,6 @@ public class QUser extends EntityPathBase<User> {
 
     public final ListPath<chungbazi.chungbazi_be.domain.user.entity.mapping.UserInterest, chungbazi.chungbazi_be.domain.user.entity.mapping.QUserInterest> userInterestList = this.<chungbazi.chungbazi_be.domain.user.entity.mapping.UserInterest, chungbazi.chungbazi_be.domain.user.entity.mapping.QUserInterest>createList("userInterestList", chungbazi.chungbazi_be.domain.user.entity.mapping.UserInterest.class, chungbazi.chungbazi_be.domain.user.entity.mapping.QUserInterest.class, PathInits.DIRECT2);
 
-    public final chungbazi.chungbazi_be.global.entity.QUuid uuid;
-
     public QUser(String variable) {
         this(User.class, forVariable(variable), INITS);
     }
@@ -93,7 +91,6 @@ public class QUser extends EntityPathBase<User> {
     public QUser(Class<? extends User> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
         this.notificationSetting = inits.isInitialized("notificationSetting") ? new chungbazi.chungbazi_be.domain.notification.entity.QNotificationSetting(forProperty("notificationSetting"), inits.get("notificationSetting")) : null;
-        this.uuid = inits.isInitialized("uuid") ? new chungbazi.chungbazi_be.global.entity.QUuid(forProperty("uuid")) : null;
     }
 
 }

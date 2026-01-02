@@ -1,4 +1,4 @@
-package chungbazi.chungbazi_be.domain.user.dto;
+package chungbazi.chungbazi_be.domain.user.dto.request;
 
 import chungbazi.chungbazi_be.domain.user.entity.enums.Education;
 import chungbazi.chungbazi_be.domain.user.entity.enums.Employment;
@@ -13,13 +13,12 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.util.List;
 
 public class UserRequestDTO {
+
     @Getter
-    @Setter
     @NoArgsConstructor
     @AllArgsConstructor
     public static class RegisterDto {
@@ -47,6 +46,7 @@ public class UserRequestDTO {
         @Schema(example = "[\"중소기업\", \"여성\", \"저소득층\"]", description = "추가 정보")
         private List<String> additionInfo;
     }
+
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
@@ -60,7 +60,6 @@ public class UserRequestDTO {
     }
 
     @Getter
-    @Setter
     @NoArgsConstructor
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)

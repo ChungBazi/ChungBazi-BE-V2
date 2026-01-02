@@ -1,4 +1,4 @@
-package chungbazi.chungbazi_be.domain.user.utils;
+package chungbazi.chungbazi_be.domain.user.support;
 
 import chungbazi.chungbazi_be.domain.auth.jwt.SecurityUtils;
 import chungbazi.chungbazi_be.domain.user.entity.User;
