@@ -31,10 +31,10 @@ public class NotificationSetting extends BaseTimeEntity {
     @JoinColumn(name = "user_id",nullable = false)
     private User user;
 
-    public void updateNotificationSetting(NotificationSettingRequestDTO dto) {
-        this.policyAlarm=dto.isPolicyAlarm();
-        this.communityAlarm=dto.isCommunityAlarm();
-        this.rewardAlarm=dto.isRewardAlarm();
-        this.noticeAlarm=dto.isNoticeAlarm();
+    public void updateNotificationSetting(boolean policyAlarm, boolean communityAlarm, boolean rewardAlarm, boolean noticeAlarm) {
+        this.policyAlarm = policyAlarm;
+        this.communityAlarm = communityAlarm;
+        this.rewardAlarm = rewardAlarm;
+        this.noticeAlarm = noticeAlarm;
     }
 }

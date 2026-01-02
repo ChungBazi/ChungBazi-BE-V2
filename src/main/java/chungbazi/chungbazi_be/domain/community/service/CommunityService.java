@@ -310,7 +310,7 @@ public class CommunityService {
                 .user(author)
                 .type(NotificationType.COMMUNITY)
                 .message(message)
-                .targetId(postId)
+                .targetId(post.getId())
                 .build();
 
         notificationService.sendNotification(request);

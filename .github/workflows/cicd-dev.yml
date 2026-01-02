@@ -77,7 +77,7 @@ jobs:
                 IMAGE_TAG=$IMAGE_TAG docker compose up -d --force-recreate
             
             elif [ "$ACTION" == "stop" ]; then
-                sudo docker compose -f down
+                sudo docker compose down
                 echo "Dev Environment Stopped"
             fi
             

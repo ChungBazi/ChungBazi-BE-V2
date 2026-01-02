@@ -24,7 +24,7 @@ public class NotificationSettingService {
 
         NotificationSetting setting=user.getNotificationSetting();
 
-        setting.updateNotificationSetting(dto);
+        setting.updateNotificationSetting(dto.isPolicyAlarm(), dto.isCommunityAlarm(), dto.isRewardAlarm(), dto.isNoticeAlarm());
 
         user.updateNotificationSetting(setting);
         notificationSettingRepository.save(setting);
