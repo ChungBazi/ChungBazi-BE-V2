@@ -23,6 +23,7 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
 
     @Query("SELECT c FROM Cart c " +
             "JOIN FETCH c.user u " +
+            "JOIN FETCH u.notificationSetting " +
             "JOIN FETCH c.policy p " +
             "WHERE p.endDate IN :targetDates ")
     List<Cart> findAllByPolicyEndDate(List<LocalDate> targetDates);

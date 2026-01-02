@@ -84,7 +84,7 @@ public class PolicyService {
             int pageIndex = 1;
             String srchPolyBizSecd = "003002001";
 
-            LocalDate twoMonthAgo = LocalDate.now().minusMonths(1);
+            LocalDate oneMonthAgo = LocalDate.now().minusMonths(1);
 
             while (true) {
                 try {
@@ -109,7 +109,7 @@ public class PolicyService {
                             continue;
                         }
 
-                        if (!isDateAvail(response, twoMonthAgo)) {
+                        if (!isDateAvail(response, oneMonthAgo)) {
                             continue;
                         }
 
@@ -122,7 +122,7 @@ public class PolicyService {
                             .get(policies.getResult().getYouthPolicyList().size() - 1);
 
                     if (validPolicies.isEmpty()) {
-                        if (!isDateAvail(lastPolicy, twoMonthAgo)) {
+                        if (!isDateAvail(lastPolicy, oneMonthAgo)) {
                             log.info("✅ 유효한 정책이 없어서 종료 (pageIndex={})", pageIndex);
                             break;
                         }
@@ -132,7 +132,7 @@ public class PolicyService {
 
                     savePolicies(validPolicies);
 
-                    if (!isDateAvail(lastPolicy, twoMonthAgo)) {
+                    if (!isDateAvail(lastPolicy, oneMonthAgo)) {
                         log.info("✅ 마지막 정책의 유효기간이 지남 → 루프 종료 (pageIndex={})", pageIndex);
                         break;
                     }

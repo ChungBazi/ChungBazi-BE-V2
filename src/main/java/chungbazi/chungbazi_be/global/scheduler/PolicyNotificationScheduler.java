@@ -6,6 +6,7 @@ import chungbazi.chungbazi_be.domain.notification.dto.internal.NotificationData;
 import chungbazi.chungbazi_be.domain.notification.entity.enums.NotificationType;
 import chungbazi.chungbazi_be.domain.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,13 +15,14 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class PolicyNotificationScheduler {
     private final CartService cartService;
     private final NotificationService notificationService;
 
-    @Scheduled(cron = "0 0 9 * * *")
+    @Scheduled(cron = "0 0 9 * * *", zone = "Asia/Seoul")
     @Transactional
     public void sendReminderNotifications() {
         LocalDate threeDaysLater = LocalDate.now().plusDays(3);
@@ -33,20 +35,25 @@ public class PolicyNotificationScheduler {
 
         // 알림 설정이 켜져 있는 사용자들에게 알림 발송
         for (Cart cart : carts) {
-            if (cart.getUser().getNotificationSetting().isPolicyAlarm()) {
-                LocalDate endDate = cart.getPolicy().getEndDate();
-                long daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), endDate);
+            try {
+                if (cart.getUser().getNotificationSetting().isPolicyAlarm()) {
+                    LocalDate endDate = cart.getPolicy().getEndDate();
+                    long daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), endDate);
 
-                String message = String.format("%s 정책이 %d일 뒤 마감됩니다!",
-                        cart.getPolicy().getName(), daysLeft);
+                    String message = String.format("%s 정책이 %d일 뒤 마감됩니다!",
+                            cart.getPolicy().getName(), daysLeft);
 
-                NotificationData notificationData = NotificationData.builder()
-                        .user(cart.getUser())
-                        .type(NotificationType.POLICY)
-                        .message(message)
-                        .targetId(cart.getPolicy().getId())
-                        .build();
-                notificationService.sendNotification(notificationData);
+                    NotificationData notificationData = NotificationData.builder()
+                            .user(cart.getUser())
+                            .type(NotificationType.POLICY)
+                            .message(message)
+                            .targetId(cart.getPolicy().getId())
+                            .build();
+                    notificationService.sendNotification(notificationData);
+                }
+            } catch (Exception e) {
+                log.error("❌ 알림 전송 실패", e);
+
             }
         }
     }
