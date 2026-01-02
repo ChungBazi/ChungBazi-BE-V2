@@ -1,9 +1,7 @@
 package chungbazi.chungbazi_be.domain.policy.entity;
 
-import chungbazi.chungbazi_be.domain.notification.entity.Notification;
 import chungbazi.chungbazi_be.domain.policy.dto.YouthPolicyResponse;
 import chungbazi.chungbazi_be.global.entity.BaseTimeEntity;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -11,11 +9,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -127,16 +122,15 @@ public class Policy extends BaseTimeEntity {
     private String applyProcedure;
 
     // 참고 사이트 URL1
+    @Column(columnDefinition = "TEXT")
     private String referenceUrl1;
 
     // 참고 사이트 URL2
+    @Column(columnDefinition = "TEXT")
     private String referenceUrl2;
 
     // 포스터 사진 url
     private String posterUrl;
-
-    @OneToMany(mappedBy = "policy", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Notification> notifications = new ArrayList<>();
 
     public static Policy toEntity(YouthPolicyResponse dto) {
 

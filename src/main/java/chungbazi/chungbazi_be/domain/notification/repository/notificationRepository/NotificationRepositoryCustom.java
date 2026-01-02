@@ -1,7 +1,7 @@
-package chungbazi.chungbazi_be.domain.notification.repository;
+package chungbazi.chungbazi_be.domain.notification.repository.notificationRepository;
 
 
-import chungbazi.chungbazi_be.domain.notification.dto.NotificationResponseDTO;
+import chungbazi.chungbazi_be.domain.notification.dto.response.NotificationResponseDTO;
 import chungbazi.chungbazi_be.domain.notification.entity.enums.NotificationType;
 
 

@@ -7,7 +7,7 @@ import chungbazi.chungbazi_be.domain.cart.dto.CartResponseDTO;
 import chungbazi.chungbazi_be.domain.cart.entity.Cart;
 import chungbazi.chungbazi_be.domain.cart.repository.CartRepository;
 import chungbazi.chungbazi_be.domain.document.repository.CalendarDocumentRepository;
-import chungbazi.chungbazi_be.domain.notification.dto.NotificationRequest;
+import chungbazi.chungbazi_be.domain.notification.dto.internal.NotificationData;
 import chungbazi.chungbazi_be.domain.notification.entity.enums.NotificationType;
 import chungbazi.chungbazi_be.domain.notification.service.NotificationService;
 import chungbazi.chungbazi_be.domain.policy.dto.PolicyCalendarResponse;
@@ -57,10 +57,6 @@ public class CartService {
 
         Cart cart = new Cart(policy, user);
         cartRepository.save(cart);
-
-        if (user.getNotificationSetting().isPolicyAlarm() && policy.getEndDate() != null) {
-            sendPolicyNotification(policy);
-        }
 
     }
 
@@ -160,24 +156,8 @@ public class CartService {
         return cartRepository.findById(cartId).orElseThrow(() -> new NotFoundHandler(ErrorStatus.NOT_FOUND_CART));
     }
 
-    public void sendPolicyNotification(Policy policy) {
-        User user = userHelper.getAuthenticatedUser();
-        LocalDate notificationDate = policy.getEndDate().minusDays(3);
-
-        if (notificationDate.isAfter(LocalDate.now())) {
-            taskScheduler.schedule(() -> {
-                String message = policy.getName() + "가 3일 뒤 마감됩니다!";
-
-                NotificationRequest request = NotificationRequest.builder()
-                        .user(user)
-                        .type(NotificationType.POLICY_ALARM)
-                        .message(message)
-                        .policy(policy)
-                        .build();
-
-                notificationService.sendNotification(request);
-            }, notificationDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-        }
+    @Transactional(readOnly = true)
+    public List<Cart> getCartsByEndDate(List<LocalDate> targetDates) {
+        return cartRepository.findAllByPolicyEndDate(targetDates);
     }
-
 }

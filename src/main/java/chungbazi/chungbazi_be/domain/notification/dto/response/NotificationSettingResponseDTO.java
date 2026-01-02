@@ -1,10 +1,10 @@
-package chungbazi.chungbazi_be.domain.notification.dto;
+package chungbazi.chungbazi_be.domain.notification.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-public class NotificationSettingResDto {
+public class NotificationSettingResponseDTO {
     @Getter
     @Builder
     @AllArgsConstructor

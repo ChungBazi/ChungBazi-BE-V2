@@ -3,6 +3,7 @@ package chungbazi.chungbazi_be.global.utils;
 import chungbazi.chungbazi_be.domain.chat.entity.Message;
 import chungbazi.chungbazi_be.domain.community.entity.Comment;
 import chungbazi.chungbazi_be.domain.community.entity.Post;
+import chungbazi.chungbazi_be.domain.notification.dto.response.NotificationResponseDTO;
 import chungbazi.chungbazi_be.domain.notification.entity.Notification;
 
 import java.util.List;
@@ -23,9 +24,9 @@ public class PaginationUtil {
                 nextCursor = ((Notification) lastItem).getId();
             } else if (lastItem instanceof Message) {
                 nextCursor = ((Message) lastItem).getId();
-            }
-
-            else {
+            } else if (lastItem instanceof NotificationResponseDTO.notificationsDto) {
+                nextCursor = ((NotificationResponseDTO.notificationsDto) lastItem).getNotificationId();
+            } else {
                 throw new IllegalArgumentException("Unsupported entity type for pagination");
             }
 

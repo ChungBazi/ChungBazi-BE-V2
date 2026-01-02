@@ -30,8 +30,7 @@ public class PolicyController {
     private final CalendarDocumentService calendarDocumentService;
     private final PopularSearchService popularSearchService;
 
-//    //정책 open api 수동 호출 확인 api
-//    @PostMapping("/fetch")
+    //정책 open api 수동 호출 확인 api
 //    public ApiResponse<String> fetchPoliciesManually() {
 //        policyService.getPolicy();  // 👈 여기서 강제 호출
 //        return ApiResponse.onSuccess("정책 수동 업데이트 완료!");

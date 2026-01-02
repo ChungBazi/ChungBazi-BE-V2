@@ -1,6 +1,6 @@
-package chungbazi.chungbazi_be.domain.notification.repository;
+package chungbazi.chungbazi_be.domain.notification.repository.notificationRepository;
 
-import chungbazi.chungbazi_be.domain.notification.dto.NotificationResponseDTO;
+import chungbazi.chungbazi_be.domain.notification.dto.response.NotificationResponseDTO;
 import chungbazi.chungbazi_be.domain.notification.entity.QNotification;
 import chungbazi.chungbazi_be.domain.notification.entity.enums.NotificationType;
 import com.querydsl.core.BooleanBuilder;
@@ -13,7 +13,7 @@ import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
-public class NotificationRepositoryImpl implements NotificationRepositoryCustom{
+public class NotificationRepositoryImpl implements NotificationRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
@@ -62,13 +62,12 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom{
                         qNotification.isRead,
                         qNotification.message,
                         qNotification.type,
-                        qNotification.policy.id,
-                        qNotification.post.id,
+                        qNotification.targetId,
                         qNotification.createdAt
                 ))
                 .from(qNotification)
                 .where(booleanBuilder)
-                .orderBy(qNotification.createdAt.desc())
+                .orderBy(qNotification.id.desc())
                 .limit(limit + 1)
                 .fetch();
 

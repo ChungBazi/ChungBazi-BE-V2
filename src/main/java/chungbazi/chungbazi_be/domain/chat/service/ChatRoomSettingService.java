@@ -1,7 +1,6 @@
-package chungbazi.chungbazi_be.domain.notification.service;
+package chungbazi.chungbazi_be.domain.chat.service;
 
 import chungbazi.chungbazi_be.domain.chat.entity.ChatRoom;
-import chungbazi.chungbazi_be.domain.chat.service.ChatRoomService;
 import chungbazi.chungbazi_be.domain.chat.entity.ChatRoomSetting;
 import chungbazi.chungbazi_be.domain.chat.repository.ChatRoomSettingRepository;
 import chungbazi.chungbazi_be.domain.user.entity.User;
