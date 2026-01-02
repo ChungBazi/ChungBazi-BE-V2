@@ -69,6 +69,9 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           envs: IMAGE_TAG
           script: |
+            export IMAGE_TAG=${{ github.sha }}
+            export ACTION=${{ github.event.inputs.action || 'deploy' }}
+            
             sudo docker pull ${{ secrets.DOCKER_REPO }}-dev:$IMAGE_TAG
             cd /root
             
