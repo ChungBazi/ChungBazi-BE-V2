@@ -11,7 +11,7 @@ import chungbazi.chungbazi_be.domain.notification.service.NotificationService;
 import chungbazi.chungbazi_be.domain.user.entity.User;
 import chungbazi.chungbazi_be.domain.user.entity.enums.RewardLevel;
 import chungbazi.chungbazi_be.domain.user.repository.UserRepository;
-import chungbazi.chungbazi_be.domain.user.utils.UserHelper;
+import chungbazi.chungbazi_be.domain.user.support.UserHelper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -10,23 +10,17 @@ import chungbazi.chungbazi_be.domain.notification.entity.NotificationSetting;
 import chungbazi.chungbazi_be.domain.user.entity.enums.*;
 import chungbazi.chungbazi_be.domain.user.entity.mapping.UserAddition;
 import chungbazi.chungbazi_be.domain.user.entity.mapping.UserInterest;
-import chungbazi.chungbazi_be.global.entity.Uuid;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
-@DynamicUpdate
-@DynamicInsert
 @Builder
 @NoArgsConstructor(access= AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -36,7 +30,6 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Setter
     @Column(nullable = false, unique = true)
     private String name;
 
@@ -63,13 +56,11 @@ public class User {
     @Column(nullable = false)
     private boolean isDeleted;
 
-    @Setter
     @ColumnDefault("false")
     private boolean surveyStatus;
 
     // 캐릭터 관련
     @Enumerated(EnumType.STRING)
-    @Setter
     @Builder.Default
     private RewardLevel characterImg = RewardLevel.LEVEL_1;
 
@@ -79,11 +70,6 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private RewardLevel reward = RewardLevel.LEVEL_1;
-
-    // 삭제 예정
-    @OneToOne
-    @JoinColumn(name = "uuid_id")
-    private Uuid uuid;
 
     // 커뮤니티 관련
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -115,7 +101,7 @@ public class User {
     //채팅 관련
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<Message> messages= new ArrayList<>();
+    private List<Message> messages = new ArrayList<>();
 
     //신고 관련
     @Column(columnDefinition = "integer default 0")
@@ -146,42 +132,33 @@ public class User {
     }
 
     // 유저 정보 관련
-    public void updateEducation(Education education) {
-        this.education = education;
+    public void applyProfile(
+            Education education,
+            Employment employment,
+            Income income,
+            Region region
+    ) {
+        if (education != null) this.education = education;
+        if (employment != null) this.employment = employment;
+        if (income != null) this.income = income;
+        if (region != null) this.region = region;
     }
-    public void updateEmployment(Employment employment) {
-        this.employment = employment;
+
+    public void updateUserSurveyStatus(boolean surveyStatus) {
+        this.surveyStatus = surveyStatus;
     }
-    public void updateIncome(Income income) {
-        this.income = income;
+
+    // 사용자 프로필 수정 관련
+    public void updateName(String newName) {
+        this.name = newName;
     }
-    public void updateRegion(Region region) { this.region = region;}
-    public void updateIsDeleted(Boolean isDeleted){this.isDeleted = isDeleted;}
+    public void updateImage(RewardLevel characterImg) {
+        this.characterImg = characterImg;
+    }
+
     public void updateRewardLevel(RewardLevel reward) {this.reward = reward;}
     public void updatePassword(String newPassword) {this.password = newPassword;}
-    public void updateName(String newName){this.name = newName;}
 
     // 알람 관련
     public void updateNotificationSetting(NotificationSetting notificationSetting) {this.notificationSetting = notificationSetting;}
-
-    @PostPersist
-    public void postPersistInitialization() {
-        // 알람 초기화
-        if (this.notificationSetting == null) {
-            this.notificationSetting = NotificationSetting.builder()
-                    .user(this)
-                    .build();
-        }
-        // 캐릭터 리스트 초기화
-        if (characters == null || characters.isEmpty()) {
-            this.characters = Arrays.stream(RewardLevel.values())
-                    .map(level -> Character.builder()
-                            .user(this)
-                            .rewardLevel(level)
-                            .open(level == RewardLevel.LEVEL_1)
-                            .build())
-                    .toList();
-        }
-    }
-
 }

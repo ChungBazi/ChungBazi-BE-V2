@@ -15,8 +15,7 @@ import chungbazi.chungbazi_be.domain.policy.entity.Category;
 import chungbazi.chungbazi_be.domain.policy.entity.Policy;
 import chungbazi.chungbazi_be.domain.policy.repository.PolicyRepository;
 import chungbazi.chungbazi_be.domain.user.entity.User;
-import chungbazi.chungbazi_be.domain.user.service.UserService;
-import chungbazi.chungbazi_be.domain.user.utils.UserHelper;
+import chungbazi.chungbazi_be.domain.user.support.UserHelper;
 import chungbazi.chungbazi_be.global.apiPayload.code.status.ErrorStatus;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.BadRequestHandler;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.NotFoundHandler;
@@ -38,7 +37,6 @@ public class CartService {
 
     private final CartRepository cartRepository;
     private final PolicyRepository policyRepository;
-    private final UserService userService;
     private final ThreadPoolTaskScheduler taskScheduler;
     private final NotificationService notificationService;
     private final UserHelper userHelper;
@@ -64,14 +62,12 @@ public class CartService {
 
     @Transactional
     public void deletePolicyFromCart(CartRequestDTO.CartDeleteList deleteListDTO) {
-
-        Long userId = SecurityUtils.getUserId();
-        User user = userService.findByUserId(userId);
+        User user = userHelper.getAuthenticatedUser();
 
         calendarDocumentRepository.deleteByCart_IdIn(deleteListDTO.getDeleteList());
         calendarDocumentRepository.flush(); // for 즉시 삭제
 
-        cartRepository.deleteByUser_IdAndPolicyIds(userId, deleteListDTO.getDeleteList());
+        cartRepository.deleteByUser_IdAndPolicyIds(user.getId(), deleteListDTO.getDeleteList());
     }
 
     public List<CartResponseDTO.CartPolicyList> getPoliciesFromCart() {

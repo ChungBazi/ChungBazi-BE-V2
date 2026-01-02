@@ -7,7 +7,7 @@ import chungbazi.chungbazi_be.domain.notification.entity.Notification;
 import chungbazi.chungbazi_be.domain.notification.entity.enums.NotificationType;
 import chungbazi.chungbazi_be.domain.notification.repository.notificationRepository.NotificationRepository;
 import chungbazi.chungbazi_be.domain.user.entity.User;
-import chungbazi.chungbazi_be.domain.user.utils.UserHelper;
+import chungbazi.chungbazi_be.domain.user.support.UserHelper;
 import chungbazi.chungbazi_be.global.apiPayload.code.status.ErrorStatus;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.NotFoundHandler;
 import chungbazi.chungbazi_be.global.utils.PaginationResult;

@@ -6,7 +6,7 @@ import chungbazi.chungbazi_be.domain.notification.dto.response.NotificationSetti
 import chungbazi.chungbazi_be.domain.notification.entity.NotificationSetting;
 import chungbazi.chungbazi_be.domain.notification.repository.NotificationSettingRepository;
 import chungbazi.chungbazi_be.domain.user.entity.User;
-import chungbazi.chungbazi_be.domain.user.utils.UserHelper;
+import chungbazi.chungbazi_be.domain.user.support.UserHelper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

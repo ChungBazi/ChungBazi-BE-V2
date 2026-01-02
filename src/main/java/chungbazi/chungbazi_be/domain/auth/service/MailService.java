@@ -1,8 +1,7 @@
 package chungbazi.chungbazi_be.domain.auth.service;
 
-import chungbazi.chungbazi_be.domain.auth.dto.TokenRequestDTO;
 import chungbazi.chungbazi_be.domain.user.entity.User;
-import chungbazi.chungbazi_be.domain.user.utils.UserHelper;
+import chungbazi.chungbazi_be.domain.user.support.UserHelper;
 import chungbazi.chungbazi_be.global.apiPayload.code.status.ErrorStatus;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.BadRequestHandler;
 import jakarta.activation.DataSource;

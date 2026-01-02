@@ -9,9 +9,17 @@ import lombok.*;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(indexes = {
-        @Index(name = "idx_blocker_id_is_active", columnList = "blocker_id,is_active")
-})
+@Table(
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_blocker_blocked",
+                        columnNames = {"blocker_id", "blocked_id"}
+                )
+        },
+        indexes = {
+                @Index(name = "idx_blocker_id_is_active", columnList = "blocker_id, is_active")
+        }
+)
 public class UserBlock extends BaseTimeEntity {
 
     @Id
@@ -29,9 +37,5 @@ public class UserBlock extends BaseTimeEntity {
     @Column(name = "is_active", nullable = false)
     @Builder.Default
     private boolean isActive = true;
-
-    public void setIsActive(boolean active){
-        this.isActive = active;
-    }
 }
 

@@ -16,7 +16,7 @@ import chungbazi.chungbazi_be.domain.report.entity.enums.ReportType;
 import chungbazi.chungbazi_be.domain.report.repository.ReportRepository;
 import chungbazi.chungbazi_be.domain.user.entity.User;
 import chungbazi.chungbazi_be.domain.user.repository.UserBlockRepository.UserBlockRepository;
-import chungbazi.chungbazi_be.domain.user.utils.UserHelper;
+import chungbazi.chungbazi_be.domain.user.support.UserHelper;
 import chungbazi.chungbazi_be.global.apiPayload.code.status.ErrorStatus;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.BadRequestHandler;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.NotFoundHandler;

@@ -21,7 +21,7 @@ import chungbazi.chungbazi_be.domain.policy.repository.PolicyRepository;
 import chungbazi.chungbazi_be.domain.user.entity.User;
 import chungbazi.chungbazi_be.domain.user.entity.enums.Employment;
 import chungbazi.chungbazi_be.domain.user.entity.mapping.UserInterest;
-import chungbazi.chungbazi_be.domain.user.utils.UserHelper;
+import chungbazi.chungbazi_be.domain.user.support.UserHelper;
 import chungbazi.chungbazi_be.global.apiPayload.code.status.ErrorStatus;
 import chungbazi.chungbazi_be.global.apiPayload.exception.GeneralException;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.BadRequestHandler;
