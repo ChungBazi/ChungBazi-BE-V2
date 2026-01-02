@@ -37,7 +37,7 @@ public class NotificationService {
     }
 
     //알림 조회
-    @Transactional(readOnly = true)
+    @Transactional
     public PaginationResult<NotificationResponseDTO.notificationsDto> getNotifications(NotificationType type, Long cursor, int limit) {
 
         User user = userHelper.getAuthenticatedUser();

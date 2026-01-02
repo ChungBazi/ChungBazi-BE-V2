@@ -9,9 +9,11 @@ import chungbazi.chungbazi_be.domain.notification.service.NotificationSettingSer
 import chungbazi.chungbazi_be.global.apiPayload.ApiResponse;
 import chungbazi.chungbazi_be.global.utils.PaginationResult;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "[알림]", description = "알림 및 수신 설정 관련 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/notifications")
