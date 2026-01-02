@@ -180,7 +180,7 @@ public class CommunityService {
                     && !parentAuthor.getId().equals(user.getId())) {
                 String message = user.getName() + "님이 회원님의 댓글에 답글을 달았습니다.";
                 NotificationData request = NotificationData.builder()
-                        .user(user)
+                        .user(parentAuthor)
                         .message(message)
                         .type(NotificationType.COMMUNITY)
                         .targetId(post.getId())
