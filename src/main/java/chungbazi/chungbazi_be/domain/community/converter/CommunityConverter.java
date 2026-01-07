@@ -75,6 +75,16 @@ public class CommunityConverter {
                 .build();
     }
 
+    public static Comment toEntity(String content, User author, Post post, Comment parent) {
+        return Comment.builder()
+                .content(content)
+                .author(author)
+                .post(post)
+                .parentComment(parent)
+                .status(ContentStatus.VISIBLE)
+                .build();
+    }
+
     public static CommunityResponseDTO.UploadAndGetCommentDto toUploadAndGetCommentDto(Comment comment, Long currentUserId,boolean isLikedByUser, int replyCount) {
         boolean isMine = false;
         if (currentUserId != null && comment.getAuthor() != null) {

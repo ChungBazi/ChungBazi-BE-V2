@@ -4,6 +4,7 @@ import chungbazi.chungbazi_be.domain.community.dto.CommunityRequestDTO;
 import chungbazi.chungbazi_be.domain.community.dto.CommunityResponseDTO;
 import chungbazi.chungbazi_be.domain.community.entity.Comment;
 import chungbazi.chungbazi_be.domain.community.entity.Post;
+import chungbazi.chungbazi_be.domain.community.service.CommentService;
 import chungbazi.chungbazi_be.domain.community.service.CommunityService;
 import chungbazi.chungbazi_be.domain.policy.dto.PopularSearchResponse;
 import chungbazi.chungbazi_be.domain.policy.entity.Category;
@@ -32,7 +33,9 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/community")
 @Validated
 public class CommunityController {
+
     private final CommunityService communityService;
+    private final CommentService commentService;
     private final PopularSearchService popularSearchService;
 
     @PostMapping(value = "/posts/upload", consumes = "multipart/form-data")
@@ -80,8 +83,9 @@ public class CommunityController {
     @PostMapping(value = "/comments/upload")
     @Operation(summary = "댓글 업로드 API", description = "댓글 업로드 API")
     public ApiResponse<CommunityResponseDTO.UploadAndGetCommentDto> uploadComment(
-            @RequestBody @Valid CommunityRequestDTO.UploadCommentDto uploadCommentDto){
-        return ApiResponse.onSuccess(communityService.uploadComment(uploadCommentDto));
+            @RequestBody @Valid CommunityRequestDTO.UploadCommentDto uploadCommentDto
+    ) {
+        return ApiResponse.onSuccess(commentService.uploadComment(uploadCommentDto));
     }
 
     @GetMapping(value = "/comments")
@@ -89,8 +93,9 @@ public class CommunityController {
     public ApiResponse<CommunityResponseDTO.CommentListDto> getComments(
             @RequestParam @ExistEntity(entityType = Post.class) Long postId,
             @RequestParam Long cursor,
-            @RequestParam(defaultValue = "10") int size){
-        return ApiResponse.onSuccess(communityService.getComments(postId, cursor, size));
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ApiResponse.onSuccess(commentService.getComments(postId, cursor, size));
     }
     @PostMapping(value = "/likes")
     @Operation(summary = "개별 게시글 좋아요 API", description = "개별 게시글 좋아요 API")

@@ -40,6 +40,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Transactional
 @RequiredArgsConstructor
 public class CommunityService {
+
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final S3Manager s3Manager;
@@ -146,108 +147,6 @@ public class CommunityService {
         return CommunityConverter.toUploadAndGetPostDto(post, commentCount, isMine,isLikedByUser);
     }
 
-    public CommunityResponseDTO.UploadAndGetCommentDto uploadComment(CommunityRequestDTO.UploadCommentDto uploadCommentDto) {
-        // 게시글 조회
-        Post post = postRepository.findById(uploadCommentDto.getPostId())
-                .orElseThrow(() -> new NotFoundHandler(ErrorStatus.NOT_FOUND_POST));
-
-        //부모 댓글이 있는지 확인
-        Comment parentComment = null;
-        if (uploadCommentDto.getParentCommentId() !=null){
-            parentComment = commentRepository.findById(uploadCommentDto.getParentCommentId())
-                    .orElseThrow(() -> new NotFoundHandler(ErrorStatus.NOT_FOUND_COMMENT));
-        }
-
-        // 유저 조회
-        User user = userHelper.getAuthenticatedUser();
-        Comment comment = Comment.builder().
-                content(uploadCommentDto.getContent())
-                .author(user)
-                .post(post)
-                .status(ContentStatus.VISIBLE)
-                .parentComment(parentComment)
-                .build();
-
-        commentRepository.save(comment);
-
-        if(user.getNotificationSetting().isCommunityAlarm() && !user.getId().equals(post.getAuthor().getId())){
-            sendCommunityNotification(post.getId());
-        }
-        if (parentComment != null) {
-            User parentAuthor = parentComment.getAuthor();
-            // 부모 댓글 작성자가 댓글 작성자 자신이 아닐 때만 알림
-            if (user.getNotificationSetting().isCommunityAlarm()
-                    && !parentAuthor.getId().equals(user.getId())) {
-                String message = user.getName() + "님이 회원님의 댓글에 답글을 달았습니다.";
-                NotificationData request = NotificationData.builder()
-                        .user(parentAuthor)
-                        .message(message)
-                        .type(NotificationType.COMMUNITY)
-                        .targetId(post.getId())
-                        .build();
-
-                notificationService.sendNotification(request);
-            }
-        }
-        rewardService.checkRewards();
-
-        return CommunityConverter.toUploadAndGetCommentDto(comment, user.getId(),false,0);
-    }
-
-    public CommunityResponseDTO.CommentListDto getComments(Long postId, Long cursor, int size){
-        Pageable pageable = PageRequest.of(0, size + 1);
-
-        User user = userHelper.getAuthenticatedUser();
-        List<Long> blockedUserIds = userBlockRepository.findBlockedUserIdsByBlocker(user.getId());
-        List<Long> reportedCommentIds = reportRepository.findReportedTargetIdsByReporterAndType(user.getId(), ReportType.COMMENT);
-
-        if (blockedUserIds.isEmpty()) {
-            blockedUserIds = Arrays.asList(-1L);
-        }
-        if (reportedCommentIds.isEmpty()) {
-            reportedCommentIds = Arrays.asList(-1L);
-        }
-
-        List<Comment> comments;
-
-        comments = commentRepository.findCommentsWithFilters(ContentStatus.VISIBLE,blockedUserIds,reportedCommentIds,postId, cursor, pageable).getContent();
-
-        PaginationResult<Comment> paginationResult = PaginationUtil.paginate(comments, size);
-        comments = paginationResult.getItems();
-
-        List<CommunityResponseDTO.UploadAndGetCommentDto> responseList = new ArrayList<>();
-        Map<Long, CommunityResponseDTO.UploadAndGetCommentDto> responseMap = new HashMap<>();
-
-        //각 부모 댓글의 대댓글 수 계산
-        Map<Long, Integer> replyCountMap = new HashMap<>();
-        comments.forEach(comment -> {
-            if (comment.getParentComment() != null) {
-                Long parentId = comment.getParentComment().getId();
-                replyCountMap.put(parentId, replyCountMap.getOrDefault(parentId, 0) + 1);
-            }
-        });
-
-        comments.forEach(comment -> {
-            boolean isLikedByUser = commentHeartRepository.existsByUserAndComment(user, comment);
-            int replyCount = replyCountMap.getOrDefault(comment.getId(), 0);
-            CommunityResponseDTO.UploadAndGetCommentDto dto = CommunityConverter.toUploadAndGetCommentDto(comment, user.getId(), isLikedByUser, replyCount);
-            responseMap.put(comment.getId(), dto);
-
-            Optional.ofNullable(comment.getParentComment())
-                    .map(parent -> responseMap.get(parent.getId()))
-                    .ifPresent(parent -> parent.getComments().add(dto));
-
-            if (comment.getParentComment() ==null){
-                responseList.add(dto);
-            }
-        });
-
-        return CommunityConverter.toGetCommentsListDto(
-                responseList,
-                paginationResult.getNextCursor(),
-                paginationResult.isHasNext());
-    }
-
     public void likePost(Long postId){
         User user = userHelper.getAuthenticatedUser();
         Post post = postRepository.getReferenceById(postId);
@@ -278,24 +177,6 @@ public class CommunityService {
 
         post.decrementLike();
         postRepository.save(post);
-    }
-
-    public void sendCommunityNotification(Long postId){
-        User user = userHelper.getAuthenticatedUser();
-
-        Post post = postRepository.getReferenceById(postId);
-
-        User author=post.getAuthor();
-        String message=user.getName()+"님이 회원님의 게시글에 댓글을 달았습니다.";
-
-        NotificationData request = NotificationData.builder()
-                .user(author)
-                .type(NotificationType.COMMUNITY)
-                .message(message)
-                .targetId(post.getId())
-                .build();
-
-        notificationService.sendNotification(request);
     }
 
     public void sendPostLikeNotification(Long postId){
