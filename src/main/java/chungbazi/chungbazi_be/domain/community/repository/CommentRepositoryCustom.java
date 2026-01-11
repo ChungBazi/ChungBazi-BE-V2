@@ -11,13 +11,11 @@ import java.util.List;
 @Repository
 public interface CommentRepositoryCustom {
 
-    Page<Comment> findCommentsWithFilters(
-            ContentStatus status,
-            List<Long> excludedAuthorIds,
-            List<Long> reportedCommentIds,
+    List<Comment> findCommentsWithFilters(
             Long postId,
-            Long lastCommentId,
-            Pageable pageable
+            Long cursor,
+            int size,
+            Long userId
     );
 
     Long countCommentsWithFilters(Long postId,

@@ -4,7 +4,6 @@ import chungbazi.chungbazi_be.domain.community.converter.CommunityConverter;
 import chungbazi.chungbazi_be.domain.community.dto.CommunityRequestDTO;
 import chungbazi.chungbazi_be.domain.community.dto.CommunityResponseDTO;
 import chungbazi.chungbazi_be.domain.community.entity.Comment;
-import chungbazi.chungbazi_be.domain.community.entity.ContentStatus;
 import chungbazi.chungbazi_be.domain.community.entity.Post;
 import chungbazi.chungbazi_be.domain.community.repository.CommentHeartRepository;
 import chungbazi.chungbazi_be.domain.community.repository.CommentRepository;
@@ -12,7 +11,6 @@ import chungbazi.chungbazi_be.domain.community.support.CommunityReader;
 import chungbazi.chungbazi_be.domain.notification.converter.NotificationConverter;
 import chungbazi.chungbazi_be.domain.notification.dto.internal.NotificationData;
 import chungbazi.chungbazi_be.domain.notification.service.NotificationService;
-import chungbazi.chungbazi_be.domain.report.entity.enums.ReportType;
 import chungbazi.chungbazi_be.domain.report.repository.ReportRepository;
 import chungbazi.chungbazi_be.domain.user.entity.User;
 import chungbazi.chungbazi_be.domain.user.repository.UserBlockRepository.UserBlockRepository;
@@ -20,8 +18,6 @@ import chungbazi.chungbazi_be.domain.user.support.UserHelper;
 import chungbazi.chungbazi_be.global.utils.PaginationResult;
 import chungbazi.chungbazi_be.global.utils.PaginationUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,58 +57,31 @@ public class CommentService {
         return CommunityConverter.toUploadAndGetCommentDto(comment, user.getId(),false,0);
     }
 
-    public CommunityResponseDTO.CommentListDto getComments(Long postId, Long cursor, int size){
-        Pageable pageable = PageRequest.of(0, size + 1);
-
+    public CommunityResponseDTO.CommentListDto getComments(Long postId, Long cursor, int size) {
         User user = userHelper.getAuthenticatedUser();
-        List<Long> blockedUserIds = userBlockRepository.findBlockedUserIdsByBlocker(user.getId());
-        List<Long> reportedCommentIds = reportRepository.findReportedTargetIdsByReporterAndType(user.getId(), ReportType.COMMENT);
 
-        if (blockedUserIds.isEmpty()) {
-            blockedUserIds = Arrays.asList(-1L);
-        }
-        if (reportedCommentIds.isEmpty()) {
-            reportedCommentIds = Arrays.asList(-1L);
-        }
+        // 사용자 기준 댓글 조회
+        List<Comment> fetched = commentRepository.findCommentsWithFilters(
+                postId, cursor, size, user.getId()
+        );
 
-        List<Comment> comments;
+        PaginationResult<Comment> pagination = PaginationUtil.paginate(fetched, size);
 
-        comments = commentRepository.findCommentsWithFilters(ContentStatus.VISIBLE,blockedUserIds,reportedCommentIds,postId, cursor, pageable).getContent();
+        // 부모 댓글 기준 대댓글 수 계산
+        Map<Long, Integer> replyCountMap = calculateReplyCounts(pagination.getItems());
 
-        PaginationResult<Comment> paginationResult = PaginationUtil.paginate(comments, size);
-        comments = paginationResult.getItems();
-
-        List<CommunityResponseDTO.UploadAndGetCommentDto> responseList = new ArrayList<>();
-        Map<Long, CommunityResponseDTO.UploadAndGetCommentDto> responseMap = new HashMap<>();
-
-        //각 부모 댓글의 대댓글 수 계산
-        Map<Long, Integer> replyCountMap = new HashMap<>();
-        comments.forEach(comment -> {
-            if (comment.getParentComment() != null) {
-                Long parentId = comment.getParentComment().getId();
-                replyCountMap.put(parentId, replyCountMap.getOrDefault(parentId, 0) + 1);
-            }
-        });
-
-        comments.forEach(comment -> {
-            boolean isLikedByUser = commentHeartRepository.existsByUserAndComment(user, comment);
-            int replyCount = replyCountMap.getOrDefault(comment.getId(), 0);
-            CommunityResponseDTO.UploadAndGetCommentDto dto = CommunityConverter.toUploadAndGetCommentDto(comment, user.getId(), isLikedByUser, replyCount);
-            responseMap.put(comment.getId(), dto);
-
-            Optional.ofNullable(comment.getParentComment())
-                    .map(parent -> responseMap.get(parent.getId()))
-                    .ifPresent(parent -> parent.getComments().add(dto));
-
-            if (comment.getParentComment() ==null){
-                responseList.add(dto);
-            }
-        });
+        List<CommunityResponseDTO.UploadAndGetCommentDto> response =
+                buildCommentTree(
+                        pagination.getItems(),
+                        user.getId(),
+                        replyCountMap
+                );
 
         return CommunityConverter.toGetCommentsListDto(
-                responseList,
-                paginationResult.getNextCursor(),
-                paginationResult.isHasNext());
+                response,
+                pagination.getNextCursor(),
+                pagination.isHasNext()
+        );
     }
 
     private void sendCommentNotification(Long postId){
@@ -161,5 +130,53 @@ public class CommentService {
                         post.getId()
                 )
         );
+    }
+
+    private Map<Long, Integer> calculateReplyCounts(List<Comment> comments) {
+        Map<Long, Integer> replyCountMap = new HashMap<>();
+
+        for (Comment comment : comments) {
+            // 대댓글일 경우
+            if (comment.getParentComment() != null) {
+                Long parentId = comment.getParentComment().getId();
+                replyCountMap.put(parentId, replyCountMap.getOrDefault(parentId, 0) + 1);
+            }
+        }
+        return replyCountMap;
+    }
+
+    private List<CommunityResponseDTO.UploadAndGetCommentDto> buildCommentTree(
+            List<Comment> comments,
+            Long userId,
+            Map<Long, Integer> replyCountMap
+    ) {
+        Map<Long, CommunityResponseDTO.UploadAndGetCommentDto> map = new HashMap<>();
+        List<CommunityResponseDTO.UploadAndGetCommentDto> parentComments = new ArrayList<>();
+
+        for (Comment comment : comments) {
+            CommunityResponseDTO.UploadAndGetCommentDto dto =
+                    CommunityConverter.toUploadAndGetCommentDto(
+                            comment,
+                            userId,
+                            isLikedByUser(comment, userId), // TODO: N + 1 수정
+                            replyCountMap.getOrDefault(comment.getId(), 0)
+                    );
+
+            map.put(comment.getId(), dto);
+
+            // 부모 댓글일 경우
+            if (comment.getParentComment() == null) {
+                parentComments.add(dto);
+            } else {
+                map.get(comment.getParentComment().getId())
+                        .getComments()
+                        .add(dto);
+            }
+        }
+        return parentComments;
+    }
+
+    private boolean isLikedByUser(Comment comment, Long userId) {
+        return commentHeartRepository.existsByUserIdAndCommentId(userId, comment.getId());
     }
 }
