@@ -67,6 +67,17 @@ public class CommentService {
 
         PaginationResult<Comment> pagination = PaginationUtil.paginate(fetched, size);
 
+        List<Comment> comments = pagination.getItems();
+
+        List<Long> commentIds = comments.stream()
+                .map(Comment::getId)
+                .toList();
+
+        // 좋아요 여부 N + 1 방지
+        Set<Long> likedCommentIds = commentIds.isEmpty() ? Set.of() : new HashSet<>(
+                commentHeartRepository.findLikedCommentIds(user.getId(), commentIds)
+        );
+
         // 부모 댓글 기준 대댓글 수 계산
         Map<Long, Integer> replyCountMap = calculateReplyCounts(pagination.getItems());
 
@@ -74,6 +85,7 @@ public class CommentService {
                 buildCommentTree(
                         pagination.getItems(),
                         user.getId(),
+                        likedCommentIds,
                         replyCountMap
                 );
 
@@ -148,20 +160,22 @@ public class CommentService {
     private List<CommunityResponseDTO.UploadAndGetCommentDto> buildCommentTree(
             List<Comment> comments,
             Long userId,
+            Set<Long> likedCommentIds,
             Map<Long, Integer> replyCountMap
     ) {
         Map<Long, CommunityResponseDTO.UploadAndGetCommentDto> map = new HashMap<>();
         List<CommunityResponseDTO.UploadAndGetCommentDto> parentComments = new ArrayList<>();
 
         for (Comment comment : comments) {
+            boolean isLiked = likedCommentIds.contains(comment.getId());
+
             CommunityResponseDTO.UploadAndGetCommentDto dto =
                     CommunityConverter.toUploadAndGetCommentDto(
                             comment,
                             userId,
-                            isLikedByUser(comment, userId), // TODO: N + 1 수정
+                            isLiked,
                             replyCountMap.getOrDefault(comment.getId(), 0)
                     );
-
             map.put(comment.getId(), dto);
 
             // 부모 댓글일 경우
@@ -174,9 +188,5 @@ public class CommentService {
             }
         }
         return parentComments;
-    }
-
-    private boolean isLikedByUser(Comment comment, Long userId) {
-        return commentHeartRepository.existsByUserIdAndCommentId(userId, comment.getId());
     }
 }

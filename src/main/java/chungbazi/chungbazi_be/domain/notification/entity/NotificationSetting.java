@@ -1,6 +1,5 @@
 package chungbazi.chungbazi_be.domain.notification.entity;
 
-import chungbazi.chungbazi_be.domain.notification.dto.request.NotificationSettingRequestDTO;
 import chungbazi.chungbazi_be.domain.user.entity.User;
 import chungbazi.chungbazi_be.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
