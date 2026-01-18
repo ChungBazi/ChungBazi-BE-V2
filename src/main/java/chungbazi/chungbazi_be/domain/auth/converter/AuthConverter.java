@@ -23,6 +23,7 @@ public class AuthConverter {
                 token.getUserId(),
                 token.getUserName(),
                 token.getAccessToken(),
+                token.getRefreshToken(),
                 token.getAccessExp()
         );
     }

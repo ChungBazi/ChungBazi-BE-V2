@@ -200,7 +200,12 @@ public class AuthService {
 
         User user = getUserById(userId);
         tokenAuthService.addToBlackList(refreshToken, "expired", 3600L);
-        return tokenGenerator.generate(userId, user.getName(), false);
+
+        TokenDTO newToken = tokenGenerator.generate(userId, user.getName(), false);
+
+        tokenAuthService.saveRefreshToken(userId, newToken.getRefreshToken(), newToken.getRefreshExp());
+
+        return newToken;
     }
 
     // 로그아웃
