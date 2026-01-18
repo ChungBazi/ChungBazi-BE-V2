@@ -30,7 +30,7 @@ public class Cart extends BaseTimeEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "policy_id", nullable = false)
+    @JoinColumn(name = "policy_id")
     private Policy policy;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -43,4 +43,7 @@ public class Cart extends BaseTimeEntity {
         this.user = user;
     }
 
+    public void deletePolicy() {
+        this.policy = null;
+    }
 }

@@ -1,18 +1,16 @@
 package chungbazi.chungbazi_be.domain.policy.controller;
 
 import chungbazi.chungbazi_be.domain.document.service.CalendarDocumentService;
-import chungbazi.chungbazi_be.domain.policy.dto.PolicyCalendarDetailResponse;
-import chungbazi.chungbazi_be.domain.policy.dto.PolicyCalendarResponse;
-import chungbazi.chungbazi_be.domain.policy.dto.PolicyDetailsResponse;
-import chungbazi.chungbazi_be.domain.policy.dto.PolicyListResponse;
-import chungbazi.chungbazi_be.domain.policy.dto.PolicyRecommendResponse;
-import chungbazi.chungbazi_be.domain.policy.dto.PopularSearchResponse;
+import chungbazi.chungbazi_be.domain.policy.dto.*;
 import chungbazi.chungbazi_be.domain.policy.entity.Category;
 import chungbazi.chungbazi_be.domain.policy.service.PolicyService;
 import chungbazi.chungbazi_be.global.apiPayload.ApiResponse;
 import chungbazi.chungbazi_be.global.service.PopularSearchService;
+import chungbazi.chungbazi_be.global.utils.PaginationResult;
 import io.swagger.v3.oas.annotations.Operation;
 import java.util.List;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/policies")
+@Tag(name = "[정책]", description = "정책 관련 API")
 public class PolicyController {
 
     private final PolicyService policyService;
@@ -60,13 +59,13 @@ public class PolicyController {
     // 카테고리별 정책 검색
     @Operation(summary = "카테고리별 정책 API", description = "카테고리별 정책 조회")
     @GetMapping
-    public ApiResponse<PolicyListResponse> getCategoryPolicy(
+    public ApiResponse<PaginationResult<PolicyListOneResponse>> getCategoryPolicy(
             @RequestParam(value = "category", required = true) Category category,
             @RequestParam(value = "cursor", required = false) Long cursor,
             @RequestParam(value = "size", defaultValue = "15", required = false) int size,
             @RequestParam(value = "order", defaultValue = "latest", required = false) String order) {
 
-        PolicyListResponse response = policyService.getCategoryPolicy(category, cursor, size, order);
+        PaginationResult<PolicyListOneResponse> response = policyService.getCategoryPolicy(category, cursor, size, order);
         return ApiResponse.onSuccess(response);
     }
 

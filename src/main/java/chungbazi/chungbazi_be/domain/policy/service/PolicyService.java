@@ -6,15 +6,9 @@ import chungbazi.chungbazi_be.domain.cart.service.CartService;
 import chungbazi.chungbazi_be.domain.document.entity.CalendarDocument;
 import chungbazi.chungbazi_be.domain.document.service.CalendarDocumentService;
 import chungbazi.chungbazi_be.domain.notification.service.NotificationService;
-import chungbazi.chungbazi_be.domain.policy.dto.PolicyCalendarDetailResponse;
-import chungbazi.chungbazi_be.domain.policy.dto.PolicyCalendarResponse;
-import chungbazi.chungbazi_be.domain.policy.dto.PolicyDetailsResponse;
-import chungbazi.chungbazi_be.domain.policy.dto.PolicyListOneResponse;
-import chungbazi.chungbazi_be.domain.policy.dto.PolicyListResponse;
-import chungbazi.chungbazi_be.domain.policy.dto.PolicyRecommendResponse;
+import chungbazi.chungbazi_be.domain.policy.dto.*;
 import chungbazi.chungbazi_be.domain.policy.entity.Category;
 import chungbazi.chungbazi_be.domain.policy.entity.Policy;
-import chungbazi.chungbazi_be.domain.policy.entity.QPolicy;
 import chungbazi.chungbazi_be.domain.policy.repository.PolicyRepository;
 import chungbazi.chungbazi_be.domain.user.entity.User;
 import chungbazi.chungbazi_be.domain.user.entity.enums.Employment;
@@ -24,24 +18,23 @@ import chungbazi.chungbazi_be.global.apiPayload.code.status.ErrorStatus;
 import chungbazi.chungbazi_be.global.apiPayload.exception.GeneralException;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.BadRequestHandler;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.NotFoundHandler;
+import chungbazi.chungbazi_be.global.utils.PaginationResult;
+import chungbazi.chungbazi_be.global.utils.PaginationUtil;
 import chungbazi.chungbazi_be.global.utils.PopularSearch;
-import com.querydsl.core.Tuple;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.reactive.function.client.WebClient;
+
 
 @Slf4j
 @Service
@@ -49,7 +42,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 @RequiredArgsConstructor
 public class PolicyService {
 
-    private final WebClient webclient;
     private final PolicyRepository policyRepository;
     private final CartService cartService;
     private final CalendarDocumentService calendarDocumentService;
@@ -62,7 +54,6 @@ public class PolicyService {
         policyRepository.saveAll(policies);
     }
 
-
     // 정책 검색
     public PolicyListResponse getSearchPolicy(String name, String cursor, int size, String order) {
 
@@ -74,45 +65,37 @@ public class PolicyService {
         popularSearch.updatePopularSearch(name, "policy");
 
         // 검색 결과 반환
-        List<Tuple> policies = policyRepository.searchPolicyWithName(name, cursor, size + 1, order);
+        List<PolicySearchResult> searchResults = policyRepository.searchPolicyWithName(name, cursor, size + 1, order);
 
+        //페이징 처리
         String nextCursor = null;
-        boolean hasNext = policies.size() > size;
+        boolean hasNext = searchResults.size() > size;
+        List<PolicySearchResult> pageResults;
 
         if (hasNext) {
-            policies.subList(0, size);
+            pageResults = searchResults.subList(0, size);
 
-            Tuple lastTuple = policies.get(policies.size() - 1);
-            nextCursor = policyRepository.generateNextCursor(lastTuple, name);
+            PolicySearchResult lastItem = pageResults.get(size - 1);
+            nextCursor = lastItem.toCursor();
+        } else {
+            pageResults = searchResults;
         }
 
-        List<PolicyListOneResponse> policyDtoList = new ArrayList<>();
-        for (Tuple tuple : policies) {
-            Policy policy = tuple.get(QPolicy.policy);
-            policyDtoList.add(PolicyListOneResponse.from(policy));
-        }
+        //프론트 통신용 응답으로 변환
+        List<PolicyListOneResponse> responses = pageResults.stream()
+                .map(PolicySearchResult::toResponse)
+                .collect(Collectors.toList());
 
-        if (policies.isEmpty()) {
-            return PolicyListResponse.of(policyDtoList, null, false);
-        }
-
-        return PolicyListResponse.of(policyDtoList, nextCursor, hasNext);
+        return PolicyListResponse.of(responses, nextCursor, hasNext);
     }
 
     // 카테고리별 정책 조회
-    public PolicyListResponse getCategoryPolicy(Category categoryName, Long cursor, int size, String order) {
+    public PaginationResult<PolicyListOneResponse> getCategoryPolicy(Category categoryName, Long cursor, int size, String order) {
 
-        List<Policy> policies = policyRepository.getPolicyWithCategory(categoryName, cursor, size + 1, order);
+        List<PolicyListOneResponse> policies = policyRepository.getPolicyWithCategory(categoryName, cursor, size + 1, order);
 
-        boolean hasNext = policies.size() > size;
+        return PaginationUtil.paginate(policies, size);
 
-        if (hasNext) {
-            policies.subList(0, size);
-        }
-
-        List<PolicyListOneResponse> policyDtoList = policies.stream().map(PolicyListOneResponse::from).toList();
-
-        return PolicyListResponse.of(policyDtoList, hasNext);
     }
 
     // 정책상세조회
@@ -158,26 +141,20 @@ public class PolicyService {
         return PolicyCalendarDetailResponse.of(cart, policy, documents);
     }
 
+    //추천 정책 조회
     public PolicyRecommendResponse getRecommendPolicy(Category category, Long cursor, int size, String order) {
 
         User user = userHelper.getAuthenticatedUser();
 
-        Employment employment = user.getEmployment();
+        List<PolicyListOneResponse> policies = policyRepository.getPolicyWithCategory(category, cursor, size+1, order);
 
-        Set<Category> userCategories = getUserInterests(user);
-        List<Policy> policies = policyRepository.findByCategory(category, cursor, size, order);
-        List<Policy> filteredPolicies = policies.stream()
-                .filter(policy -> policy.getEmployment() == null || employment.getDescription()
-                        .equals(policy.getEmployment()))
-                .toList();
-        boolean hasNext = filteredPolicies.size() > size;
-        if (hasNext) {
-            filteredPolicies = filteredPolicies.subList(0, size);
-        }
+        PaginationResult<PolicyListOneResponse> paging = PaginationUtil.paginate(policies, size);
 
+        //안 읽은 알림 개수 & 유저 관심분야
         boolean isReadAllNotifications=notificationService.isReadAllNotification();
+        Set<Category> userCategories = getUserInterests(user);
 
-        return PolicyRecommendResponse.of(policies, userCategories, hasNext,isReadAllNotifications, user.getName());
+        return PolicyRecommendResponse.of(paging.getItems(), userCategories, paging.isHasNext(),isReadAllNotifications, user.getName(), paging.getNextCursor());
     }
 
 
@@ -227,14 +204,8 @@ public class PolicyService {
             return 0;
         }
 
-        // CalendarDocument 삭제
-        List<Long> cartIds = cartService.findIdsByPolicyIdIn(expiredPolicyIds);
-        if (!cartIds.isEmpty()) {
-            calendarDocumentService.deleteByCartIdIn(cartIds);
-        }
-
-        // Cart 삭제
-        cartService.deleteByPolicyIdIn(expiredPolicyIds);
+        // Cart와의 연관관계 제거
+        cartService.nullifyPolicyInCart(expiredPolicyIds);
 
         // Policy 삭제
         long deletedPolicies = policyRepository.deleteByIdIn(expiredPolicyIds);

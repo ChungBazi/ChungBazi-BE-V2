@@ -170,4 +170,19 @@ public class CartService {
     public void deleteByPolicyIdIn(List<Long> expiredPolicyIds) {
         cartRepository.deleteByPolicyIdIn(expiredPolicyIds);
     }
+
+    @Transactional
+    public void nullifyPolicyInCart(List<Long> expiredPolicyIds) {
+        // 해당 policyIds를 가진 모든 cart 찾기
+        List<Cart> carts = cartRepository.findAllByPolicyIdIn(expiredPolicyIds);
+
+        if (carts.isEmpty()) {
+            return;
+        }
+
+        // 정책 참조 제거
+        carts.forEach(cart -> cart.deletePolicy());
+
+        cartRepository.saveAll(carts);
+    }
 }

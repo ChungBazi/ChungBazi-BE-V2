@@ -37,4 +37,7 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
     @Modifying
     @Query("DELETE FROM Cart c WHERE c.policy.id IN :policyIds")
     void deleteByPolicyIdIn(@Param("policyIds") List<Long> policyIds);
+
+    @Query("SELECT c FROM Cart c WHERE c.policy.id IN :policyIds")
+    List<Cart> findAllByPolicyIdIn(List<Long> expiredPolicyIds);
 }

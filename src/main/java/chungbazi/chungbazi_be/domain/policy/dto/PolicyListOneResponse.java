@@ -3,11 +3,16 @@ package chungbazi.chungbazi_be.domain.policy.dto;
 import chungbazi.chungbazi_be.domain.policy.entity.Policy;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class PolicyListOneResponse {
 
     private Long policyId;
@@ -15,6 +20,7 @@ public class PolicyListOneResponse {
     private LocalDate startDate;
     private LocalDate endDate;
     private Integer dDay;
+    private String employment;
 
     public static PolicyListOneResponse from(Policy policy) {
 
@@ -33,5 +39,19 @@ public class PolicyListOneResponse {
                 .endDate(policy.getEndDate())
                 .dDay(dDay)
                 .build();
+    }
+
+    public PolicyListOneResponse(Long id, String name, LocalDate startDate,
+                                 LocalDate endDate, String employment) {
+        this.policyId = id;
+        this.policyName = name;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.employment = employment;
+
+        // dDay 계산
+        if (endDate != null) {
+            this.dDay = (int) ChronoUnit.DAYS.between(LocalDate.now(), endDate);
+        }
     }
 }
