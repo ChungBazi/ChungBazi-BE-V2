@@ -7,8 +7,6 @@ import chungbazi.chungbazi_be.domain.cart.dto.CartResponseDTO;
 import chungbazi.chungbazi_be.domain.cart.entity.Cart;
 import chungbazi.chungbazi_be.domain.cart.repository.CartRepository;
 import chungbazi.chungbazi_be.domain.document.repository.CalendarDocumentRepository;
-import chungbazi.chungbazi_be.domain.notification.dto.internal.NotificationData;
-import chungbazi.chungbazi_be.domain.notification.entity.enums.NotificationType;
 import chungbazi.chungbazi_be.domain.notification.service.NotificationService;
 import chungbazi.chungbazi_be.domain.policy.dto.PolicyCalendarResponse;
 import chungbazi.chungbazi_be.domain.policy.entity.Category;
@@ -20,7 +18,6 @@ import chungbazi.chungbazi_be.global.apiPayload.code.status.ErrorStatus;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.BadRequestHandler;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.NotFoundHandler;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
@@ -159,5 +156,18 @@ public class CartService {
     @Transactional(readOnly = true)
     public List<Cart> getCartsByEndDate(List<LocalDate> targetDates) {
         return cartRepository.findAllByPolicyEndDate(targetDates);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Cart> findAllByPolicy(Policy policy) {
+        return cartRepository.findAllByPolicy(policy);
+    }
+
+    public List<Long> findIdsByPolicyIdIn(List<Long> expiredPolicyIds) {
+        return cartRepository.findIdsByPolicyIdIn(expiredPolicyIds);
+    }
+
+    public void deleteByPolicyIdIn(List<Long> expiredPolicyIds) {
+        cartRepository.deleteByPolicyIdIn(expiredPolicyIds);
     }
 }

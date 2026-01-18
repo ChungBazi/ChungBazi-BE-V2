@@ -12,8 +12,6 @@ import chungbazi.chungbazi_be.domain.policy.dto.PolicyDetailsResponse;
 import chungbazi.chungbazi_be.domain.policy.dto.PolicyListOneResponse;
 import chungbazi.chungbazi_be.domain.policy.dto.PolicyListResponse;
 import chungbazi.chungbazi_be.domain.policy.dto.PolicyRecommendResponse;
-import chungbazi.chungbazi_be.domain.policy.dto.YouthPolicyListResponse;
-import chungbazi.chungbazi_be.domain.policy.dto.YouthPolicyResponse;
 import chungbazi.chungbazi_be.domain.policy.entity.Category;
 import chungbazi.chungbazi_be.domain.policy.entity.Policy;
 import chungbazi.chungbazi_be.domain.policy.entity.QPolicy;
@@ -27,10 +25,10 @@ import chungbazi.chungbazi_be.global.apiPayload.exception.GeneralException;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.BadRequestHandler;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.NotFoundHandler;
 import chungbazi.chungbazi_be.global.utils.PopularSearch;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.querydsl.core.Tuple;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -40,8 +38,6 @@ import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,82 +57,6 @@ public class PolicyService {
     private final UserHelper userHelper;
     private final NotificationService notificationService;
 
-    public static final Set<String> VALID_KEYWORDS = Set.of(
-            "계속", "상시", "매년", "2025~", "연 2회", "별도 종료 시기 없음", "당해 연도"
-    );
-
-
-    @Value("${webclient.openApiVlak}")
-    private String openApiVlak;
-
-        // OpenAPI에서 정책 가져오기
-        public void getPolicy() {
-
-            int display = 20;
-            int pageIndex = 1;
-            String srchPolyBizSecd = "003002001";
-
-            LocalDate oneMonthAgo = LocalDate.now().minusMonths(1);
-
-            while (true) {
-                try {
-                // JSON -> DTO
-                YouthPolicyListResponse policies = fetchPolicy(display, pageIndex, srchPolyBizSecd);
-
-                if (policies == null || policies.getResult() == null || policies.getResult().getYouthPolicyList().isEmpty()) {
-                    log.warn("✅ 더 이상 가져올 정책이 없어서 종료 (pageIndex={})", pageIndex);
-                    break;
-                }
-
-                log.info("✅ 가져온 정책 수: {} (pageIndex={})", policies.getResult().getYouthPolicyList().size(), pageIndex);
-
-                // DB에 이미 존재하는 bizId가 있는지 확인 & 날짜 유효한 것만 DTO -> Entity
-                    List<Policy> validPolicies = new ArrayList<>();
-                    for (YouthPolicyResponse response : policies.getResult().getYouthPolicyList()) {
-                        if (response.getPlcyNo() == null) {
-                            continue;
-                        }
-
-                        if (policyRepository.existsByBizId(response.getPlcyNo())) {
-                            continue;
-                        }
-
-                        if (!isDateAvail(response, oneMonthAgo)) {
-                            continue;
-                        }
-
-                        Policy policy = Policy.toEntity(response);
-                        validPolicies.add(policy);
-                    }
-
-                    // 마지막 정책 마감날짜
-                    YouthPolicyResponse lastPolicy = policies.getResult().getYouthPolicyList()
-                            .get(policies.getResult().getYouthPolicyList().size() - 1);
-
-                    if (validPolicies.isEmpty()) {
-                        if (!isDateAvail(lastPolicy, oneMonthAgo)) {
-                            log.info("✅ 유효한 정책이 없어서 종료 (pageIndex={})", pageIndex);
-                            break;
-                        }
-                        pageIndex++;
-                        continue;
-                    }
-
-                    savePolicies(validPolicies);
-
-                    if (!isDateAvail(lastPolicy, oneMonthAgo)) {
-                        log.info("✅ 마지막 정책의 유효기간이 지남 → 루프 종료 (pageIndex={})", pageIndex);
-                        break;
-                    }
-
-                    pageIndex++;
-                } catch (Exception e) {
-                    log.error("❌ 페이지 {} 요청 중 오류 발생 → 루프 종료", pageIndex, e);
-                    break;
-                }
-            }
-
-        }
     @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
     public void savePolicies(List<Policy> policies) {
         policyRepository.saveAll(policies);
@@ -201,62 +121,6 @@ public class PolicyService {
         Policy policy = policyRepository.findById(policyId)
                 .orElseThrow(() -> new NotFoundHandler(ErrorStatus.POLICY_NOT_FOUND));
         return PolicyDetailsResponse.from(policy);
-    }
-
-    // JSON -> DTO
-    private YouthPolicyListResponse fetchPolicy(int display, int pageIndex, String srchPolyBizSecd) {
-
-        String responseBody = webclient
-                .get()
-                .uri(uriBuilder ->
-                            uriBuilder.path("/go/ythip/getPlcy")
-                            .queryParam("apiKeyNm", openApiVlak) // 인증키
-                            .queryParam("pageSize", display) // 출력 건수
-                            .queryParam("pageNum", pageIndex) // 조회 페이지
-                            .queryParam("rtnType", "json")
-                            //.queryParam("srchPolyBizSecd", srchPolyBizSecd)
-                            .build())
-                .retrieve()
-                .bodyToMono(String.class)   // 서버 response content-type이 text/plain 라서
-                .block();
-
-        System.out.println("API 응답: " + responseBody);
-
-        // text/plain-> JSON
-        try {
-            //Json 문자열을 자바 객체에 매핑해주는 역할
-            ObjectMapper objectMapper = new ObjectMapper();
-            // JSON -> DTO 매핑
-            return objectMapper.readValue(responseBody, YouthPolicyListResponse.class);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-
-
-    }
-
-
-    // 날짜 나와있는지 + 2달 이내 정책인지 검증
-    private boolean isDateAvail(YouthPolicyResponse response, LocalDate twoMonthAgo) {
-        LocalDate endDate = response.getEndDate();
-        String bizPeriod = response.getBizPrdEtcCn();
-
-        if (endDate == null) {
-            if (bizPeriod != null) {
-                for (String keyword : VALID_KEYWORDS) {
-                    if (bizPeriod.contains(keyword)) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-        return endDate.isAfter(twoMonthAgo);
-    }
-
-    public Policy findByPolicyId(Long policyId) {
-        return policyRepository.findById(policyId).orElseThrow(() -> new NotFoundHandler(ErrorStatus.POLICY_NOT_FOUND));
     }
 
     // 캘린더 정책 전체 조회
@@ -348,5 +212,35 @@ public class PolicyService {
             }
         });
         return userCategories;
+    }
+
+    @Transactional
+    public long deleteExpiredPolicies() {
+
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+
+        // 1. 삭제 대상 정책 조회
+        List<Long> expiredPolicyIds = policyRepository.findIdsByEndDateBefore(today);
+
+        if (expiredPolicyIds.isEmpty()) {
+            log.info("📌 삭제 대상 정책 없음.");
+            return 0;
+        }
+
+        // CalendarDocument 삭제
+        List<Long> cartIds = cartService.findIdsByPolicyIdIn(expiredPolicyIds);
+        if (!cartIds.isEmpty()) {
+            calendarDocumentService.deleteByCartIdIn(cartIds);
+        }
+
+        // Cart 삭제
+        cartService.deleteByPolicyIdIn(expiredPolicyIds);
+
+        // Policy 삭제
+        long deletedPolicies = policyRepository.deleteByIdIn(expiredPolicyIds);
+
+        log.info("🧹 삭제된 정책 수: {}", deletedPolicies);
+        return deletedPolicies;
+
     }
 }
