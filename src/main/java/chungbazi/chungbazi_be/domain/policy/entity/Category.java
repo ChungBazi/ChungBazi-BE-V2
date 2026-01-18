@@ -14,11 +14,9 @@ public enum Category {
     WELFARE_CULTURE("복지·문화", "004"),
     PARTICIPATION_RIGHTS("참여·권리", "005");
 
-
     @Getter
     private final String koreanName;
     private final String code;
-
 
     public static Category fromCode(String code) {
         for (Category category : Category.values()) {

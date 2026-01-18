@@ -69,14 +69,6 @@ public class PolicyService {
     @Value("${webclient.openApiVlak}")
     private String openApiVlak;
 
-
-        @Scheduled(cron = "15 22 11 * * *")
-        public void schedulePolicyFetch() {
-            log.info("✅ 정책 스케줄러 실행 시작!");
-            getPolicy();
-            log.info("✅ 정책 스케줄러 실행 완료!");
-        }
-
         // OpenAPI에서 정책 가져오기
         public void getPolicy() {
 
