@@ -76,7 +76,7 @@ public class JwtProvider{
                     .getBody();
             return claims.getSubject();
         } catch (ExpiredJwtException e) {
-            return e.getClaims().getSubject();
+            throw new BadRequestHandler(ErrorStatus.EXPIRED_TOKEN);
         } catch (MalformedJwtException e) {
             throw new BadRequestHandler(ErrorStatus.MALFORMED_TOKEN);
         } catch (UnsupportedJwtException e) {
