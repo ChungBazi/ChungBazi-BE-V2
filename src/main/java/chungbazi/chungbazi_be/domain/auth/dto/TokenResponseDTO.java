@@ -28,11 +28,17 @@ public class TokenResponseDTO {
         private Long userId;
         private String userName;
         private String accessToken;
+        private String refreshToken;
         private long accessExp;
 
-        public static RefreshTokenResponseDTO of(Long userId, String userName, String accessToken, long accessExp) {
-            return new RefreshTokenResponseDTO(userId, userName, accessToken, accessExp);
+        public static RefreshTokenResponseDTO of(
+                Long userId,
+                String userName,
+                String accessToken,
+                String refreshToken,
+                long accessExp
+        ) {
+            return new RefreshTokenResponseDTO(userId, userName, accessToken, refreshToken, accessExp);
         }
     }
-
 }

@@ -88,7 +88,6 @@ public class JwtProvider{
         }
     }
 
-
     public Long getUserIdParsingFromToken(String token) {
         return Long.parseLong(extractSubject(token)); // subject를 userId로 변환
     }
@@ -109,6 +108,4 @@ public class JwtProvider{
         return new UsernamePasswordAuthenticationToken(
                 userDetails, token, userDetails.getAuthorities());
     }
-
-
 }
