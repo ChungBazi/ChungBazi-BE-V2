@@ -32,12 +32,12 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
 
     @Query("SELECT c.id FROM Cart c " +
             "WHERE c.policy.id IN :expiredPolicyIds")
-    List<Long> findIdsByPolicyIdIn(List<Long> expiredPolicyIds);
+    List<Long> findIdsByPolicyIdIn(@Param("expiredPolicyIds") List<Long> expiredPolicyIds);
 
     @Modifying
     @Query("DELETE FROM Cart c WHERE c.policy.id IN :policyIds")
     void deleteByPolicyIdIn(@Param("policyIds") List<Long> policyIds);
 
-    @Query("SELECT c FROM Cart c WHERE c.policy.id IN :policyIds")
-    List<Cart> findAllByPolicyIdIn(List<Long> expiredPolicyIds);
+    @Query("SELECT c FROM Cart c WHERE c.policy.id IN :expiredPolicyIds")
+    List<Cart> findAllByPolicyIdIn(@Param("expiredPolicyIds") List<Long> expiredPolicyIds);
 }

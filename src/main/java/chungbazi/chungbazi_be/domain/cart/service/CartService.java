@@ -129,10 +129,12 @@ public class CartService {
         return cartRepository.findAllByPolicy(policy);
     }
 
+    @Transactional(readOnly = true)
     public List<Long> findIdsByPolicyIdIn(List<Long> expiredPolicyIds) {
         return cartRepository.findIdsByPolicyIdIn(expiredPolicyIds);
     }
 
+    @Transactional
     public void deleteByPolicyIdIn(List<Long> expiredPolicyIds) {
         cartRepository.deleteByPolicyIdIn(expiredPolicyIds);
     }

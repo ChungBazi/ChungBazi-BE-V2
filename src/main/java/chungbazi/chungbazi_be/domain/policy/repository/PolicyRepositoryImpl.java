@@ -30,7 +30,6 @@ import org.springframework.stereotype.Repository;
 public class PolicyRepositoryImpl implements PolicyRepositoryCustom {
 
     private final JPAQueryFactory jpaQueryFactory;
-    private final static LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
 
     QPolicy policy = QPolicy.policy;
 
@@ -148,11 +147,11 @@ public class PolicyRepositoryImpl implements PolicyRepositoryCustom {
 
         //같은 검색 우선순위 + 시작일이 더 이전인 정책들
         BooleanExpression sameSearchPriorityLaterEndDate = priorityScore.eq(cursorPriority)
-                .and(policy.endDate.lt(cursorStartDate));
+                .and(policy.startDate.lt(cursorStartDate));
 
         //같은 검색 우선순위 + 같은 마감일 + ID가 더 작은 정책들
         BooleanExpression allSameLowerId = priorityScore.eq(priorityScore)
-                .and(policy.endDate.eq(cursorStartDate))
+                .and(policy.startDate.eq(cursorStartDate))
                 .and(policy.id.lt(cursorId));
 
         return lowerSearchPriority
@@ -171,7 +170,7 @@ public class PolicyRepositoryImpl implements PolicyRepositoryCustom {
                 .and(policy.endDate.gt(cursorEndDate));
 
         //같은 검색 우선순위 + 같은 마감일 + ID가 더 작은 정책들
-        BooleanExpression allSameLowerId = priorityScore.eq(priorityScore)
+        BooleanExpression allSameLowerId = priorityScore.eq(cursorPriority)
                 .and(policy.endDate.eq(cursorEndDate))
                 .and(policy.id.lt(cursorId));
 
@@ -304,6 +303,8 @@ public class PolicyRepositoryImpl implements PolicyRepositoryCustom {
     // ==================== DTO 변환 ====================
 
     private List<PolicySearchResult> convertToSearchResults(List<Tuple> tuples, NumberExpression<Integer> priorityScore) {
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+
         return tuples.stream()
                 .map(tuple -> {
                     LocalDate endDate = tuple.get(policy.endDate);
@@ -323,6 +324,8 @@ public class PolicyRepositoryImpl implements PolicyRepositoryCustom {
     }
 
     private List<PolicyListOneResponse> convertToPolicyResponses(List<Tuple> tuples) {
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+
         return tuples.stream()
                 .map(tuple -> {
                     LocalDate endDate = tuple.get(policy.endDate);

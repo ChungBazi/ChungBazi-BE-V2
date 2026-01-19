@@ -41,17 +41,4 @@ public class PolicyListOneResponse {
                 .build();
     }
 
-    public PolicyListOneResponse(Long id, String name, LocalDate startDate,
-                                 LocalDate endDate, String employment) {
-        this.policyId = id;
-        this.policyName = name;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.employment = employment;
-
-        // dDay 계산
-        if (endDate != null) {
-            this.dDay = (int) ChronoUnit.DAYS.between(LocalDate.now(), endDate);
-        }
-    }
 }

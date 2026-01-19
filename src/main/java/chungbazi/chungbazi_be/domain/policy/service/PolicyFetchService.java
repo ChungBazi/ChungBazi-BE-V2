@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -42,8 +43,14 @@ public class PolicyFetchService {
         while (true) {
             List<YouthPolicyResponse> policies = callOpenAPI(display, page);
 
+            if (policies == null) {
+                log.warn("OpenAPI 오류로 페이지 스킵 (page={})", page);
+                page++;
+                continue;
+            }
+
             //정책이 없을 경우
-            if (policies == null || policies.isEmpty()) {
+            if (policies.isEmpty()) {
                 log.warn("✅ 더 이상 가져올 정책이 없어서 종료 (page={})", page);
                 break;
             }
@@ -82,7 +89,7 @@ public class PolicyFetchService {
                             .build())
                     .retrieve()
                     .bodyToMono(String.class)     // text/plain -> String
-                    .block();
+                    .block(Duration.ofSeconds(10));
 
             if (responseBody == null || responseBody.isEmpty()) {
                 log.warn("OpenAPI 응답이 비어있습니다 (page={})", page);
@@ -109,13 +116,13 @@ public class PolicyFetchService {
 
         }  catch (WebClientResponseException.InternalServerError ex) {
             log.warn("⚠️ OpenAPI 500 에러 발생 page={} → 이 페이지 스킵", page);
-            return Collections.emptyList();  // 그냥 해당 페이지 스킵
+            return null;
         } catch (WebClientResponseException ex) {
             log.error("❌ OpenAPI 응답 오류 page={} status={}", page, ex.getRawStatusCode());
-            return Collections.emptyList();
+            return null;
         } catch (Exception e) {
             log.error("❌ OpenAPI 호출/파싱 오류 page={}", page, e);
-            return Collections.emptyList();
+            return null;
         }
     }
 }
