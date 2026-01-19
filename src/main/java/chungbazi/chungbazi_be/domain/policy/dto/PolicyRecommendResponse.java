@@ -15,12 +15,12 @@ public class PolicyRecommendResponse {
     private Set<Category> interests;
     private boolean isReadAllNotifications;
     private boolean hasNext;
-    private Long nextCursor;
+    private String nextCursor;
     private String username;
 
     public static PolicyRecommendResponse of(List<PolicyListOneResponse> policies, Set<Category> interests, boolean hasNext,
                                              boolean isReadAllNotifications,
-                                             String username, Long nextCursor) {
+                                             String username, String nextCursor) {
 
 
         return PolicyRecommendResponse.builder()

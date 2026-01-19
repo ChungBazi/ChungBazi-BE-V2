@@ -6,7 +6,6 @@ import chungbazi.chungbazi_be.domain.policy.entity.Category;
 import chungbazi.chungbazi_be.domain.policy.service.PolicyService;
 import chungbazi.chungbazi_be.global.apiPayload.ApiResponse;
 import chungbazi.chungbazi_be.global.service.PopularSearchService;
-import chungbazi.chungbazi_be.global.utils.PaginationResult;
 import io.swagger.v3.oas.annotations.Operation;
 import java.util.List;
 
@@ -14,7 +13,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -59,13 +57,13 @@ public class PolicyController {
     // 카테고리별 정책 검색
     @Operation(summary = "카테고리별 정책 API", description = "카테고리별 정책 조회")
     @GetMapping
-    public ApiResponse<PaginationResult<PolicyListOneResponse>> getCategoryPolicy(
+    public ApiResponse<PolicyListResponse> getCategoryPolicy(
             @RequestParam(value = "category", required = true) Category category,
-            @RequestParam(value = "cursor", required = false) Long cursor,
+            @RequestParam(value = "cursor", required = false) String cursor,
             @RequestParam(value = "size", defaultValue = "15", required = false) int size,
             @RequestParam(value = "order", defaultValue = "latest", required = false) String order) {
 
-        PaginationResult<PolicyListOneResponse> response = policyService.getCategoryPolicy(category, cursor, size, order);
+        PolicyListResponse response = policyService.getCategoryPolicy(category, cursor, size, order);
         return ApiResponse.onSuccess(response);
     }
 
@@ -101,7 +99,7 @@ public class PolicyController {
     @Operation(summary = "추천 정책 조회 API", description = "추천 정책 상세 조회")
     @GetMapping("/recommend")
     public ApiResponse<PolicyRecommendResponse> getRecommendPolicy(@RequestParam Category category,
-                                                                   @RequestParam(value = "cursor", required = false) Long cursor,
+                                                                   @RequestParam(value = "cursor", required = false) String cursor,
                                                                    @RequestParam(value = "size", defaultValue = "15", required = false) int size,
                                                                    @RequestParam(value = "order", defaultValue = "latest", required = false) String order) {
 

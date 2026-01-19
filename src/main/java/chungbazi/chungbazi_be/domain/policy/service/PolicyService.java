@@ -11,7 +11,6 @@ import chungbazi.chungbazi_be.domain.policy.entity.Category;
 import chungbazi.chungbazi_be.domain.policy.entity.Policy;
 import chungbazi.chungbazi_be.domain.policy.repository.PolicyRepository;
 import chungbazi.chungbazi_be.domain.user.entity.User;
-import chungbazi.chungbazi_be.domain.user.entity.enums.Employment;
 import chungbazi.chungbazi_be.domain.user.entity.mapping.UserInterest;
 import chungbazi.chungbazi_be.domain.user.support.UserHelper;
 import chungbazi.chungbazi_be.global.apiPayload.code.status.ErrorStatus;
@@ -57,6 +56,8 @@ public class PolicyService {
     // 정책 검색
     public PolicyListResponse getSearchPolicy(String name, String cursor, int size, String order) {
 
+        User user = userHelper.getAuthenticatedUser();
+
         if (name == null) {
             throw new GeneralException(ErrorStatus.NO_SEARCH_NAME);
         }
@@ -70,19 +71,16 @@ public class PolicyService {
         //페이징 처리
         String nextCursor = null;
         boolean hasNext = searchResults.size() > size;
-        List<PolicySearchResult> pageResults;
 
         if (hasNext) {
-            pageResults = searchResults.subList(0, size);
+            PolicySearchResult lastItem = searchResults.get(size - 1);
+            nextCursor = policyRepository.generateSearchCursor(lastItem, order);
 
-            PolicySearchResult lastItem = pageResults.get(size - 1);
-            nextCursor = lastItem.toCursor();
-        } else {
-            pageResults = searchResults;
+            searchResults = searchResults.subList(0, size);
         }
 
         //프론트 통신용 응답으로 변환
-        List<PolicyListOneResponse> responses = pageResults.stream()
+        List<PolicyListOneResponse> responses = searchResults.stream()
                 .map(PolicySearchResult::toResponse)
                 .collect(Collectors.toList());
 
@@ -90,11 +88,23 @@ public class PolicyService {
     }
 
     // 카테고리별 정책 조회
-    public PaginationResult<PolicyListOneResponse> getCategoryPolicy(Category categoryName, Long cursor, int size, String order) {
+    public PolicyListResponse getCategoryPolicy(Category categoryName, String cursor, int size, String order) {
+
+        User user = userHelper.getAuthenticatedUser();
 
         List<PolicyListOneResponse> policies = policyRepository.getPolicyWithCategory(categoryName, cursor, size + 1, order);
 
-        return PaginationUtil.paginate(policies, size);
+        String nextCursor = null;
+        boolean hasNext = policies.size() > size;
+
+        if (hasNext) {
+            PolicyListOneResponse lastItem = policies.get(size - 1);
+            nextCursor = policyRepository.generateCategoryCursor(lastItem, order);
+
+            policies = policies.subList(0, size);
+        }
+
+        return PolicyListResponse.of(policies, nextCursor, hasNext);
 
     }
 
@@ -142,19 +152,27 @@ public class PolicyService {
     }
 
     //추천 정책 조회
-    public PolicyRecommendResponse getRecommendPolicy(Category category, Long cursor, int size, String order) {
+    public PolicyRecommendResponse getRecommendPolicy(Category category, String cursor, int size, String order) {
 
         User user = userHelper.getAuthenticatedUser();
 
         List<PolicyListOneResponse> policies = policyRepository.getPolicyWithCategory(category, cursor, size+1, order);
 
-        PaginationResult<PolicyListOneResponse> paging = PaginationUtil.paginate(policies, size);
+        String nextCursor = null;
+        boolean hasNext = policies.size() > size;
+
+        if (hasNext) {
+            PolicyListOneResponse lastItem = policies.get(size - 1);
+            nextCursor = policyRepository.generateCategoryCursor(lastItem, order);
+
+            policies = policies.subList(0, size);
+        }
 
         //안 읽은 알림 개수 & 유저 관심분야
         boolean isReadAllNotifications=notificationService.isReadAllNotification();
         Set<Category> userCategories = getUserInterests(user);
 
-        return PolicyRecommendResponse.of(paging.getItems(), userCategories, paging.isHasNext(),isReadAllNotifications, user.getName(), paging.getNextCursor());
+        return PolicyRecommendResponse.of(policies, userCategories, hasNext, isReadAllNotifications, user.getName(), nextCursor);
     }
 
 

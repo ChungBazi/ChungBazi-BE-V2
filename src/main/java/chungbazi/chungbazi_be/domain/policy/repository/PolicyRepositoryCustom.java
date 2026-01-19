@@ -11,10 +11,9 @@ public interface PolicyRepositoryCustom {
 
     List<PolicySearchResult> searchPolicyWithName(String keyword, String cursor, int size, String order);
 
-    String generateNextCursor(Tuple policy, String name);
+    List<PolicyListOneResponse> getPolicyWithCategory(Category category, String cursor, int size, String order);
 
-    List<PolicyListOneResponse> getPolicyWithCategory(Category category, Long cursor, int size, String order);
+    String generateSearchCursor(PolicySearchResult result, String order);
 
-    List<PolicyListOneResponse> findByCategory(Category category, Long cursor, int size, String order);
-
+    String generateCategoryCursor(PolicyListOneResponse policy, String order);
 }
