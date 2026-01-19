@@ -18,6 +18,7 @@ import chungbazi.chungbazi_be.global.apiPayload.code.status.ErrorStatus;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.BadRequestHandler;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.NotFoundHandler;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
@@ -76,54 +77,19 @@ public class CartService {
         Map<Category, List<Cart>> grouped = carts.stream()
                 .collect(Collectors.groupingBy(cart -> cart.getPolicy().getCategory()));
 
-        List<CartResponseDTO.CartPolicyList> groupedDTO = grouped.entrySet().stream().map(entry -> {
+        //각 카테고리별로 DTO 변환 및 정렬
+        return grouped.entrySet().stream()
+                .map(entry -> {
                     Category category = entry.getKey();
-                    List<Cart> cartList = entry.getValue();
 
-                    List<CartResponseDTO.CartPolicy> policyDetails = cartList.stream()
-                            .map(cart -> {
-                                Policy policy = cart.getPolicy();
-                                return CartConverter.toCartPolicy(policy);
-                            })
-                            .sorted((p1, p2) -> {
-                                LocalDate endDate1 = p1.getEndDate();
-                                LocalDate endDate2 = p2.getEndDate();
-
-                                // 1. 상시 모집(endDate가 null인 경우)을 뒤로 정렬
-                                if (endDate1 == null && endDate2 == null) {
-                                    return 0;  // 둘 다 상시 모집이면 순서를 변경하지 않음
-                                } else if (endDate1 == null) {
-                                    return 1;  // p1이 상시 모집 -> 뒤로 보냄
-                                } else if (endDate2 == null) {
-                                    return -1; // p2가 상시 모집 -> p1이 앞에 옴
-                                }
-
-                                // 2. dDay 계산
-                                int dDay1 = (int) ChronoUnit.DAYS.between(LocalDate.now(), endDate1);
-                                int dDay2 = (int) ChronoUnit.DAYS.between(LocalDate.now(), endDate2);
-
-                                // 3. 정렬 조건
-                                if (dDay1 < 0 && dDay2 < 0) {
-                                    // 둘 다 dDay가 음수인 경우: 오름차순 정렬
-                                    return Integer.compare(dDay1, dDay2);
-                                } else if (dDay1 < 0) {
-                                    // dDay1은 음수, dDay2는 양수 -> dDay1이 우선
-                                    return -1;
-                                } else if (dDay2 < 0) {
-                                    // dDay1이 양수, dDay2는 음수 -> dDay2가 우선
-                                    return 1;
-                                } else {
-                                    // 둘 다 양수인 경우: 오름차순 정렬
-                                    return Integer.compare(dDay1, dDay2);
-                                }
-                            })
+                    List<CartResponseDTO.CartPolicy> sortedPolicies = entry.getValue().stream()
+                            .map(cart -> CartConverter.toCartPolicy(cart.getPolicy()))
+                            .sorted(this::compareByDeadline)
                             .toList();
 
-                    return CartConverter.toCartPolicyList(category, policyDetails);
+                    return CartConverter.toCartPolicyList(category, sortedPolicies);
                 })
                 .toList();
-
-        return groupedDTO;
 
     }
 
@@ -184,5 +150,42 @@ public class CartService {
         carts.forEach(cart -> cart.deletePolicy());
 
         cartRepository.saveAll(carts);
+    }
+
+    /*
+        마감일 기준 정렬 비교자
+        1. 마감 지난 정책 (오래 지난 것 먼저)
+        2. 마감 안 지난 정책 (임박한 것 먼저)
+        3. 상시 모집 종책
+     */
+    private int compareByDeadline(CartResponseDTO.CartPolicy policy1, CartResponseDTO.CartPolicy policy2) {
+        LocalDate endDate1 = policy1.getEndDate();
+        LocalDate endDate2 = policy2.getEndDate();
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+
+        // 1. 상시 모집(null) 처리
+        if (endDate1 == null && endDate2 == null) return 0;
+        if (endDate1 == null) return 1;   // policy1 상시 → 뒤로
+        if (endDate2 == null) return -1;  // policy2 상시 → policy1 앞으로
+
+        int dDay1 = (int) ChronoUnit.DAYS.between(today, endDate1);
+        int dDay2 = (int) ChronoUnit.DAYS.between(today, endDate2);
+
+        boolean expired1 = dDay1 < 0;
+        boolean expired2 = dDay2 < 0;
+
+        if (expired1 && expired2) {
+            // 둘 다 지남 → 오래 지난 것 먼저 (오름차순)
+            return Integer.compare(dDay1, dDay2);
+        } else if (expired1) {
+            // p1만 지남 → p1이 먼저
+            return -1;
+        } else if (expired2) {
+            // p2만 지남 → p2가 먼저
+            return 1;
+        } else {
+            // 둘 다 안 지남 → 임박한 것 먼저 (오름차순)
+            return Integer.compare(dDay1, dDay2);
+        }
     }
 }
