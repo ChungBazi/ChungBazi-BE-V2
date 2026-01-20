@@ -45,6 +45,7 @@ public enum ErrorStatus implements BaseErrorCode {
     POLICY_NOT_FOUND(HttpStatus.NOT_FOUND, "POLICY5004", "존재하지 않는 정책입니다."),
     NO_CURSOR(HttpStatus.BAD_REQUEST, "POLICY5005", "커서가 존재하지않습니다."),
     NOT_VALID_TYPE_YEAR_MONTH(HttpStatus.BAD_REQUEST, "POLICY5006", "유효한 날짜 형식이 아닙니다."),
+    INVALID_CURSOR(HttpStatus.BAD_REQUEST, "POLICY4001", "유효한 커서 형식이 아닙니다."),
 
     //Cart
     ALREADY_EXIST_CART(HttpStatus.BAD_REQUEST, "Cart4001", "이미 해당 정책을 장바구니에 담았습니다."),
@@ -112,6 +113,7 @@ public enum ErrorStatus implements BaseErrorCode {
     OPENAI_API_ERROR(HttpStatus.BAD_GATEWAY, "OPENAI4001", "OpenAI API 호출 중 오류가 발생했습니다."),
     OPENAI_TIMEOUT(HttpStatus.GATEWAY_TIMEOUT, "OPENAI4002", "OpenAI API 응답이 지연되었습니다."),
     OPENAI_INVALID_RESPONSE(HttpStatus.INTERNAL_SERVER_ERROR, "OPENAI4003", "OpenAI API 응답 포맷이 올바르지 않습니다."),
+
     ;
 
 

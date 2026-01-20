@@ -120,11 +120,21 @@ public class PolicyRepositoryImpl implements PolicyRepositoryCustom {
         }
 
         String[] cursorParts = cursor.split("-");
+        if (cursorParts.length != 5) {
+            throw new GeneralException(ErrorStatus.INVALID_CURSOR);
+        }
 
         NumberExpression<Integer> priorityScore = calculateSearchPriority(keyword);
 
-        int cursorPriority = Integer.parseInt(cursorParts[0]);
-        Long cursorId = Long.parseLong(cursorParts[4]);
+        //커서 파싱
+        int cursorPriority;
+        Long cursorId;
+        try {
+            cursorPriority = Integer.parseInt(cursorParts[0]);
+            cursorId = Long.parseLong(cursorParts[4]);
+        } catch (NumberFormatException e) {
+            throw new GeneralException(ErrorStatus.INVALID_CURSOR);
+        }
 
         if ("deadline".equals(order)) {
             //우선순위-마감일-ID 형태의 cursor 파싱
@@ -181,8 +191,8 @@ public class PolicyRepositoryImpl implements PolicyRepositoryCustom {
 
     /*
         카테고리용 커서 조건 생성
-        - latest: "시작일-ID"
-        - deadline: "마감일-ID"
+        - latest: "시작일-ID" (ex. "2026-03-01-1234")
+        - deadline: "마감일-ID" (ex. "2026-03-01-1234")
     */
     private BooleanExpression buildCategoryCursor(String cursor, QPolicy policy, String order){
         if (isNullOrEmpty(cursor)) {
@@ -190,7 +200,17 @@ public class PolicyRepositoryImpl implements PolicyRepositoryCustom {
         }
 
         String[] parts = cursor.split("-");
-        Long cursorId = Long.parseLong(parts[3]);
+
+        if (parts.length != 4) {
+            throw new GeneralException(ErrorStatus.INVALID_CURSOR);
+        }
+
+        Long cursorId;
+        try{
+            cursorId = Long.parseLong(parts[3]);
+        } catch (NumberFormatException e){
+            throw new GeneralException(ErrorStatus.INVALID_CURSOR);
+        }
 
         if ("deadline".equals(order)) {
             // "마감일-ID" 파싱
