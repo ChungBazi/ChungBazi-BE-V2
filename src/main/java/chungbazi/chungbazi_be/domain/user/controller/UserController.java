@@ -64,7 +64,7 @@ public class UserController {
             ---
             - `email`: 사용자 이메일 (String)
             """)
-    public ApiResponse<UserResponseDTO.EmailExistsDto> getEmailExits(@RequestParam String email) {
+    public ApiResponse<UserResponseDTO.EmailExistsDto> getEmailExists(@RequestParam String email) {
         return ApiResponse.onSuccess(userService.getEmailExists(email));
     }
 }
