@@ -149,7 +149,8 @@ public class CartService {
         }
 
         // 정책 참조 제거
-        carts.forEach(cart -> cart.deletePolicy());
+        cartRepository.nullifyPolicyByPolicyIds(expiredPolicyIds);
+
 
         cartRepository.saveAll(carts);
     }

@@ -40,4 +40,8 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
 
     @Query("SELECT c FROM Cart c WHERE c.policy.id IN :expiredPolicyIds")
     List<Cart> findAllByPolicyIdIn(@Param("expiredPolicyIds") List<Long> expiredPolicyIds);
+
+    @Modifying
+    @Query("UPDATE Cart c SET c.policy = null WHERE c.policy.id IN :policyIds")
+    void nullifyPolicyByPolicyIds(@Param("policyIds") List<Long> policyIds);
 }
