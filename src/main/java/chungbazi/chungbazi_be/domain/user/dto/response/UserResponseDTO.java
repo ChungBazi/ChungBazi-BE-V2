@@ -32,4 +32,11 @@ public class UserResponseDTO {
         int postCount;
         int commentCount;
     }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    public static class EmailExistsDto {
+        boolean isExist;
+    }
 }

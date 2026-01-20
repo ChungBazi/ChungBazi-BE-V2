@@ -106,6 +106,11 @@ public class UserService {
         }
     }
 
+    public UserResponseDTO.EmailExistsDto getEmailExists(String email) {
+        boolean isExist = userRepository.existsByEmail(email);
+        return UserConverter.toEmailExistsDto(isExist);
+    }
+
     private void updateAdditions(User user, List<String> additionalInfo) {
         userAdditionRepository.deleteByUser(user);
         for (String additionName : additionalInfo) {
