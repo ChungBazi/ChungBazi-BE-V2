@@ -13,10 +13,10 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class LoggingAspect {
 
-    @Pointcut("execution(* chungbazi.chungbazi_be.domain..*Service.*(..))")
-    public void servicePointcut() {}
+    @Pointcut("execution(* chungbazi.chungbazi_be.domain..*Controller.*(..))")
+    public void controllerPointcut() {}
 
-    @Around("servicePointcut()")
+    @Around("controllerPointcut()")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
         long startTime = System.currentTimeMillis();
 

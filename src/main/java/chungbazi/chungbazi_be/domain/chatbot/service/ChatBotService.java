@@ -5,7 +5,6 @@ import chungbazi.chungbazi_be.domain.chatbot.dto.ChatBotResponseDTO;
 import chungbazi.chungbazi_be.domain.policy.entity.Category;
 import chungbazi.chungbazi_be.domain.policy.entity.Policy;
 import chungbazi.chungbazi_be.domain.policy.repository.PolicyRepository;
-import chungbazi.chungbazi_be.domain.policy.service.PolicyService;
 import chungbazi.chungbazi_be.global.apiPayload.code.status.ErrorStatus;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.NotFoundHandler;
 import java.time.LocalDate;
@@ -22,11 +21,15 @@ public class ChatBotService {
     private final PolicyRepository policyRepository;
     private final ChatGptClient chatGptClient;
 
+    public static final Set<String> VALID_KEYWORDS = Set.of(
+            "계속", "상시", "매년", "연 2회", "별도 종료 시기 없음", "당해 연도", "상시 접속 가능"
+    );
+
     public List<ChatBotResponseDTO.PolicyDto> getPolicies(Category category) {
         List<Policy> policies = policyRepository.findTop5ByCategoryOrderByCreatedAtDesc(category);
 
         LocalDate today = LocalDate.now();
-        Set<String> validKeywords = PolicyService.VALID_KEYWORDS;
+        Set<String> validKeywords = VALID_KEYWORDS;
 
         return policies.stream()
                 .filter(policy -> {
@@ -43,7 +46,7 @@ public class ChatBotService {
                 .orElseThrow(() -> new NotFoundHandler(ErrorStatus.POLICY_NOT_FOUND));
 
         LocalDate today = LocalDate.now();
-        Set<String> validKeywords = PolicyService.VALID_KEYWORDS;
+        Set<String> validKeywords = VALID_KEYWORDS;
 
         return ChatBotConverter.toPolicyDetailDto(policy, today, validKeywords);
     }

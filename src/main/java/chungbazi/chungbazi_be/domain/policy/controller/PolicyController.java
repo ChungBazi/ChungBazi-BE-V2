@@ -1,22 +1,18 @@
 package chungbazi.chungbazi_be.domain.policy.controller;
 
 import chungbazi.chungbazi_be.domain.document.service.CalendarDocumentService;
-import chungbazi.chungbazi_be.domain.policy.dto.PolicyCalendarDetailResponse;
-import chungbazi.chungbazi_be.domain.policy.dto.PolicyCalendarResponse;
-import chungbazi.chungbazi_be.domain.policy.dto.PolicyDetailsResponse;
-import chungbazi.chungbazi_be.domain.policy.dto.PolicyListResponse;
-import chungbazi.chungbazi_be.domain.policy.dto.PolicyRecommendResponse;
-import chungbazi.chungbazi_be.domain.policy.dto.PopularSearchResponse;
+import chungbazi.chungbazi_be.domain.policy.dto.*;
 import chungbazi.chungbazi_be.domain.policy.entity.Category;
 import chungbazi.chungbazi_be.domain.policy.service.PolicyService;
 import chungbazi.chungbazi_be.global.apiPayload.ApiResponse;
 import chungbazi.chungbazi_be.global.service.PopularSearchService;
 import io.swagger.v3.oas.annotations.Operation;
 import java.util.List;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/policies")
+@Tag(name = "[정책]", description = "정책 관련 API")
 public class PolicyController {
 
     private final PolicyService policyService;
@@ -62,7 +59,7 @@ public class PolicyController {
     @GetMapping
     public ApiResponse<PolicyListResponse> getCategoryPolicy(
             @RequestParam(value = "category", required = true) Category category,
-            @RequestParam(value = "cursor", required = false) Long cursor,
+            @RequestParam(value = "cursor", required = false) String cursor,
             @RequestParam(value = "size", defaultValue = "15", required = false) int size,
             @RequestParam(value = "order", defaultValue = "latest", required = false) String order) {
 
@@ -102,7 +99,7 @@ public class PolicyController {
     @Operation(summary = "추천 정책 조회 API", description = "추천 정책 상세 조회")
     @GetMapping("/recommend")
     public ApiResponse<PolicyRecommendResponse> getRecommendPolicy(@RequestParam Category category,
-                                                                   @RequestParam(value = "cursor", required = false) Long cursor,
+                                                                   @RequestParam(value = "cursor", required = false) String cursor,
                                                                    @RequestParam(value = "size", defaultValue = "15", required = false) int size,
                                                                    @RequestParam(value = "order", defaultValue = "latest", required = false) String order) {
 
