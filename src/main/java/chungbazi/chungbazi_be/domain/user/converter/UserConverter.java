@@ -25,4 +25,10 @@ public class UserConverter {
                 .commentCount(commentCount)
                 .build();
     }
+
+    public static UserResponseDTO.EmailExistsDto toEmailExistsDto(boolean isExist) {
+        return UserResponseDTO.EmailExistsDto.builder()
+                .isExist(isExist)
+                .build();
+    }
 }

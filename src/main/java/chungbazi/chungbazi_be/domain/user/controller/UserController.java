@@ -56,4 +56,15 @@ public class UserController {
         userService.updateUserInfo(updateDto);
         return ApiResponse.onSuccess("User information updated successfully.");
     }
+
+    @GetMapping("/email/exists")
+    @Operation(summary = "이메일 중복 확인 API",
+            description = """
+            ### RequestParam
+            ---
+            - `email`: 사용자 이메일 (String)
+            """)
+    public ApiResponse<UserResponseDTO.EmailExistsDto> getEmailExists(@RequestParam String email) {
+        return ApiResponse.onSuccess(userService.getEmailExists(email));
+    }
 }

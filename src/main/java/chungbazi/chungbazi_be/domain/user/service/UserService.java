@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
-@Transactional
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class UserService {
 
@@ -52,6 +52,7 @@ public class UserService {
         return UserConverter.toRewardDto(rewardLevel, postCount, commentCount);
     }
 
+    @Transactional
     public void updateProfile(UserRequestDTO.ProfileUpdateDto profileUpdateDto) {
         User user = userHelper.getAuthenticatedUser();
 
@@ -73,6 +74,7 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
     public void registerUserInfo(UserRequestDTO.RegisterDto registerDto) {
         User user = userHelper.getAuthenticatedUser();
 
@@ -87,6 +89,7 @@ public class UserService {
         user.updateUserSurveyStatus(true);
     }
 
+    @Transactional
     public void updateUserInfo(UserRequestDTO.UpdateDto updateDto) {
         User user = userHelper.getAuthenticatedUser();
 
@@ -104,6 +107,11 @@ public class UserService {
         if (updateDto.getAdditionInfo() != null) {
             updateAdditions(user, updateDto.getAdditionInfo());
         }
+    }
+
+    public UserResponseDTO.EmailExistsDto getEmailExists(String email) {
+        boolean isExist = userRepository.existsByEmail(email);
+        return UserConverter.toEmailExistsDto(isExist);
     }
 
     private void updateAdditions(User user, List<String> additionalInfo) {
