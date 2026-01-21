@@ -32,7 +32,6 @@ import java.security.PublicKey;
 @RequiredArgsConstructor
 public class AuthService {
 
-
     private final TokenGenerator tokenGenerator;
     private final TokenAuthService tokenAuthService;
     private final FCMService fcmService;
@@ -266,7 +265,6 @@ public class AuthService {
         user.updatePassword(encodedPassword);
         userRepository.save(user);
     }
-
 
     public void resetPasswordWithEmailAndCode(ResetPasswordNoAuthRequestDTO request) {
         mailService.verifiedCode(request.getEmail(),request.getAuthCode());

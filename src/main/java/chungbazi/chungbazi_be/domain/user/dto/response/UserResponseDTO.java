@@ -14,6 +14,7 @@ public class UserResponseDTO {
         Long userId;
         String name;
         String email;
+        String oAuthProvider;
         RewardLevel characterImg;
     }
 

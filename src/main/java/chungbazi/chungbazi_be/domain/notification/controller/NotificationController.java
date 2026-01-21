@@ -63,5 +63,4 @@ public class NotificationController {
         return ApiResponse.onSuccess(response);
     }
 
-
 }
