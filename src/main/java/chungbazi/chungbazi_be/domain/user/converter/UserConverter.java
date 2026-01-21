@@ -9,6 +9,7 @@ public class UserConverter {
                 .userId(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
+                .oAuthProvider(user.getOAuthProvider().getDescription())
                 .characterImg(user.getCharacterImg())
                 .build();
     }

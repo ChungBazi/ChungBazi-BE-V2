@@ -85,8 +85,6 @@ jobs:
             fi
             
             sudo docker image prune -a --filter "until=72h" -f
-            sudo docker container prune --filter "until=72h" -f
-            sudo docker network prune --filter "until=72h" -f
       # jar 파일명 확인
       - name: Show built files
         run: |
