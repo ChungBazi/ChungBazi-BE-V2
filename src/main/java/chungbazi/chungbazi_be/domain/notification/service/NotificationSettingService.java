@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class NotificationSettingService {
@@ -22,7 +24,15 @@ public class NotificationSettingService {
     public NotificationSettingResponseDTO.settingResDto setNotificationSetting(NotificationSettingRequestDTO dto){
         User user=userHelper.getAuthenticatedUser();
 
-        NotificationSetting setting=user.getNotificationSetting();
+        NotificationSetting setting= user.getNotificationSetting();
+
+        if (setting == null) {
+            NotificationSetting notificationSetting = NotificationSetting.builder()
+                    .user(user)
+                    .build();
+
+            setting = notificationSettingRepository.save(notificationSetting);
+        }
 
         setting.updateNotificationSetting(dto.isPolicyAlarm(), dto.isCommunityAlarm(), dto.isRewardAlarm(), dto.isNoticeAlarm());
 
@@ -33,10 +43,18 @@ public class NotificationSettingService {
     }
 
     //알림 수신 설정 조회
-    @Transactional(readOnly = true)
+    @Transactional
     public NotificationSettingResponseDTO.settingResDto getNotificationSetting(){
         User user=userHelper.getAuthenticatedUser();
         NotificationSetting setting=user.getNotificationSetting();
+
+        if (setting == null) {
+            NotificationSetting notificationSetting = NotificationSetting.builder()
+                    .user(user)
+                    .build();
+
+            setting = notificationSettingRepository.save(notificationSetting);
+        }
 
         return NotificationConverter.toSettingResDto(setting);
     }

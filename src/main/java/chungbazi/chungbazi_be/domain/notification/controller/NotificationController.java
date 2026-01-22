@@ -1,5 +1,6 @@
 package chungbazi.chungbazi_be.domain.notification.controller;
 
+import chungbazi.chungbazi_be.domain.notification.dto.request.FcmTokenRequestDTO;
 import chungbazi.chungbazi_be.domain.notification.dto.response.NotificationResponseDTO;
 import chungbazi.chungbazi_be.domain.notification.dto.request.NotificationSettingRequestDTO;
 import chungbazi.chungbazi_be.domain.notification.dto.response.NotificationSettingResponseDTO;
@@ -20,6 +21,15 @@ import org.springframework.web.bind.annotation.*;
 public class NotificationController {
     private final NotificationService notificationService;
     private final NotificationSettingService notificationSettingService;
+
+    @PostMapping("/notifications/fcm-token")
+    @Operation(summary = "FCM 토큰 저장 API", description = "유저가 FCM 토큰을 저장할 때 사용하는 API입니다.")
+    public ApiResponse<String> saveFcmToken(@RequestBody FcmTokenRequestDTO requestDTO){
+
+        notificationService.saveFcmToken(requestDTO.fcmToken());
+
+        return ApiResponse.onSuccess("FCM 토큰이 저장되었습니다.");
+    }
 
     @PatchMapping("/{notificationId}/read")
     @Operation(summary = "특정 알림 읽음 상태 변경 API")

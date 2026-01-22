@@ -161,4 +161,10 @@ public class User {
 
     // 알람 관련
     public void updateNotificationSetting(NotificationSetting notificationSetting) {this.notificationSetting = notificationSetting;}
+
+    public void createNotificationSetting() {
+        this.notificationSetting = NotificationSetting.builder()
+                .user(this)
+                .build();
+    }
 }

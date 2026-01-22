@@ -25,7 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class NotificationService {
     private final NotificationRepository notificationRepository;
-    private final FCMService fcmService;
+    private final FcmTokenService fcmTokenService;
     private final UserHelper userHelper;
 
     //알람 읽음 처리
@@ -68,11 +68,11 @@ public class NotificationService {
         notificationRepository.save(notification);
 
         //FCM 푸시 전송
-        String fcmToken = fcmService.getToken(request.getUser().getId());
+        String fcmToken = fcmTokenService.getToken(request.getUser().getId());
 
         if (fcmToken != null) {
             FcmPushData data = FcmPushData.from(notification);
-            fcmService.pushFCMNotification(fcmToken,data);
+            fcmTokenService.pushFCMNotification(fcmToken,data);
         }
     }
 
@@ -84,4 +84,7 @@ public class NotificationService {
                 .anyMatch(notification -> !notification.isRead());
     }
 
+    public void saveFcmToken(String fcmToken) {
+        
+    }
 }

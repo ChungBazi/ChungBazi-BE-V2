@@ -16,19 +16,25 @@ import java.util.Map;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class FCMService {
+public class FcmTokenService {
     private final RedisTemplate<String, String> redisTemplate;
 
+    private static final String KEY_PREFIX = "fcm_token:";
+    private static final long TOKEN_EXPIRATION_TIME = 60 * 60 * 24 * 7;
+
     public void saveFcmToken(Long userId, String fcmToken) {
-        redisTemplate.opsForValue().set("_"+String.valueOf(userId), fcmToken);
+        String key = KEY_PREFIX + userId;
+        redisTemplate.opsForValue().set("_"+key, fcmToken, TOKEN_EXPIRATION_TIME);
     }
 
     public String getToken(Long userId){
-        return redisTemplate.opsForValue().get("_"+String.valueOf(userId));
+        String key = KEY_PREFIX + userId;
+        return redisTemplate.opsForValue().get("_"+key);
     }
 
     public void deleteToken(Long userId){
-        redisTemplate.delete(String.valueOf("_"+userId));
+        String key = KEY_PREFIX + userId;
+        redisTemplate.delete(key);
     }
 
 
