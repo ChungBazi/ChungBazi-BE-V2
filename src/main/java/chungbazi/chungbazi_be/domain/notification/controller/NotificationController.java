@@ -5,8 +5,11 @@ import chungbazi.chungbazi_be.domain.notification.dto.response.NotificationRespo
 import chungbazi.chungbazi_be.domain.notification.dto.request.NotificationSettingRequestDTO;
 import chungbazi.chungbazi_be.domain.notification.dto.response.NotificationSettingResponseDTO;
 import chungbazi.chungbazi_be.domain.notification.entity.enums.NotificationType;
+import chungbazi.chungbazi_be.domain.notification.service.FcmTokenService;
 import chungbazi.chungbazi_be.domain.notification.service.NotificationService;
 import chungbazi.chungbazi_be.domain.notification.service.NotificationSettingService;
+import chungbazi.chungbazi_be.domain.user.entity.User;
+import chungbazi.chungbazi_be.domain.user.support.UserHelper;
 import chungbazi.chungbazi_be.global.apiPayload.ApiResponse;
 import chungbazi.chungbazi_be.global.utils.PaginationResult;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,14 +24,16 @@ import org.springframework.web.bind.annotation.*;
 public class NotificationController {
     private final NotificationService notificationService;
     private final NotificationSettingService notificationSettingService;
+    private final FcmTokenService fcmTokenService;
+    private final UserHelper userHelper;
 
-    @PostMapping("/notifications/fcm-token")
-    @Operation(summary = "FCM 토큰 저장 API", description = "유저가 FCM 토큰을 저장할 때 사용하는 API입니다.")
-    public ApiResponse<String> saveFcmToken(@RequestBody FcmTokenRequestDTO requestDTO){
+    @PostMapping()
+    @Operation(summary = "FCM 토큰 저장 API", description = "FCM 토큰을 저장하는 API입니다.")
+    public ApiResponse<String> saveFcmToken(@RequestBody FcmTokenRequestDTO requestDTO) {
+        User user = userHelper.getAuthenticatedUser();
+        fcmTokenService.registerOrUpdateToken(user, requestDTO.fcmToken());
 
-        notificationService.saveFcmToken(requestDTO.fcmToken());
-
-        return ApiResponse.onSuccess("FCM 토큰이 저장되었습니다.");
+        return ApiResponse.onSuccess("FCM 토큰 저장이 완료되었습니다.");
     }
 
     @PatchMapping("/{notificationId}/read")

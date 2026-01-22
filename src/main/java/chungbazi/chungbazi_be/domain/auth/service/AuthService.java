@@ -103,7 +103,7 @@ public class AuthService {
         boolean isFirst = determineIsFirst(user);
         TokenDTO tokenDTO = tokenGenerator.generate(user.getId(), user.getName(), isFirst);
         tokenAuthService.saveRefreshToken(user.getId(), tokenDTO.getRefreshToken(), tokenDTO.getRefreshExp());
-        fcmTokenService.saveFcmToken(user.getId(), request.getFcmToken());
+        fcmTokenService.registerOrUpdateToken(user, request.getFcmToken());
         return tokenDTO;
     }
 
@@ -113,7 +113,7 @@ public class AuthService {
         boolean isFirst = determineIsFirst(user);
         TokenDTO tokenDTO = tokenGenerator.generate(user.getId(), user.getName(), isFirst);
         tokenAuthService.saveRefreshToken(user.getId(), tokenDTO.getRefreshToken(), tokenDTO.getRefreshExp());
-        fcmTokenService.saveFcmToken(user.getId(), request.getFcmToken());
+        fcmTokenService.registerOrUpdateToken(user, request.getFcmToken());
         return tokenDTO;
     }
 
@@ -163,14 +163,14 @@ public class AuthService {
                 })
                 .orElseGet(() -> createUserForAppleLogin(email, appleUserId, oAuthProvider));
 
-        // 6. FCM 토큰 저장
-        fcmTokenService.saveFcmToken(user.getId(), request.getFcmToken());
 
         // 7. JWT 토큰 발급 및 저장
         boolean isFirst = determineIsFirst(user);
         TokenDTO tokenDTO = tokenGenerator.generate(user.getId(), user.getName(), isFirst);
         tokenAuthService.saveRefreshToken(user.getId(), tokenDTO.getRefreshToken(), tokenDTO.getRefreshExp());
-        fcmTokenService.saveFcmToken(user.getId(), request.getFcmToken());
+
+        //fcm 토큰 저장
+        fcmTokenService.registerOrUpdateToken(user, request.getFcmToken());
 
         return tokenDTO;
     }
