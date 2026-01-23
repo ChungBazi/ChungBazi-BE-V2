@@ -24,40 +24,31 @@ public class FcmTokenService {
     private final FcmTokenCacheService cacheService;
 
     @Transactional
-    public void registerOrUpdateToken(User user, String token) {
+    public void registerOrUpdateToken(User user, String newToken) {
         FcmToken fcmToken = getByUserId(user.getId())
                 .orElse(null);
 
         if (fcmToken != null) {
-            updateTokenUsage(fcmToken);
+
+            fcmToken.updateLastUsedAt();
+            cacheService.refreshTokenTtl(fcmToken.getUserId());
         } else {
             fcmToken = FcmToken.builder()
                     .userId(user.getId())
-                    .token(token)
+                    .token(newToken)
                     .lastUsedAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")))
                     .build();
+
+            cacheService.cacheToken(user.getId(), newToken);
         }
 
         fcmTokenRepository.save(fcmToken);
-        cacheService.cacheToken(user.getId(), token);
 
     }
 
     @Transactional(readOnly = true)
     public Optional<FcmToken> getByUserId(Long userId) {
         return fcmTokenRepository.findByUserId(userId);
-    }
-
-    //토큰 갱신
-    @Transactional
-    public void updateTokenUsage(FcmToken fcmToken) {
-
-        fcmToken.updateLastUsedAt();
-        fcmTokenRepository.save(fcmToken);
-
-        // Redis TTL 갱신
-        cacheService.refreshTokenTtl(fcmToken.getUserId());
-
     }
 
     @Transactional
@@ -78,15 +69,17 @@ public class FcmTokenService {
     public String getFcmToken(Long userId){
 
         //캐시에 fcm 토큰이 존재할 경우
-        if (cacheService.existsToken(userId)) {
-            return cacheService.getTokenByUserId(userId);
-        } else {
-            FcmToken fcmToken = getByUserId(userId)
-                    .orElseThrow(()-> new GeneralException(ErrorStatus.NOT_FOUND_FCM_TOKEN));
-
-            cacheService.cacheToken(userId, fcmToken.getToken());
-            return fcmToken.getToken();
+        String cachedToken = cacheService.getTokenByUserId(userId);
+        if (cachedToken != null) {
+            return cachedToken;
         }
+
+        FcmToken fcmToken = getByUserId(userId)
+                .orElseThrow(()-> new GeneralException(ErrorStatus.NOT_FOUND_FCM_TOKEN));
+
+        cacheService.cacheToken(userId, fcmToken.getToken());
+
+        return fcmToken.getToken();
 
     }
 

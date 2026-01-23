@@ -33,4 +33,9 @@ public class FcmToken extends BaseTimeEntity {
     public boolean isExpired() {
         return lastUsedAt.isBefore(LocalDateTime.now().minusDays(30));
     }
+
+    public void updateToken(String newToken) {
+        this.lastUsedAt = LocalDateTime.now();
+        this.token = newToken;
+    }
 }

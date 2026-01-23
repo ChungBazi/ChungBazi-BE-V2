@@ -14,6 +14,7 @@ import chungbazi.chungbazi_be.global.apiPayload.ApiResponse;
 import chungbazi.chungbazi_be.global.utils.PaginationResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,7 +30,7 @@ public class NotificationController {
 
     @PostMapping()
     @Operation(summary = "FCM 토큰 저장 API", description = "FCM 토큰을 저장하는 API입니다.")
-    public ApiResponse<String> saveFcmToken(@RequestBody FcmTokenRequestDTO requestDTO) {
+    public ApiResponse<String> saveFcmToken(@RequestBody @Valid FcmTokenRequestDTO requestDTO) {
         User user = userHelper.getAuthenticatedUser();
         fcmTokenService.registerOrUpdateToken(user, requestDTO.fcmToken());
 
