@@ -18,4 +18,10 @@ public class UserHelper {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundHandler(ErrorStatus.NOT_FOUND_USER));
     }
+
+    public User getUserWithInformation(){
+        Long userId = SecurityUtils.getUserId();
+        return userRepository.findByIdWithAdditionsAndInterests(userId)
+                .orElseThrow(() -> new NotFoundHandler(ErrorStatus.NOT_FOUND_USER));
+    }
 }

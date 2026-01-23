@@ -37,6 +37,7 @@ public enum ErrorStatus implements BaseErrorCode {
     INVALID_CREDENTIALS(HttpStatus.BAD_REQUEST,"USER4006","잘못된 비밀번호 입니다."),
     PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST,"USER4007","비밀번호와 확인 비밀번호가 일치하지 않습니다."),
     SAME_AS_OLD_PASSWORD(HttpStatus.BAD_REQUEST,"USER4008","기존 비밀번호와 같습니다."),
+    ONBOARDING_NOT_COMPLETED(HttpStatus.BAD_REQUEST, "USER4009", "온보딩 정보가 없습니다. 온보딩부터 완료해주세요."),
 
     //Policy
     CATEGORY_CODE_NOT_FOUND(HttpStatus.BAD_REQUEST, "POLICY5001", "존재하지 않는 정책 코드 입니다."),
