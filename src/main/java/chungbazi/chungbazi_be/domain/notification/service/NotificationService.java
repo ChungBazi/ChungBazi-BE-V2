@@ -25,7 +25,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class NotificationService {
     private final NotificationRepository notificationRepository;
-    private final FCMService fcmService;
+    private final FcmTokenService fcmTokenService;
+    private final FcmService fcmService;
     private final UserHelper userHelper;
 
     //알람 읽음 처리
@@ -68,7 +69,7 @@ public class NotificationService {
         notificationRepository.save(notification);
 
         //FCM 푸시 전송
-        String fcmToken = fcmService.getToken(request.getUser().getId());
+        String fcmToken = fcmTokenService.getFcmToken(request.getUser().getId());
 
         if (fcmToken != null) {
             FcmPushData data = FcmPushData.from(notification);

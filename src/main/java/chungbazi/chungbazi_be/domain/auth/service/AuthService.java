@@ -12,7 +12,7 @@ import chungbazi.chungbazi_be.domain.auth.dto.TokenResponseDTO;
 import chungbazi.chungbazi_be.domain.auth.jwt.JwtProvider;
 import chungbazi.chungbazi_be.domain.auth.jwt.SecurityUtils;
 import chungbazi.chungbazi_be.domain.auth.jwt.TokenGenerator;
-import chungbazi.chungbazi_be.domain.notification.service.FCMService;
+import chungbazi.chungbazi_be.domain.notification.service.FcmTokenService;
 import chungbazi.chungbazi_be.domain.user.entity.User;
 import chungbazi.chungbazi_be.domain.user.entity.enums.OAuthProvider;
 import chungbazi.chungbazi_be.domain.user.repository.UserRepository;
@@ -34,7 +34,7 @@ public class AuthService {
 
     private final TokenGenerator tokenGenerator;
     private final TokenAuthService tokenAuthService;
-    private final FCMService fcmService;
+    private final FcmTokenService fcmTokenService;
     private final AuthConverter authConverter;
     private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
@@ -61,6 +61,9 @@ public class AuthService {
                 .name("닉네임을 등록해주세요.")
                 .oAuthProvider(OAuthProvider.LOCAL)
                 .build();
+
+        user.createNotificationSetting();
+
         userRepository.save(user);
     }
 
@@ -100,7 +103,7 @@ public class AuthService {
         boolean isFirst = determineIsFirst(user);
         TokenDTO tokenDTO = tokenGenerator.generate(user.getId(), user.getName(), isFirst);
         tokenAuthService.saveRefreshToken(user.getId(), tokenDTO.getRefreshToken(), tokenDTO.getRefreshExp());
-        fcmService.saveFcmToken(user.getId(), request.getFcmToken());
+        fcmTokenService.registerOrUpdateToken(user, request.getFcmToken());
         return tokenDTO;
     }
 
@@ -110,7 +113,7 @@ public class AuthService {
         boolean isFirst = determineIsFirst(user);
         TokenDTO tokenDTO = tokenGenerator.generate(user.getId(), user.getName(), isFirst);
         tokenAuthService.saveRefreshToken(user.getId(), tokenDTO.getRefreshToken(), tokenDTO.getRefreshExp());
-        fcmService.saveFcmToken(user.getId(), request.getFcmToken());
+        fcmTokenService.registerOrUpdateToken(user, request.getFcmToken());
         return tokenDTO;
     }
 
@@ -133,6 +136,9 @@ public class AuthService {
                 .password("")
                 .oAuthProvider(oAuthProvider)
                 .build();
+
+        user.createNotificationSetting();
+
         return userRepository.save(user);
     }
 
@@ -157,14 +163,14 @@ public class AuthService {
                 })
                 .orElseGet(() -> createUserForAppleLogin(email, appleUserId, oAuthProvider));
 
-        // 6. FCM 토큰 저장
-        fcmService.saveFcmToken(user.getId(), request.getFcmToken());
 
         // 7. JWT 토큰 발급 및 저장
         boolean isFirst = determineIsFirst(user);
         TokenDTO tokenDTO = tokenGenerator.generate(user.getId(), user.getName(), isFirst);
         tokenAuthService.saveRefreshToken(user.getId(), tokenDTO.getRefreshToken(), tokenDTO.getRefreshExp());
-        fcmService.saveFcmToken(user.getId(), request.getFcmToken());
+
+        //fcm 토큰 저장
+        fcmTokenService.registerOrUpdateToken(user, request.getFcmToken());
 
         return tokenDTO;
     }
@@ -188,6 +194,9 @@ public class AuthService {
                 .password("")
                 .oAuthProvider(oAuthProvider)
                 .build();
+
+        user.createNotificationSetting();
+
         return userRepository.save(user);
     }
 
@@ -223,7 +232,7 @@ public class AuthService {
         tokenAuthService.addToBlackList(token, "delete-account", 3600L);
         tokenAuthService.deleteRefreshToken(userId);
         deleteUser(userId);
-        fcmService.deleteToken(userId);
+        fcmTokenService.deleteToken(userId);
     }
 
     // 응답

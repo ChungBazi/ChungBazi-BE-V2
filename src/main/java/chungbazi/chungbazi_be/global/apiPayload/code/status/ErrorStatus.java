@@ -57,6 +57,7 @@ public enum ErrorStatus implements BaseErrorCode {
     CHAT_ALARM_CHAT_NULL(HttpStatus.BAD_REQUEST, "NOTIFICATION003", "Chat 알림에서 chat이 null입니다."),
     POLICY_ALARM_CHAT_NULL(HttpStatus.BAD_REQUEST, "NOTIFICATION004", "Chat 알림에서 chat이 null입니다."),
     INVALID_NOTIFICATION_TYPE(HttpStatus.BAD_REQUEST, "NOTIFICATION005", "알림 타입이 존재하지 않습니다."),
+    NOT_FOUND_FCM_TOKEN(HttpStatus.NOT_FOUND, "FCMTOKEN404", "해당 fcm 토큰이 존재하지 않습니다."),
 
     //인증 관련 에러
     MALFORMED_TOKEN(HttpStatus.BAD_REQUEST, "TOKEN4012", "잘못된 형식의 토큰입니다."),
