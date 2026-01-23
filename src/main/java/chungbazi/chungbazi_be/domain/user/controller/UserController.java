@@ -1,6 +1,8 @@
 package chungbazi.chungbazi_be.domain.user.controller;
 
 import chungbazi.chungbazi_be.domain.user.dto.request.UserRequestDTO;
+import chungbazi.chungbazi_be.domain.user.dto.response.UserInformationResponse;
+import chungbazi.chungbazi_be.domain.user.dto.response.UserInterestListResponse;
 import chungbazi.chungbazi_be.domain.user.dto.response.UserResponseDTO;
 import chungbazi.chungbazi_be.domain.user.service.UserService;
 import chungbazi.chungbazi_be.global.apiPayload.ApiResponse;
@@ -55,6 +57,22 @@ public class UserController {
     public ApiResponse<String> updateUserInfo(@RequestBody UserRequestDTO.UpdateDto updateDto) {
         userService.updateUserInfo(updateDto);
         return ApiResponse.onSuccess("User information updated successfully.");
+    }
+
+    @GetMapping("/information")
+    @Operation(summary = "사용자 정보 조회 API", description = "사용자 정보(지역, 취업상태, 소득, 추가사항, 관심사, 학력)를 조회하는 API입니다.")
+    public ApiResponse<UserInformationResponse> getUserInfo(){
+        UserInformationResponse response = userService.getUserInformation();
+
+        return ApiResponse.onSuccess(response);
+    }
+
+    @GetMapping("/interests")
+    @Operation(summary = "사용자의 관심사 조회 API", description = "사용자의 관심사를 조회하는 API입니다.")
+    public ApiResponse<UserInterestListResponse> getUserInterestList(){
+        UserInterestListResponse response = userService.getUserInterest();
+
+        return ApiResponse.onSuccess(response);
     }
 
     @GetMapping("/email/exists")

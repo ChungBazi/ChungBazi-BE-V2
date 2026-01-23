@@ -5,6 +5,8 @@ import chungbazi.chungbazi_be.domain.community.repository.CommentRepository;
 import chungbazi.chungbazi_be.domain.community.repository.PostRepository;
 import chungbazi.chungbazi_be.domain.user.converter.UserConverter;
 import chungbazi.chungbazi_be.domain.user.dto.request.UserRequestDTO;
+import chungbazi.chungbazi_be.domain.user.dto.response.UserInformationResponse;
+import chungbazi.chungbazi_be.domain.user.dto.response.UserInterestListResponse;
 import chungbazi.chungbazi_be.domain.user.dto.response.UserResponseDTO;
 import chungbazi.chungbazi_be.domain.user.entity.Addition;
 import chungbazi.chungbazi_be.domain.user.entity.Interest;
@@ -14,6 +16,8 @@ import chungbazi.chungbazi_be.domain.user.entity.mapping.UserInterest;
 import chungbazi.chungbazi_be.domain.user.repository.*;
 import chungbazi.chungbazi_be.domain.user.support.UserHelper;
 import chungbazi.chungbazi_be.domain.user.validator.UserValidator;
+import chungbazi.chungbazi_be.global.apiPayload.code.status.ErrorStatus;
+import chungbazi.chungbazi_be.global.apiPayload.exception.GeneralException;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -131,4 +135,32 @@ public class UserService {
             userInterestRepository.save(UserInterest.builder().user(user).interest(interest).build());
         }
     }
+
+    @Transactional(readOnly = true)
+    public UserInformationResponse getUserInformation() {
+        User user = userHelper.getUserWithInformation();
+
+        validateOnboardingCompleted(user);
+
+        return UserInformationResponse.from(user);
+    }
+
+    @Transactional(readOnly = true)
+    public UserInterestListResponse getUserInterest() {
+        User user = userHelper.getAuthenticatedUser();
+
+        List<UserInterest> interests = userInterestRepository.findAllByUser(user);
+
+        return UserInterestListResponse.from(interests);
+    }
+
+
+    private void validateOnboardingCompleted(User user) {
+        if (user.getEducation() == null ||
+                user.getEmployment() == null ||
+                user.getIncome() == null) {
+            throw new GeneralException(ErrorStatus.ONBOARDING_NOT_COMPLETED);
+        }
+    }
+
 }
