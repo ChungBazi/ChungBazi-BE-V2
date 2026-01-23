@@ -138,7 +138,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserInformationResponse getUserInformation() {
-        User user = userHelper.getAuthenticatedUser();
+        User user = userHelper.getUserWithInformation();
 
         validateOnboardingCompleted(user);
 
@@ -153,6 +153,7 @@ public class UserService {
 
         return UserInterestListResponse.from(interests);
     }
+
 
     private void validateOnboardingCompleted(User user) {
         if (user.getEducation() == null ||

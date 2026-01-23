@@ -24,8 +24,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT DISTINCT u FROM User u " +
             "LEFT JOIN FETCH u.userAdditionList ua " +
             "LEFT JOIN FETCH ua.addition " +
+            "WHERE u.id = :userId")
+    Optional<User> findByIdWithAdditions(@Param("userId") Long userId);
+
+    @Query("SELECT DISTINCT u FROM User u " +
             "LEFT JOIN FETCH u.userInterestList ui " +
             "LEFT JOIN FETCH ui.interest " +
             "WHERE u.id = :userId")
-    Optional<User> findByIdWithAdditionsAndInterests(Long userId);
+    Optional<User> findByIdWithInterests(@Param("userId") Long userId);
 }
