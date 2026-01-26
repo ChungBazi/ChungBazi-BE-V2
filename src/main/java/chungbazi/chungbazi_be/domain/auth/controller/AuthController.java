@@ -76,10 +76,10 @@ public class AuthController {
     @DeleteMapping("/delete-account")
     @Operation(summary = "회원 탈퇴 API", description = "access Token을 블랙리스트에 추가하고 refresh Token 삭제, 회원 정보 삭제")
     public ApiResponse<String> deleteAccount() {
-        String token = (String) SecurityContextHolder.getContext().getAuthentication().getCredentials();
-        authService.deleteUserAccount(token);
+        authService.deleteUserAccount();
         return ApiResponse.onSuccess("Account deletion successful.");
     }
+
     @PostMapping("/reset-password")
     public ApiResponse<String> resetPassword(@RequestBody @Valid TokenRequestDTO.ResetPasswordRequestDTO request) {
         authService.resetPassword(request.getNewPassword());

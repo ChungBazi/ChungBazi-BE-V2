@@ -226,10 +226,8 @@ public class AuthService {
     }
 
     // 회원 탈퇴
-    public void deleteUserAccount(String token) {
-        tokenAuthService.validateNotBlackListed(token);
+    public void deleteUserAccount() {
         Long userId = SecurityUtils.getUserId();
-        tokenAuthService.addToBlackList(token, "delete-account", 3600L);
         tokenAuthService.deleteRefreshToken(userId);
         deleteUser(userId);
         fcmTokenService.deleteToken(userId);
