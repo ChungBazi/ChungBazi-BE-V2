@@ -1,19 +1,16 @@
 package chungbazi.chungbazi_be.domain.auth.jwt;
 
-import chungbazi.chungbazi_be.domain.auth.service.CustomUserDetailsService;
 import chungbazi.chungbazi_be.global.apiPayload.code.status.ErrorStatus;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.BadRequestHandler;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 import java.security.Key;
 import java.util.Date;
@@ -68,13 +65,22 @@ public class JwtProvider{
     }
 
     public String extractSubject(String token) {
+        return extractClaims(token).getSubject();
+    }
+
+    public Long getRemainingExpirationTime(String token) {
+        Claims claims = extractClaims(token);
+        long remainingTime = claims.getExpiration().getTime() - System.currentTimeMillis();
+        return Math.max(0, (remainingTime / 1000) + 1);
+    }
+
+    private Claims extractClaims(String token) {
         try {
-            Claims claims = Jwts.parserBuilder()
+            return Jwts.parserBuilder()
                     .setSigningKey(key)
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
-            return claims.getSubject();
         } catch (ExpiredJwtException e) {
             throw new BadRequestHandler(ErrorStatus.EXPIRED_TOKEN);
         } catch (MalformedJwtException e) {
