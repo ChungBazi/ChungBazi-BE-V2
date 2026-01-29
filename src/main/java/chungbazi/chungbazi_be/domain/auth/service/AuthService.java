@@ -242,7 +242,6 @@ public class AuthService {
         return authConverter.toRefreshTokenResponse(token);
     }
 
-
     public boolean determineIsFirst(User user) {
         return !user.isSurveyStatus();
     }
