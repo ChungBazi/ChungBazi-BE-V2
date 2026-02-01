@@ -219,9 +219,11 @@ public class AuthService {
     }
 
     // 로그아웃
-    public void logoutUser(String token) {
+    public void logoutUser() {
         Long userId = SecurityUtils.getUserId();
+        String token = (String) SecurityContextHolder.getContext().getAuthentication().getCredentials();
         Long remainingTime = jwtProvider.getRemainingExpirationTime(token);
+
         tokenAuthService.addToBlackList(token, "logout", remainingTime);
         tokenAuthService.deleteRefreshToken(userId);
     }

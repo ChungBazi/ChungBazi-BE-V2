@@ -68,8 +68,7 @@ public class AuthController {
     @PostMapping("/logout")
     @Operation(summary = "로그아웃 API", description = "refresh Token 삭제하고 access Token 블랙리스트에 추가")
     public ApiResponse<String> logout() {
-        String token = (String) SecurityContextHolder.getContext().getAuthentication().getCredentials();
-        authService.logoutUser(token);
+        authService.logoutUser();
         return ApiResponse.onSuccess("Logout successful.");
     }
 
