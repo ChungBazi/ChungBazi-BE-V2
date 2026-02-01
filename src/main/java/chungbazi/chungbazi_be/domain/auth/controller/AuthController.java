@@ -8,12 +8,13 @@ import chungbazi.chungbazi_be.domain.auth.service.AuthService;
 import chungbazi.chungbazi_be.domain.user.entity.enums.OAuthProvider;
 import chungbazi.chungbazi_be.global.apiPayload.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 
+@Tag(name = "[인증/인가]", description = "로그인, 로그아웃 등 인증, 인가 관련 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/auth")
