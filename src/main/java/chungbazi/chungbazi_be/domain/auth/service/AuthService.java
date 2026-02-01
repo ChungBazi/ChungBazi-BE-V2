@@ -22,6 +22,7 @@ import chungbazi.chungbazi_be.global.apiPayload.exception.handler.BadRequestHand
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.NotFoundHandler;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -228,7 +229,12 @@ public class AuthService {
     // 회원 탈퇴
     public void deleteUserAccount() {
         Long userId = SecurityUtils.getUserId();
+        String accessToken = (String) SecurityContextHolder.getContext().getAuthentication().getCredentials();
+        Long remainingTime = jwtProvider.getRemainingExpirationTime(accessToken);
+
+        tokenAuthService.addToBlackList(accessToken, "delete-account", remainingTime);
         tokenAuthService.deleteRefreshToken(userId);
+
         deleteUser(userId);
         fcmTokenService.deleteToken(userId);
     }
