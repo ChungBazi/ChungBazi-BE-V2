@@ -8,12 +8,13 @@ import chungbazi.chungbazi_be.domain.auth.service.AuthService;
 import chungbazi.chungbazi_be.domain.user.entity.enums.OAuthProvider;
 import chungbazi.chungbazi_be.global.apiPayload.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 
+@Tag(name = "[인증/인가]", description = "로그인, 로그아웃 등 인증, 인가 관련 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/auth")
@@ -68,18 +69,17 @@ public class AuthController {
     @PostMapping("/logout")
     @Operation(summary = "로그아웃 API", description = "refresh Token 삭제하고 access Token 블랙리스트에 추가")
     public ApiResponse<String> logout() {
-        String token = (String) SecurityContextHolder.getContext().getAuthentication().getCredentials();
-        authService.logoutUser(token);
+        authService.logoutUser();
         return ApiResponse.onSuccess("Logout successful.");
     }
 
     @DeleteMapping("/delete-account")
     @Operation(summary = "회원 탈퇴 API", description = "access Token을 블랙리스트에 추가하고 refresh Token 삭제, 회원 정보 삭제")
     public ApiResponse<String> deleteAccount() {
-        String token = (String) SecurityContextHolder.getContext().getAuthentication().getCredentials();
-        authService.deleteUserAccount(token);
+        authService.deleteUserAccount();
         return ApiResponse.onSuccess("Account deletion successful.");
     }
+
     @PostMapping("/reset-password")
     public ApiResponse<String> resetPassword(@RequestBody @Valid TokenRequestDTO.ResetPasswordRequestDTO request) {
         authService.resetPassword(request.getNewPassword());

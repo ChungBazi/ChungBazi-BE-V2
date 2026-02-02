@@ -22,6 +22,7 @@ import chungbazi.chungbazi_be.global.apiPayload.exception.handler.BadRequestHand
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.NotFoundHandler;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -218,19 +219,24 @@ public class AuthService {
     }
 
     // 로그아웃
-    public void logoutUser(String token) {
-        tokenAuthService.validateNotBlackListed(token);
+    public void logoutUser() {
         Long userId = SecurityUtils.getUserId();
-        tokenAuthService.addToBlackList(token, "logout", 3600L);
+        String token = (String) SecurityContextHolder.getContext().getAuthentication().getCredentials();
+        Long remainingTime = jwtProvider.getRemainingExpirationTime(token);
+
+        tokenAuthService.addToBlackList(token, "logout", remainingTime);
         tokenAuthService.deleteRefreshToken(userId);
     }
 
     // 회원 탈퇴
-    public void deleteUserAccount(String token) {
-        tokenAuthService.validateNotBlackListed(token);
+    public void deleteUserAccount() {
         Long userId = SecurityUtils.getUserId();
-        tokenAuthService.addToBlackList(token, "delete-account", 3600L);
+        String accessToken = (String) SecurityContextHolder.getContext().getAuthentication().getCredentials();
+        Long remainingTime = jwtProvider.getRemainingExpirationTime(accessToken);
+
+        tokenAuthService.addToBlackList(accessToken, "delete-account", remainingTime);
         tokenAuthService.deleteRefreshToken(userId);
+
         deleteUser(userId);
         fcmTokenService.deleteToken(userId);
     }
@@ -243,7 +249,6 @@ public class AuthService {
     public TokenResponseDTO.RefreshTokenResponseDTO createRefreshTokenResponse(TokenDTO token) {
         return authConverter.toRefreshTokenResponse(token);
     }
-
 
     public boolean determineIsFirst(User user) {
         return !user.isSurveyStatus();
