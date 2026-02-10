@@ -33,10 +33,9 @@ public class LogTraceFilter implements Filter {
             if (entryPoint == null) entryPoint = "DIRECT";
             MDC.put("entry_point", entryPoint);
 
-            // 다음 필터로 제어 전달, 실제 요청이 로직이 실행되는 지점
             chain.doFilter(request, response);
         } finally {
-            // 실제 요청이 완료되면 MDC 저장소를 초기화
+
             MDC.clear();
         }
     }

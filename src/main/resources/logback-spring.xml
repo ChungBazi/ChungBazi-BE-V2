@@ -9,7 +9,6 @@
     <conversionRule conversionWord="wex" class="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter" />
     <conversionRule conversionWord="wEx" class="class.org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter" />
 
-
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>

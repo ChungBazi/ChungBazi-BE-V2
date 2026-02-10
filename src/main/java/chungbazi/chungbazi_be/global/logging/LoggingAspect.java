@@ -64,7 +64,6 @@ public class LoggingAspect {
     public Object around(ProceedingJoinPoint joinPoint, TrackEvent trackEvent) throws Throwable {
         long startTime = System.currentTimeMillis();
 
-        //메서드 실행 전: 파라미터(검색어, 필터값 등) 미리 추출
         Map<String, Object> params = getMethodParameters(joinPoint);
 
         Object result;
@@ -77,7 +76,6 @@ public class LoggingAspect {
 
             return result;
         } catch (Exception ex) {
-            // 에러 시 로깅 (필요 시)
             log.error("Event Method Error: {}", ex.getMessage());
             throw ex;
         }
@@ -88,7 +86,7 @@ public class LoggingAspect {
             // 결과 개수 추출 (PolicyListResponse 등에서)
             int resultCount = getResultCount(result);
 
-            // 검색 결과가 0개면 PM이 가장 중요하게 보는 'empty_policy_result'로 이벤트명 변경
+            // 검색 결과가 0개면 'empty_policy_result'로 이벤트명 변경
             String finalEventName = (resultCount == 0 )
                     ? "empty_policy_result" : eventName;
 
