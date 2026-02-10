@@ -20,7 +20,7 @@ public class PolicyScheduler {
     private final PolicyService policyService;
 
     //새로운 정책들 DB에 저장
-    @Scheduled(cron = "0 0 9  * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 5 20  * * *", zone = "Asia/Seoul")
     @Transactional
     public void policyFetch() {
         log.info("✅ 정책 스케줄러 실행 시작!");
