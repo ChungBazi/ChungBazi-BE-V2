@@ -2,7 +2,7 @@ package chungbazi.chungbazi_be.global.logging;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
-import org.jboss.logging.MDC;
+import org.slf4j.MDC;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -27,7 +27,7 @@ public class LogTraceFilter implements Filter {
         try {
             // 랜덤한 uuid 값을 생성하여 MDC 저장소에 request_id를 키, uuid를 value로 저장
             UUID uuid = UUID.randomUUID();
-            MDC.put("trace_id", uuid.toString().substring(0, 8));
+            MDC.put("traceId", uuid.toString().substring(0, 8));
 
             String entryPoint = httpRequest.getHeader("X-Entry-Point");
             if (entryPoint == null) entryPoint = "DIRECT";

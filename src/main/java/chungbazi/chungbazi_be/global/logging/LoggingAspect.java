@@ -87,7 +87,7 @@ public class LoggingAspect {
             int resultCount = getResultCount(result);
 
             // 검색 결과가 0개면 'empty_policy_result'로 이벤트명 변경
-            String finalEventName = (resultCount == 0 )
+            String finalEventName = (resultCount == 0 && result instanceof PolicyListResponse )
                     ? "empty_policy_result" : eventName;
 
             Map<String, Object> extraProperties = new HashMap<>();
@@ -101,7 +101,8 @@ public class LoggingAspect {
                     userId = user.getId();
                     extraProperties.put("user_income", user.getIncome()); // 소득분위
                     extraProperties.put("user_region", user.getRegion()); // 유저 지역
-                    extraProperties.put("user_education", user.getEducation()); // 유저 나이
+                    extraProperties.put("user_education", user.getEducation()); //유저 학력
+                    extraProperties.put("user_employment", user.getEmployment()); //유저 취업 상태
                 }
             } catch (Exception e) {
                 // 인증 정보가 없는 경우 무시
