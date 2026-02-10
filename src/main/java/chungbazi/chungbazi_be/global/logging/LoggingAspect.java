@@ -4,6 +4,7 @@ import chungbazi.chungbazi_be.domain.policy.dto.PolicyDetailsResponse;
 import chungbazi.chungbazi_be.domain.policy.dto.PolicyListResponse;
 import chungbazi.chungbazi_be.domain.user.entity.User;
 import chungbazi.chungbazi_be.domain.user.support.UserHelper;
+import chungbazi.chungbazi_be.domain.user.support.UserIdentifier;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -94,11 +95,11 @@ public class LoggingAspect {
             extraProperties.put("input_params", params);
             extraProperties.put("result_count", resultCount);
 
-            Long userId = null;
+            String hashedUserId = null;
             try {
                 User user = userHelper.getAuthenticatedUser();
                 if (user != null) {
-                    userId = user.getId();
+                    hashedUserId = UserIdentifier.hashUserId(user.getId());
                     extraProperties.put("user_income", user.getIncome()); // 소득분위
                     extraProperties.put("user_region", user.getRegion()); // 유저 지역
                     extraProperties.put("user_education", user.getEducation()); //유저 학력
@@ -118,7 +119,7 @@ public class LoggingAspect {
                     .traceId(MDC.get("trace_id"))
                     .entryPoint(eventName)
                     .timeStamp(LocalDateTime.now().toString())
-                    .userId(userId)
+                    .hashedUserId(hashedUserId)
                     .properties(extraProperties)
                     .build();
 
@@ -146,7 +147,8 @@ public class LoggingAspect {
 
     private int getResultCount(Object result) {
         if (result instanceof PolicyListResponse) {
-            return ((PolicyListResponse) result).getPolicies().size();
+            var policies = ((PolicyListResponse) result).getPolicies();
+            return policies != null ? policies.size() : 0;
         }
         return 0;
     }

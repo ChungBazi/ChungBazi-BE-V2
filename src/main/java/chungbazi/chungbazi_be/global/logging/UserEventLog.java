@@ -8,7 +8,7 @@ import java.util.Map;
 public record UserEventLog(
         String eventName,
         String traceId,
-        Long userId,
+        String hashedUserId,
         String entryPoint,
         Map<String, Object> properties,
         String timeStamp

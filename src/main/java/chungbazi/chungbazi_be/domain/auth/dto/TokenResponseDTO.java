@@ -1,5 +1,6 @@
 package chungbazi.chungbazi_be.domain.auth.dto;
 
+import chungbazi.chungbazi_be.domain.user.support.UserIdentifier;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -11,6 +12,7 @@ public class TokenResponseDTO {
     @AllArgsConstructor
     public static class LoginTokenResponseDTO {
         private Long userId;
+        private String hashedUserId;
         private String userName;
         private Boolean isFirst;
         private String accessToken;
@@ -18,7 +20,8 @@ public class TokenResponseDTO {
         private long accessExp;
 
         public static LoginTokenResponseDTO of(Long userId, String userName, Boolean isFirst, String accessToken, String refreshToken, long accessExp) {
-            return new LoginTokenResponseDTO(userId, userName, isFirst, accessToken, refreshToken, accessExp);
+
+            return new LoginTokenResponseDTO(userId, UserIdentifier.hashUserId(userId), userName, isFirst, accessToken, refreshToken, accessExp);
         }
     }
 
@@ -26,6 +29,7 @@ public class TokenResponseDTO {
     @AllArgsConstructor
     public static class RefreshTokenResponseDTO {
         private Long userId;
+        private String hashedUserId;
         private String userName;
         private String accessToken;
         private String refreshToken;
@@ -38,7 +42,7 @@ public class TokenResponseDTO {
                 String refreshToken,
                 long accessExp
         ) {
-            return new RefreshTokenResponseDTO(userId, userName, accessToken, refreshToken, accessExp);
+            return new RefreshTokenResponseDTO(userId, UserIdentifier.hashUserId(userId), userName, accessToken, refreshToken, accessExp);
         }
     }
 }
