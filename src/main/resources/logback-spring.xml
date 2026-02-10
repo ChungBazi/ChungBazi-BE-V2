@@ -1,12 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <property name="ENV" value="${spring.profiles.active:-default}" />
+
+    <property name="CONSOLE_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %clr([%X{traceId}]){magenta} %clr([%-5level]) %clr(%logger{36}){cyan} - %msg%n" />
+    <property name="FILE_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{traceId}] [env=${ENV}] %-5level %logger{36} - %msg%n" />
     <!-- 콘솔 출력 설정 -->
-    <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter" />
+    <conversionRule conversionWord="clr" class="org.springframework.boot.logging.logback.ColorConverter" />
+    <conversionRule conversionWord="wex" class="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter" />
+    <conversionRule conversionWord="wEx" class="class.org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter" />
+
+
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>
-                %d{yyyy-MM-dd HH:mm:ss.SSS} %highlight([%thread]) [env=${ENV}] %clr([%-5level]) %logger{36} - %msg%n
+                ${CONSOLE_LOG_PATTERN}
             </pattern>
         </encoder>
     </appender>
@@ -15,7 +22,7 @@
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>logs/application.log</file>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [env=${ENV}] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
         </encoder>
 
         <!-- 로그 파일 롤링 정책 -->
@@ -35,7 +42,7 @@
         </filter>
 
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [env=${ENV}] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
         </encoder>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
@@ -45,6 +52,22 @@
             <totalSizeCap>1GB</totalSizeCap>
         </rollingPolicy>
     </appender>
+
+    <appender name="EVENT_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/user-events.log</file>
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>logs/user-events-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>90</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <logger name="USER_EVENT_LOGGER" level="INFO" additivity="false">
+        <appender-ref ref="EVENT_FILE" />
+        <appender-ref ref="CONSOLE" /> </logger>
 
     <!-- 루트 로거 설정 -->
     <root level="INFO">
