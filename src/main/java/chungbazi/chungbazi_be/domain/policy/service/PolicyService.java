@@ -17,8 +17,7 @@ import chungbazi.chungbazi_be.global.apiPayload.code.status.ErrorStatus;
 import chungbazi.chungbazi_be.global.apiPayload.exception.GeneralException;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.BadRequestHandler;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.NotFoundHandler;
-import chungbazi.chungbazi_be.global.utils.PaginationResult;
-import chungbazi.chungbazi_be.global.utils.PaginationUtil;
+import chungbazi.chungbazi_be.global.logging.TrackEvent;
 import chungbazi.chungbazi_be.global.utils.PopularSearch;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -54,6 +53,7 @@ public class PolicyService {
     }
 
     // 정책 검색
+    @TrackEvent(name = "search_policy")
     public PolicyListResponse getSearchPolicy(String name, String cursor, int size, String order) {
 
         User user = userHelper.getAuthenticatedUser();
@@ -88,6 +88,7 @@ public class PolicyService {
     }
 
     // 카테고리별 정책 조회
+    @TrackEvent(name = "filter_apply")
     public PolicyListResponse getCategoryPolicy(Category categoryName, String cursor, int size, String order) {
 
         User user = userHelper.getAuthenticatedUser();
@@ -109,6 +110,7 @@ public class PolicyService {
     }
 
     // 정책상세조회
+    @TrackEvent(name = "policy_detail_view")
     public PolicyDetailsResponse getPolicyDetails(Long policyId) {
 
         Policy policy = policyRepository.findById(policyId)

@@ -3,6 +3,7 @@ package chungbazi.chungbazi_be.domain.policy.service;
 import chungbazi.chungbazi_be.domain.policy.dto.YouthPolicyListResponse;
 import chungbazi.chungbazi_be.domain.policy.dto.YouthPolicyResponse;
 import chungbazi.chungbazi_be.domain.policy.entity.Policy;
+import chungbazi.chungbazi_be.domain.policy.repository.PolicyRepository;
 import chungbazi.chungbazi_be.domain.policy.validator.PolicyValidator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -15,9 +16,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -27,6 +26,7 @@ public class PolicyFetchService {
 
     private final WebClient webclient;
     private final PolicyValidator policyValidator;
+    private final PolicyRepository policyRepository;
 
     @Value("${webclient.openApiVlak}")
     private String openApiVlak;
@@ -37,6 +37,8 @@ public class PolicyFetchService {
         String srchPolyBizSecd = "003002001";
 
         LocalDate plusOneYear = LocalDate.now(ZoneId.of("Asia/Seoul")).minusDays(1);
+
+        Set<String> existingBizIds = new HashSet<>(policyRepository.findAllBizIds());
 
         List<Policy> allPolicies = new ArrayList<>();
 
@@ -56,8 +58,13 @@ public class PolicyFetchService {
             }
 
             List<Policy> validPolicies = policies.stream()
-                    .filter(policy -> policyValidator.isValid(policy, plusOneYear))
-                    .map(Policy::toEntity)
+                    .filter(dto -> !existingBizIds.contains(dto.getPlcyNo()))
+                    .filter(dto -> policyValidator.isValid(dto, plusOneYear))
+                    .map(dto -> {
+                        //이번 배치 내 중복 방지
+                        existingBizIds.add(dto.getPlcyNo());
+                        return Policy.toEntity(dto);
+                    })
                     .collect(Collectors.toList());
 
             if (!validPolicies.isEmpty()) {

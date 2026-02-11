@@ -22,7 +22,7 @@ public class UserRequestDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class RegisterDto {
-        @NotNull
+
         @Schema(example = "서울시 강남구", description = "사용자의 지역")
         private Region region;
 

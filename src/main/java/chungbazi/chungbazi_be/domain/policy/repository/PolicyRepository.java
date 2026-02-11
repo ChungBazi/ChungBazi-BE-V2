@@ -26,4 +26,7 @@ public interface PolicyRepository extends JpaRepository<Policy, Long>, PolicyRep
     @Query("DELETE FROM Policy p " +
             "WHERE p.id IN :expiredPolicyIds")
     long deleteByIdIn(@Param("expiredPolicyIds") List<Long> expiredPolicyIds);
+
+    @Query("SELECT p.bizId FROM Policy p")
+    List<String> findAllBizIds();
 }
