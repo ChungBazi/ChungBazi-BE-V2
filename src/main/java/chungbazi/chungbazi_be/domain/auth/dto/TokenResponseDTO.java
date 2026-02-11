@@ -8,6 +8,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class TokenResponseDTO {
 
+
     @Getter
     @AllArgsConstructor
     public static class LoginTokenResponseDTO {

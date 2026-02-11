@@ -13,6 +13,11 @@ public class UserIdentifier {
     @Value("${logging.salt-key}")
     private static String saltKey;
 
+    @Value("${logging.salt-key}")
+    public void setSaltKey(String saltKey) {
+        UserIdentifier.saltKey = saltKey;
+    }
+
     public static String hashUserId(Long userId) {
         if (userId == null) return null;
         try {
