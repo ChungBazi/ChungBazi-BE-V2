@@ -59,7 +59,6 @@ public class AuthService {
         User user = User.builder()
                 .email(request.getEmail())
                 .password(encodedPassword)
-                .name("닉네임을 등록해주세요.")
                 .oAuthProvider(OAuthProvider.LOCAL)
                 .build();
 
