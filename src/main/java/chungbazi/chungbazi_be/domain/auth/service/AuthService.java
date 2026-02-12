@@ -242,8 +242,8 @@ public class AuthService {
     }
 
     // 응답
-    public TokenResponseDTO.LoginTokenResponseDTO createLoginTokenResponse(TokenDTO token) {
-        return authConverter.toLoginTokenResponse(token);
+    public TokenResponseDTO.LoginTokenResponseDTO createLoginTokenResponse(TokenDTO token, OAuthProvider loginType) {
+        return authConverter.toLoginTokenResponse(token, loginType);
     }
 
     public TokenResponseDTO.RefreshTokenResponseDTO createRefreshTokenResponse(TokenDTO token) {

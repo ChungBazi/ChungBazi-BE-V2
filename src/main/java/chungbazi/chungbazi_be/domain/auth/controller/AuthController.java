@@ -42,21 +42,21 @@ public class AuthController {
     @Operation(summary = "일반 사용자 로그인 API", description = "이메일과 비밀번호로 로그인하여 JWT 토큰을 생성")
     public ApiResponse<TokenResponseDTO.LoginTokenResponseDTO> loginUser(@Valid @RequestBody TokenRequestDTO.LoginTokenRequestDTO request) {
         TokenDTO token = authService.loginUser(request);
-        return ApiResponse.onSuccess(authService.createLoginTokenResponse(token));
+        return ApiResponse.onSuccess(authService.createLoginTokenResponse(token, OAuthProvider.LOCAL));
     }
 
     @PostMapping("/kakao-login")
     @Operation(summary = "사용자 등록 및 JWT 생성 API", description = "사용자 정보를 받아서 DB에 저장하고 JWT 토큰을 생성")
     public ApiResponse<TokenResponseDTO.LoginTokenResponseDTO> kakaoLoginUser(@Valid @RequestBody TokenRequestDTO.KakaoLoginTokenRequestDTO request) {
         TokenDTO token = authService.kakaolLoginUser(request,OAuthProvider.KAKAO);
-        return ApiResponse.onSuccess(authService.createLoginTokenResponse(token));
+        return ApiResponse.onSuccess(authService.createLoginTokenResponse(token, OAuthProvider.KAKAO));
     }
 
     @PostMapping("/apple-login")
     @Operation(summary = "Apple 로그인 API", description = "Apple idToken과 fcmToken으로 사용자 인증 후 JWT 토큰을 생성")
     public ApiResponse<TokenResponseDTO.LoginTokenResponseDTO> appleLoginUser(@Valid @RequestBody TokenRequestDTO.AppleLoginTokenRequestDTO request) {
         TokenDTO token = authService.appleLoginUser(request,OAuthProvider.APPLE);
-        return ApiResponse.onSuccess(authService.createLoginTokenResponse(token));
+        return ApiResponse.onSuccess(authService.createLoginTokenResponse(token, OAuthProvider.APPLE));
     }
 
     @PostMapping("/refresh-token")

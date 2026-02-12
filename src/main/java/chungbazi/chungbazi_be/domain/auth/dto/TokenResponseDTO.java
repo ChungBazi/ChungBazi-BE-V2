@@ -1,5 +1,6 @@
 package chungbazi.chungbazi_be.domain.auth.dto;
 
+import chungbazi.chungbazi_be.domain.user.entity.enums.OAuthProvider;
 import chungbazi.chungbazi_be.domain.user.support.UserIdentifier;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,10 +20,11 @@ public class TokenResponseDTO {
         private String accessToken;
         private String refreshToken;
         private long accessExp;
+        private OAuthProvider loginType;
 
-        public static LoginTokenResponseDTO of(Long userId, String userName, Boolean isFirst, String accessToken, String refreshToken, long accessExp) {
+        public static LoginTokenResponseDTO of(Long userId, String userName, Boolean isFirst, String accessToken, String refreshToken, long accessExp, OAuthProvider loginType) {
 
-            return new LoginTokenResponseDTO(userId, UserIdentifier.hashUserId(userId), userName, isFirst, accessToken, refreshToken, accessExp);
+            return new LoginTokenResponseDTO(userId, UserIdentifier.hashUserId(userId), userName, isFirst, accessToken, refreshToken, accessExp, loginType);
         }
     }
 
