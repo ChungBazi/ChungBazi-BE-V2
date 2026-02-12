@@ -190,7 +190,7 @@ public class AuthService {
     public User createUserForAppleLogin(String email, String appleUserId, OAuthProvider oAuthProvider) {
         User user = User.builder()
                 .email(email)
-                .name(appleUserId)
+                //.name(appleUserId)
                 .password("")
                 .oAuthProvider(oAuthProvider)
                 .build();
