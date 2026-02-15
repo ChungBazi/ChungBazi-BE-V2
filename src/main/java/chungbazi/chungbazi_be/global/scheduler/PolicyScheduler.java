@@ -32,7 +32,7 @@ public class PolicyScheduler {
     }
 
     //마감기한 지난 정책들 DB에서 삭제
-    @Scheduled(cron = "0 2 23  * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 1 0  * * *", zone = "Asia/Seoul")
     public void deletePolicy() {
 
         long deletedCount = policyService.deleteExpiredPolicies();
