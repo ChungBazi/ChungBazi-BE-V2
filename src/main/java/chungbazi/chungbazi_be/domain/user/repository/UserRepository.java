@@ -18,7 +18,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Modifying
     @Transactional
-    @Query("UPDATE User u SET u.name = '(알 수 없음)', u.email = CONCAT('deleted_', u.id, '@chungbazi.com') WHERE u.id = :userId")
+    @Query("UPDATE User u SET u.name = NULL , u.email = CONCAT('deleted_', u.id, '@chungbazi.com') WHERE u.id = :userId")
     void anonymizeUser(@Param("userId") Long userId);
 
     @Query("SELECT DISTINCT u FROM User u " +
