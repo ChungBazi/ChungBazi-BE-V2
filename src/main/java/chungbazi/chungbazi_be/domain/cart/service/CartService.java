@@ -7,6 +7,7 @@ import chungbazi.chungbazi_be.domain.cart.dto.CartResponseDTO;
 import chungbazi.chungbazi_be.domain.cart.entity.Cart;
 import chungbazi.chungbazi_be.domain.cart.repository.CartRepository;
 import chungbazi.chungbazi_be.domain.document.repository.CalendarDocumentRepository;
+import chungbazi.chungbazi_be.domain.document.service.CalendarDocumentService;
 import chungbazi.chungbazi_be.domain.notification.service.NotificationService;
 import chungbazi.chungbazi_be.domain.policy.dto.PolicyCalendarResponse;
 import chungbazi.chungbazi_be.domain.policy.entity.Category;
@@ -140,19 +141,15 @@ public class CartService {
     }
 
     @Transactional
-    public void nullifyPolicyInCart(List<Long> expiredPolicyIds) {
+    public void deletePolicyInCart(List<Long> expiredPolicyIds) {
         // 해당 policyIds를 가진 모든 cart 찾기
-        List<Cart> carts = cartRepository.findAllByPolicyIdIn(expiredPolicyIds);
-
-        if (carts.isEmpty()) {
+        if (expiredPolicyIds == null || expiredPolicyIds.isEmpty()) {
             return;
         }
 
-        // 정책 참조 제거
-        cartRepository.nullifyPolicyByPolicyIds(expiredPolicyIds);
+        calendarDocumentRepository.deleteByPolicyIdIn(expiredPolicyIds);
 
-
-        cartRepository.saveAll(carts);
+        cartRepository.deleteByPolicyIdIn(expiredPolicyIds);
     }
 
     /*

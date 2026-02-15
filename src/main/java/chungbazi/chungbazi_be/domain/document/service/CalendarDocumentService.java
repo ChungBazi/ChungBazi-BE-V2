@@ -87,8 +87,5 @@ public class CalendarDocumentService {
         return calendarDocumentRepository.findAllByCart_Id(cartId);
     }
 
-    @Transactional
-    public void deleteByCartIdIn(List<Long> cartIds) {
-        calendarDocumentRepository.deleteByCartIdIn(cartIds);
-    }
+
 }
