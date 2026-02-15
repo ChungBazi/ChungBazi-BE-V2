@@ -140,19 +140,13 @@ public class CartService {
     }
 
     @Transactional
-    public void nullifyPolicyInCart(List<Long> expiredPolicyIds) {
+    public void deletePolicyInCart(List<Long> expiredPolicyIds) {
         // 해당 policyIds를 가진 모든 cart 찾기
-        List<Cart> carts = cartRepository.findAllByPolicyIdIn(expiredPolicyIds);
-
-        if (carts.isEmpty()) {
+        if (expiredPolicyIds == null || expiredPolicyIds.isEmpty()) {
             return;
         }
 
-        // 정책 참조 제거
-        cartRepository.nullifyPolicyByPolicyIds(expiredPolicyIds);
-
-
-        cartRepository.saveAll(carts);
+        cartRepository.deleteAllByPolicyIdIn(expiredPolicyIds);
     }
 
     /*

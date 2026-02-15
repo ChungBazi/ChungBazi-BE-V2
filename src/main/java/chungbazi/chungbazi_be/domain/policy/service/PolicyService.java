@@ -225,7 +225,7 @@ public class PolicyService {
         }
 
         // Cart와의 연관관계 제거
-        cartService.nullifyPolicyInCart(expiredPolicyIds);
+        cartService.deletePolicyInCart(expiredPolicyIds);
 
         // Policy 삭제
         long deletedPolicies = policyRepository.deleteByIdIn(expiredPolicyIds);
