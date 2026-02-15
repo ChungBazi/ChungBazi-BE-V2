@@ -7,6 +7,7 @@ import chungbazi.chungbazi_be.domain.cart.dto.CartResponseDTO;
 import chungbazi.chungbazi_be.domain.cart.entity.Cart;
 import chungbazi.chungbazi_be.domain.cart.repository.CartRepository;
 import chungbazi.chungbazi_be.domain.document.repository.CalendarDocumentRepository;
+import chungbazi.chungbazi_be.domain.document.service.CalendarDocumentService;
 import chungbazi.chungbazi_be.domain.notification.service.NotificationService;
 import chungbazi.chungbazi_be.domain.policy.dto.PolicyCalendarResponse;
 import chungbazi.chungbazi_be.domain.policy.entity.Category;
@@ -146,7 +147,9 @@ public class CartService {
             return;
         }
 
-        cartRepository.deleteAllByPolicyIdIn(expiredPolicyIds);
+        calendarDocumentRepository.deleteByPolicyIdIn(expiredPolicyIds);
+
+        cartRepository.deleteByPolicyIdIn(expiredPolicyIds);
     }
 
     /*
