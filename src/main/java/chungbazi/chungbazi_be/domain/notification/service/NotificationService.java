@@ -78,11 +78,9 @@ public class NotificationService {
     }
 
     //안 읽은 알림이 있는지 검사하는 로직
-    public boolean isReadAllNotification(){
-        User user=userHelper.getAuthenticatedUser();
-
+    public boolean isReadAllNotification(User user) {
         return user.getNotificationList().stream()
-                .anyMatch(notification -> !notification.isRead());
+                .allMatch(Notification::isRead);
     }
 
 }
