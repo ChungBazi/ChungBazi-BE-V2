@@ -1,51 +1,36 @@
 package chungbazi.chungbazi_be.domain.notification.service;
 
-import chungbazi.chungbazi_be.domain.notification.converter.NotificationFactory;
-import chungbazi.chungbazi_be.domain.notification.dto.*;
+import chungbazi.chungbazi_be.domain.notification.dto.internal.FcmPushData;
+import chungbazi.chungbazi_be.domain.notification.dto.internal.NotificationData;
+import chungbazi.chungbazi_be.domain.notification.dto.response.NotificationResponseDTO;
 import chungbazi.chungbazi_be.domain.notification.entity.Notification;
 import chungbazi.chungbazi_be.domain.notification.entity.enums.NotificationType;
-import chungbazi.chungbazi_be.domain.notification.repository.NotificationRepository;
+import chungbazi.chungbazi_be.domain.notification.repository.notificationRepository.NotificationRepository;
 import chungbazi.chungbazi_be.domain.user.entity.User;
-import chungbazi.chungbazi_be.domain.user.utils.UserHelper;
+import chungbazi.chungbazi_be.domain.user.support.UserHelper;
 import chungbazi.chungbazi_be.global.apiPayload.code.status.ErrorStatus;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.NotFoundHandler;
 import chungbazi.chungbazi_be.global.utils.PaginationResult;
 import chungbazi.chungbazi_be.global.utils.PaginationUtil;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@Transactional
 public class NotificationService {
     private final NotificationRepository notificationRepository;
-    private final FCMService fcmService;
+    private final FcmTokenService fcmTokenService;
+    private final FcmService fcmService;
     private final UserHelper userHelper;
 
-    @Transactional
-    public NotificationResponseDTO.responseDto sendNotification(NotificationRequest request) {
-        request.validate();
-
-        //알림 생성
-        Notification notification= NotificationFactory.from(request);
-        notificationRepository.save(notification);
-
-        //FCM 푸시 전송
-        sendFcmPushIfTokenExists(notification);
-
-        return NotificationResponseDTO.responseDto.builder()
-                .notificationId(notification.getId())
-                .createdAt(notification.getCreatedAt())
-                .build();
-    }
-
     //알람 읽음 처리
+    @Transactional
     public void markAsRead(Long notificationId){
         Notification notification=notificationRepository.findById(notificationId)
                 .orElseThrow(()->new NotFoundHandler(ErrorStatus.NOT_FOUND_NOTIFICATION));
@@ -53,7 +38,8 @@ public class NotificationService {
     }
 
     //알림 조회
-    public NotificationResponseDTO.notificationListDto getNotifications(NotificationType type, Long cursor, int limit) {
+    @Transactional
+    public PaginationResult<NotificationResponseDTO.notificationsDto> getNotifications(NotificationType type, Long cursor, int limit) {
 
         User user = userHelper.getAuthenticatedUser();
 
@@ -62,31 +48,39 @@ public class NotificationService {
 
         List<NotificationResponseDTO.notificationsDto> notificationDtos = notificationRepository.findNotificationsByUserIdAndNotificationTypeDto(user.getId(), type, cursor, limit + 1);
 
-        PaginationResult<NotificationResponseDTO.notificationsDto> paginationResult =
-                PaginationUtil.paginate(notificationDtos, limit);
+        PaginationResult<NotificationResponseDTO.notificationsDto> paginationResult = PaginationUtil.paginate(notificationDtos, limit);
 
-        return NotificationResponseDTO.notificationListDto.builder()
-                .notifications(notificationDtos)
-                .nextCursor(paginationResult.getNextCursor())
-                .hasNext(paginationResult.isHasNext())
+        return paginationResult;
+
+    }
+
+    @Transactional
+    public void sendNotification(NotificationData request) {
+
+        //알림 생성
+        Notification notification= Notification.builder()
+                .user(request.getUser())
+                .message(request.getMessage())
+                .targetId(request.getTargetId())
+                .isRead(false)
+                .type(request.getType())
                 .build();
 
-    }
+        notificationRepository.save(notification);
 
-    //안 읽은 알림이 있는지 검사하는 로직
-    public boolean isReadAllNotification(){
-        User user=userHelper.getAuthenticatedUser();
-
-        return user.getNotificationList().stream()
-                .anyMatch(notification -> !notification.isRead());
-    }
-
-    private void sendFcmPushIfTokenExists(Notification notification) {
-        String fcmToken = fcmService.getToken(notification.getUser().getId());
+        //FCM 푸시 전송
+        String fcmToken = fcmTokenService.getFcmToken(request.getUser().getId());
 
         if (fcmToken != null) {
             FcmPushData data = FcmPushData.from(notification);
             fcmService.pushFCMNotification(fcmToken,data);
         }
     }
+
+    //안 읽은 알림이 있는지 검사하는 로직
+    public boolean isReadAllNotification(User user) {
+        return user.getNotificationList().stream()
+                .allMatch(Notification::isRead);
+    }
+
 }

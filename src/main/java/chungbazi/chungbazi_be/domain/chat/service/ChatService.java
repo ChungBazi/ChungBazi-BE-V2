@@ -9,16 +9,15 @@ import chungbazi.chungbazi_be.domain.chat.repository.chatRoom.ChatRoomRepository
 import chungbazi.chungbazi_be.domain.chat.repository.MessageRepository.MessageRepository;
 import chungbazi.chungbazi_be.domain.community.entity.Post;
 import chungbazi.chungbazi_be.domain.community.repository.PostRepository;
-import chungbazi.chungbazi_be.domain.notification.dto.NotificationRequest;
+import chungbazi.chungbazi_be.domain.notification.dto.internal.NotificationData;
 import chungbazi.chungbazi_be.domain.chat.entity.ChatRoomSetting;
 import chungbazi.chungbazi_be.domain.notification.entity.enums.NotificationType;
-import chungbazi.chungbazi_be.domain.notification.service.ChatRoomSettingService;
 import chungbazi.chungbazi_be.domain.notification.service.NotificationService;
 import chungbazi.chungbazi_be.domain.user.entity.User;
 import chungbazi.chungbazi_be.domain.user.repository.UserBlockRepository.UserBlockRepository;
 import chungbazi.chungbazi_be.domain.user.repository.UserRepository;
 import chungbazi.chungbazi_be.domain.user.service.UserBlockService;
-import chungbazi.chungbazi_be.domain.user.utils.UserHelper;
+import chungbazi.chungbazi_be.domain.user.support.UserHelper;
 import chungbazi.chungbazi_be.global.apiPayload.code.status.ErrorStatus;
 import chungbazi.chungbazi_be.global.apiPayload.exception.GeneralException;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.BadRequestHandler;
@@ -32,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -133,11 +131,11 @@ public class ChatService {
         if(chatRoomSettingService.getChatRoomSettingIsEnabled(receiverId,chat.getChatRoom().getId())){
             String message = chat.getSender().getName() + "님이 쪽지를 보내셨습니다.";
 
-            NotificationRequest request = NotificationRequest.builder()
+            NotificationData request = NotificationData.builder()
                     .user(receiver)
-                    .type(NotificationType.CHAT_ALARM)
+                    .type(NotificationType.CHAT)
                     .message(message)
-                    .chat(chat)
+                    .targetId(chat.getId())
                     .build();
 
             notificationService.sendNotification(request);

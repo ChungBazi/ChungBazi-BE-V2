@@ -37,6 +37,7 @@ public enum ErrorStatus implements BaseErrorCode {
     INVALID_CREDENTIALS(HttpStatus.BAD_REQUEST,"USER4006","잘못된 비밀번호 입니다."),
     PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST,"USER4007","비밀번호와 확인 비밀번호가 일치하지 않습니다."),
     SAME_AS_OLD_PASSWORD(HttpStatus.BAD_REQUEST,"USER4008","기존 비밀번호와 같습니다."),
+    ONBOARDING_NOT_COMPLETED(HttpStatus.BAD_REQUEST, "USER4009", "온보딩 정보가 없습니다. 온보딩부터 완료해주세요."),
 
     //Policy
     CATEGORY_CODE_NOT_FOUND(HttpStatus.BAD_REQUEST, "POLICY5001", "존재하지 않는 정책 코드 입니다."),
@@ -45,6 +46,7 @@ public enum ErrorStatus implements BaseErrorCode {
     POLICY_NOT_FOUND(HttpStatus.NOT_FOUND, "POLICY5004", "존재하지 않는 정책입니다."),
     NO_CURSOR(HttpStatus.BAD_REQUEST, "POLICY5005", "커서가 존재하지않습니다."),
     NOT_VALID_TYPE_YEAR_MONTH(HttpStatus.BAD_REQUEST, "POLICY5006", "유효한 날짜 형식이 아닙니다."),
+    INVALID_CURSOR(HttpStatus.BAD_REQUEST, "POLICY4001", "유효한 커서 형식이 아닙니다."),
 
     //Cart
     ALREADY_EXIST_CART(HttpStatus.BAD_REQUEST, "Cart4001", "이미 해당 정책을 장바구니에 담았습니다."),
@@ -56,6 +58,7 @@ public enum ErrorStatus implements BaseErrorCode {
     CHAT_ALARM_CHAT_NULL(HttpStatus.BAD_REQUEST, "NOTIFICATION003", "Chat 알림에서 chat이 null입니다."),
     POLICY_ALARM_CHAT_NULL(HttpStatus.BAD_REQUEST, "NOTIFICATION004", "Chat 알림에서 chat이 null입니다."),
     INVALID_NOTIFICATION_TYPE(HttpStatus.BAD_REQUEST, "NOTIFICATION005", "알림 타입이 존재하지 않습니다."),
+    NOT_FOUND_FCM_TOKEN(HttpStatus.NOT_FOUND, "FCMTOKEN404", "해당 fcm 토큰이 존재하지 않습니다."),
 
     //인증 관련 에러
     MALFORMED_TOKEN(HttpStatus.BAD_REQUEST, "TOKEN4012", "잘못된 형식의 토큰입니다."),
@@ -112,6 +115,7 @@ public enum ErrorStatus implements BaseErrorCode {
     OPENAI_API_ERROR(HttpStatus.BAD_GATEWAY, "OPENAI4001", "OpenAI API 호출 중 오류가 발생했습니다."),
     OPENAI_TIMEOUT(HttpStatus.GATEWAY_TIMEOUT, "OPENAI4002", "OpenAI API 응답이 지연되었습니다."),
     OPENAI_INVALID_RESPONSE(HttpStatus.INTERNAL_SERVER_ERROR, "OPENAI4003", "OpenAI API 응답 포맷이 올바르지 않습니다."),
+
     ;
 
 

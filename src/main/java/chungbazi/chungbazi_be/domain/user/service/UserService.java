@@ -1,33 +1,30 @@
 package chungbazi.chungbazi_be.domain.user.service;
 
-
-import chungbazi.chungbazi_be.domain.auth.jwt.SecurityUtils;
 import chungbazi.chungbazi_be.domain.community.entity.ContentStatus;
 import chungbazi.chungbazi_be.domain.community.repository.CommentRepository;
 import chungbazi.chungbazi_be.domain.community.repository.PostRepository;
 import chungbazi.chungbazi_be.domain.user.converter.UserConverter;
-import chungbazi.chungbazi_be.domain.user.dto.UserRequestDTO;
-import chungbazi.chungbazi_be.domain.user.dto.UserResponseDTO;
+import chungbazi.chungbazi_be.domain.user.dto.request.UserRequestDTO;
+import chungbazi.chungbazi_be.domain.user.dto.response.UserInformationResponse;
+import chungbazi.chungbazi_be.domain.user.dto.response.UserInterestListResponse;
+import chungbazi.chungbazi_be.domain.user.dto.response.UserResponseDTO;
 import chungbazi.chungbazi_be.domain.user.entity.Addition;
 import chungbazi.chungbazi_be.domain.user.entity.Interest;
 import chungbazi.chungbazi_be.domain.user.entity.User;
 import chungbazi.chungbazi_be.domain.user.entity.mapping.UserAddition;
 import chungbazi.chungbazi_be.domain.user.entity.mapping.UserInterest;
 import chungbazi.chungbazi_be.domain.user.repository.*;
-import chungbazi.chungbazi_be.domain.user.utils.UserHelper;
+import chungbazi.chungbazi_be.domain.user.support.UserHelper;
+import chungbazi.chungbazi_be.domain.user.validator.UserValidator;
 import chungbazi.chungbazi_be.global.apiPayload.code.status.ErrorStatus;
-import chungbazi.chungbazi_be.global.apiPayload.exception.handler.BadRequestHandler;
-import chungbazi.chungbazi_be.global.apiPayload.exception.handler.NotFoundHandler;
-import jakarta.transaction.Transactional;
+import chungbazi.chungbazi_be.global.apiPayload.exception.GeneralException;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
-
 @Service
-@Transactional
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class UserService {
 
@@ -39,15 +36,18 @@ public class UserService {
     private final UserHelper userHelper;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final UserValidator userValidator;
 
     public UserResponseDTO.ProfileDto getProfile() {
         User user = userHelper.getAuthenticatedUser();
         return UserConverter.toProfileDto(user);
     }
+
     public UserResponseDTO.CharacterImgDto getCharacterImg() {
         User user = userHelper.getAuthenticatedUser();
         return UserConverter.toCharacterImgDto(user);
     }
+
     public UserResponseDTO.RewardDto getReward() {
         User user = userHelper.getAuthenticatedUser();
         int rewardLevel = user.getReward().getLevel();
@@ -56,55 +56,66 @@ public class UserService {
         return UserConverter.toRewardDto(rewardLevel, postCount, commentCount);
     }
 
+    @Transactional
     public void updateProfile(UserRequestDTO.ProfileUpdateDto profileUpdateDto) {
         User user = userHelper.getAuthenticatedUser();
 
         // 유저 레벨보다 높은 캐릭터 선택 시 에러 핸들링
-        if (profileUpdateDto.getCharacterImg().getLevel() > user.getReward().getLevel()) {
-            throw new BadRequestHandler(ErrorStatus.INVALID_CHARACTER);
+        userValidator.validateCharacterLevel(user, profileUpdateDto);
+
+        // 닉네임 존재 여부 예외 처리
+        userValidator.validateNickname(user, profileUpdateDto);
+
+        // 기존 닉네임과 입력받은 닉네임이 다를 경우
+        if (!user.getName().equals(profileUpdateDto.getName())) {
+            user.updateName(profileUpdateDto.getName());
         }
 
-        // 닉네임 및 이미지 변경 여부 확인
-        if (!user.getName().equals(profileUpdateDto.getName())) { // 기존 닉네임과 입력받은 닉네임이 다를 경우
-            boolean isDuplicateName = userRepository.existsByName(profileUpdateDto.getName());
-            if (isDuplicateName) {
-                throw new BadRequestHandler(ErrorStatus.INVALID_NICKNAME);
-            }
-            user.setName(profileUpdateDto.getName());
-        }
-
-        if (!user.getCharacterImg().equals(profileUpdateDto.getCharacterImg())) { // 기존 이미지와 입력받은 이미지가 다를 경우
-            user.setCharacterImg(profileUpdateDto.getCharacterImg());
+        // 기존 이미지와 입력받은 이미지가 다를 경우
+        if (!user.getCharacterImg().equals(profileUpdateDto.getCharacterImg())) {
+            user.updateImage(profileUpdateDto.getCharacterImg());
         }
         userRepository.save(user);
     }
 
+    @Transactional
     public void registerUserInfo(UserRequestDTO.RegisterDto registerDto) {
-        Long userId = SecurityUtils.getUserId();
+        User user = userHelper.getAuthenticatedUser();
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundHandler(ErrorStatus.NOT_FOUND_USER));
-
-        user.updateRegion(registerDto.getRegion());
-        user.updateEmployment(registerDto.getEmployment());
-        user.updateIncome(registerDto.getIncome());
-        user.updateEducation(registerDto.getEducation());
+        user.applyProfile(
+                registerDto.getEducation(),
+                registerDto.getEmployment(),
+                registerDto.getIncome(),
+                registerDto.getRegion()
+        );
         updateInterests(user, registerDto.getInterests());
         updateAdditions(user, registerDto.getAdditionInfo());
-        user.setSurveyStatus(true);
+        user.updateUserSurveyStatus(true);
     }
 
+    @Transactional
     public void updateUserInfo(UserRequestDTO.UpdateDto updateDto) {
-        Long userId = SecurityUtils.getUserId();
+        User user = userHelper.getAuthenticatedUser();
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundHandler(ErrorStatus.NOT_FOUND_USER));
-        Optional.ofNullable(updateDto.getRegion()).ifPresent(user::updateRegion);
-        Optional.ofNullable(updateDto.getEmployment()).ifPresent(user::updateEmployment);
-        Optional.ofNullable(updateDto.getIncome()).ifPresent(user::updateIncome);
-        Optional.ofNullable(updateDto.getEducation()).ifPresent(user::updateEducation);
-        Optional.ofNullable(updateDto.getInterests()).ifPresent(interests -> updateInterests(user, interests));
-        Optional.ofNullable(updateDto.getAdditionInfo()).ifPresent(additions -> updateAdditions(user, additions));
+        user.applyProfile(
+                updateDto.getEducation(),
+                updateDto.getEmployment(),
+                updateDto.getIncome(),
+                updateDto.getRegion()
+        );
+
+        if (updateDto.getInterests() != null) {
+            updateInterests(user, updateDto.getInterests());
+        }
+
+        if (updateDto.getAdditionInfo() != null) {
+            updateAdditions(user, updateDto.getAdditionInfo());
+        }
+    }
+
+    public UserResponseDTO.EmailExistsDto getEmailExists(String email) {
+        boolean isExist = userRepository.existsByEmail(email);
+        return UserConverter.toEmailExistsDto(isExist);
     }
 
     private void updateAdditions(User user, List<String> additionalInfo) {
@@ -116,7 +127,6 @@ public class UserService {
         }
     }
 
-
     private void updateInterests(User user, List<String> interests) {
         userInterestRepository.deleteByUser(user);
         for (String interestName : interests) {
@@ -126,7 +136,31 @@ public class UserService {
         }
     }
 
-    public User findByUserId(Long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new NotFoundHandler(ErrorStatus.NOT_FOUND_USER));
+    @Transactional(readOnly = true)
+    public UserInformationResponse getUserInformation() {
+        User user = userHelper.getUserWithInformation();
+
+        validateOnboardingCompleted(user);
+
+        return UserInformationResponse.from(user);
     }
+
+    @Transactional(readOnly = true)
+    public UserInterestListResponse getUserInterest() {
+        User user = userHelper.getAuthenticatedUser();
+
+        List<UserInterest> interests = userInterestRepository.findAllByUser(user);
+
+        return UserInterestListResponse.from(interests);
+    }
+
+
+    private void validateOnboardingCompleted(User user) {
+        if (user.getEducation() == null ||
+                user.getEmployment() == null ||
+                user.getIncome() == null) {
+            throw new GeneralException(ErrorStatus.ONBOARDING_NOT_COMPLETED);
+        }
+    }
+
 }

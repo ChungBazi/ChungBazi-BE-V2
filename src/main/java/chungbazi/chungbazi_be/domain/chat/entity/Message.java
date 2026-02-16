@@ -1,12 +1,10 @@
 package chungbazi.chungbazi_be.domain.chat.entity;
 
-import chungbazi.chungbazi_be.domain.notification.entity.Notification;
 import chungbazi.chungbazi_be.domain.user.entity.User;
 import chungbazi.chungbazi_be.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -29,9 +27,6 @@ public class Message extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id")
     private ChatRoom chatRoom;
-
-    @OneToOne(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Notification notification;
 
     @Column(nullable = false)
     @Builder.Default

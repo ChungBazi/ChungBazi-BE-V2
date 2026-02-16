@@ -12,16 +12,17 @@ import chungbazi.chungbazi_be.domain.auth.dto.TokenResponseDTO;
 import chungbazi.chungbazi_be.domain.auth.jwt.JwtProvider;
 import chungbazi.chungbazi_be.domain.auth.jwt.SecurityUtils;
 import chungbazi.chungbazi_be.domain.auth.jwt.TokenGenerator;
-import chungbazi.chungbazi_be.domain.notification.service.FCMService;
+import chungbazi.chungbazi_be.domain.notification.service.FcmTokenService;
 import chungbazi.chungbazi_be.domain.user.entity.User;
 import chungbazi.chungbazi_be.domain.user.entity.enums.OAuthProvider;
 import chungbazi.chungbazi_be.domain.user.repository.UserRepository;
-import chungbazi.chungbazi_be.domain.user.utils.UserHelper;
+import chungbazi.chungbazi_be.domain.user.support.UserHelper;
 import chungbazi.chungbazi_be.global.apiPayload.code.status.ErrorStatus;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.BadRequestHandler;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.NotFoundHandler;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -32,10 +33,9 @@ import java.security.PublicKey;
 @RequiredArgsConstructor
 public class AuthService {
 
-
     private final TokenGenerator tokenGenerator;
     private final TokenAuthService tokenAuthService;
-    private final FCMService fcmService;
+    private final FcmTokenService fcmTokenService;
     private final AuthConverter authConverter;
     private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
@@ -59,9 +59,11 @@ public class AuthService {
         User user = User.builder()
                 .email(request.getEmail())
                 .password(encodedPassword)
-                .name("닉네임을 등록해주세요.")
                 .oAuthProvider(OAuthProvider.LOCAL)
                 .build();
+
+        user.createNotificationSetting();
+
         userRepository.save(user);
     }
 
@@ -101,7 +103,7 @@ public class AuthService {
         boolean isFirst = determineIsFirst(user);
         TokenDTO tokenDTO = tokenGenerator.generate(user.getId(), user.getName(), isFirst);
         tokenAuthService.saveRefreshToken(user.getId(), tokenDTO.getRefreshToken(), tokenDTO.getRefreshExp());
-        fcmService.saveFcmToken(user.getId(), request.getFcmToken());
+        fcmTokenService.registerOrUpdateToken(user, request.getFcmToken());
         return tokenDTO;
     }
 
@@ -111,7 +113,7 @@ public class AuthService {
         boolean isFirst = determineIsFirst(user);
         TokenDTO tokenDTO = tokenGenerator.generate(user.getId(), user.getName(), isFirst);
         tokenAuthService.saveRefreshToken(user.getId(), tokenDTO.getRefreshToken(), tokenDTO.getRefreshExp());
-        fcmService.saveFcmToken(user.getId(), request.getFcmToken());
+        fcmTokenService.registerOrUpdateToken(user, request.getFcmToken());
         return tokenDTO;
     }
 
@@ -134,6 +136,9 @@ public class AuthService {
                 .password("")
                 .oAuthProvider(oAuthProvider)
                 .build();
+
+        user.createNotificationSetting();
+
         return userRepository.save(user);
     }
 
@@ -158,14 +163,14 @@ public class AuthService {
                 })
                 .orElseGet(() -> createUserForAppleLogin(email, appleUserId, oAuthProvider));
 
-        // 6. FCM 토큰 저장
-        fcmService.saveFcmToken(user.getId(), request.getFcmToken());
 
         // 7. JWT 토큰 발급 및 저장
         boolean isFirst = determineIsFirst(user);
         TokenDTO tokenDTO = tokenGenerator.generate(user.getId(), user.getName(), isFirst);
         tokenAuthService.saveRefreshToken(user.getId(), tokenDTO.getRefreshToken(), tokenDTO.getRefreshExp());
-        fcmService.saveFcmToken(user.getId(), request.getFcmToken());
+
+        //fcm 토큰 저장
+        fcmTokenService.registerOrUpdateToken(user, request.getFcmToken());
 
         return tokenDTO;
     }
@@ -185,10 +190,13 @@ public class AuthService {
     public User createUserForAppleLogin(String email, String appleUserId, OAuthProvider oAuthProvider) {
         User user = User.builder()
                 .email(email)
-                .name(appleUserId)
+                //.name(appleUserId)
                 .password("")
                 .oAuthProvider(oAuthProvider)
                 .build();
+
+        user.createNotificationSetting();
+
         return userRepository.save(user);
     }
 
@@ -199,37 +207,47 @@ public class AuthService {
         tokenAuthService.validateRefreshToken(userId, refreshToken);
 
         User user = getUserById(userId);
-        tokenAuthService.addToBlackList(refreshToken, "expired", 3600L);
-        return tokenGenerator.generate(userId, user.getName(), false);
+
+        TokenDTO newToken = tokenGenerator.generate(userId, user.getName(), false);
+
+        tokenAuthService.saveRefreshToken(userId, newToken.getRefreshToken(), newToken.getRefreshExp());
+
+        tokenAuthService.addToBlackList(refreshToken, "expired", newToken.getRefreshExp());
+
+        return newToken;
     }
 
     // 로그아웃
-    public void logoutUser(String token) {
-        tokenAuthService.validateNotBlackListed(token);
+    public void logoutUser() {
         Long userId = SecurityUtils.getUserId();
-        tokenAuthService.addToBlackList(token, "logout", 3600L);
+        String token = (String) SecurityContextHolder.getContext().getAuthentication().getCredentials();
+        Long remainingTime = jwtProvider.getRemainingExpirationTime(token);
+
+        tokenAuthService.addToBlackList(token, "logout", remainingTime);
         tokenAuthService.deleteRefreshToken(userId);
     }
 
     // 회원 탈퇴
-    public void deleteUserAccount(String token) {
-        tokenAuthService.validateNotBlackListed(token);
+    public void deleteUserAccount() {
         Long userId = SecurityUtils.getUserId();
-        tokenAuthService.addToBlackList(token, "delete-account", 3600L);
+        String accessToken = (String) SecurityContextHolder.getContext().getAuthentication().getCredentials();
+        Long remainingTime = jwtProvider.getRemainingExpirationTime(accessToken);
+
+        tokenAuthService.addToBlackList(accessToken, "delete-account", remainingTime);
         tokenAuthService.deleteRefreshToken(userId);
+
         deleteUser(userId);
-        fcmService.deleteToken(userId);
+        fcmTokenService.deleteToken(userId);
     }
 
     // 응답
-    public TokenResponseDTO.LoginTokenResponseDTO createLoginTokenResponse(TokenDTO token) {
-        return authConverter.toLoginTokenResponse(token);
+    public TokenResponseDTO.LoginTokenResponseDTO createLoginTokenResponse(TokenDTO token, OAuthProvider loginType) {
+        return authConverter.toLoginTokenResponse(token, loginType);
     }
 
     public TokenResponseDTO.RefreshTokenResponseDTO createRefreshTokenResponse(TokenDTO token) {
         return authConverter.toRefreshTokenResponse(token);
     }
-
 
     public boolean determineIsFirst(User user) {
         return !user.isSurveyStatus();
@@ -260,7 +278,6 @@ public class AuthService {
         user.updatePassword(encodedPassword);
         userRepository.save(user);
     }
-
 
     public void resetPasswordWithEmailAndCode(ResetPasswordNoAuthRequestDTO request) {
         mailService.verifiedCode(request.getEmail(),request.getAuthCode());

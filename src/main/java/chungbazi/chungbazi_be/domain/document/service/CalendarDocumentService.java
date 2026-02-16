@@ -7,7 +7,7 @@ import chungbazi.chungbazi_be.domain.document.dto.DocumentRequestDTO.DocumentUpd
 import chungbazi.chungbazi_be.domain.document.entity.CalendarDocument;
 import chungbazi.chungbazi_be.domain.document.repository.CalendarDocumentRepository;
 import chungbazi.chungbazi_be.domain.user.entity.User;
-import chungbazi.chungbazi_be.domain.user.utils.UserHelper;
+import chungbazi.chungbazi_be.domain.user.support.UserHelper;
 import chungbazi.chungbazi_be.global.apiPayload.code.status.ErrorStatus;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.NotFoundHandler;
 import java.util.List;
@@ -86,5 +86,6 @@ public class CalendarDocumentService {
     public List<CalendarDocument> findAllByCart_Id(Long cartId) {
         return calendarDocumentRepository.findAllByCart_Id(cartId);
     }
-    
+
+
 }

@@ -132,33 +132,7 @@ public class YouthPolicyResponse {
         }
     }
 
-
-/*
-    @JsonSetter("rqutPrdCn") // Jackson이 XML에서 rqutPrdCn 태그를 찾고 setRqutPrdCn 메서드를 호출하여 startDate, endDate 설정
-    public void setRqutPrdCn(String rqutPrdCn) {
-        this.rqutPrdCn = rqutPrdCn; // XML 데이터 매핑
-        parseDatesFromRqutPrdCn(rqutPrdCn); // 매핑 중에 날짜 파싱
+    public void updateEndDate(LocalDate parsingEndDate){
+        this.endDate = parsingEndDate;
     }
-
-    private void parseDatesFromRqutPrdCn(String rqutPrdCn) {
-        if (rqutPrdCn == null || rqutPrdCn.isEmpty()) {
-            return;
-        }
-        String[] lines = rqutPrdCn.split("\n");
-        if (lines.length > 0) {
-            String firstLine = lines[0].trim();
-            if (firstLine.matches("\\d{4}-\\d{2}-\\d{2}~\\d{4}-\\d{2}-\\d{2}")) {
-                String[] dateSplit = firstLine.split("~");
-
-                try {
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                    this.startDate = LocalDate.parse(dateSplit[0].trim(), formatter);
-                    this.endDate = LocalDate.parse(dateSplit[1].trim(), formatter);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
- */
 }

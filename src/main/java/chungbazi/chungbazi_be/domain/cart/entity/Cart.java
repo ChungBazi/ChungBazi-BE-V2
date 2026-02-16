@@ -43,4 +43,7 @@ public class Cart extends BaseTimeEntity {
         this.user = user;
     }
 
+    public void deletePolicy() {
+        this.policy = null;
+    }
 }

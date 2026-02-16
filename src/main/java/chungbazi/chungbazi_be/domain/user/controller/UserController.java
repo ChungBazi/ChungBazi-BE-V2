@@ -1,16 +1,18 @@
 package chungbazi.chungbazi_be.domain.user.controller;
 
-import chungbazi.chungbazi_be.domain.user.dto.UserRequestDTO;
-import chungbazi.chungbazi_be.domain.user.dto.UserResponseDTO;
+import chungbazi.chungbazi_be.domain.user.dto.request.UserRequestDTO;
+import chungbazi.chungbazi_be.domain.user.dto.response.UserInformationResponse;
+import chungbazi.chungbazi_be.domain.user.dto.response.UserInterestListResponse;
+import chungbazi.chungbazi_be.domain.user.dto.response.UserResponseDTO;
 import chungbazi.chungbazi_be.domain.user.service.UserService;
 import chungbazi.chungbazi_be.global.apiPayload.ApiResponse;
-import com.google.protobuf.Api;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
+@Tag(name = "[사용자]", description = "사용자 관련 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/user")
@@ -22,11 +24,13 @@ public class UserController {
     public ApiResponse<UserResponseDTO.ProfileDto> getProfile() {
         return ApiResponse.onSuccess(userService.getProfile());
     }
+
     @GetMapping("/characterImg")
     @Operation(summary = "유저 캐릭터 이미지 조회 API", description = "유저 캐릭터 이미지 조회")
     public ApiResponse<UserResponseDTO.CharacterImgDto> getCharacterImg() {
         return ApiResponse.onSuccess(userService.getCharacterImg());
     }
+
     @PatchMapping(value = "/profile/update")
     @Operation(summary = "프로필 수정 API", description = "마이페이지 프로필 수정")
     public ApiResponse<Void> updateProfile(
@@ -50,8 +54,35 @@ public class UserController {
 
     @PatchMapping("/update")
     @Operation(summary = "사용자 정보 수정 API", description = "사용자 정보(지역, 취업상태, 소득, 추가사항, 관심사, 학력) 수정")
-    public ApiResponse<String> updateUserInfo( @RequestBody UserRequestDTO.UpdateDto updateDto) {
+    public ApiResponse<String> updateUserInfo(@RequestBody UserRequestDTO.UpdateDto updateDto) {
         userService.updateUserInfo(updateDto);
         return ApiResponse.onSuccess("User information updated successfully.");
+    }
+
+    @GetMapping("/information")
+    @Operation(summary = "사용자 정보 조회 API", description = "사용자 정보(지역, 취업상태, 소득, 추가사항, 관심사, 학력)를 조회하는 API입니다.")
+    public ApiResponse<UserInformationResponse> getUserInfo(){
+        UserInformationResponse response = userService.getUserInformation();
+
+        return ApiResponse.onSuccess(response);
+    }
+
+    @GetMapping("/interests")
+    @Operation(summary = "사용자의 관심사 조회 API", description = "사용자의 관심사를 조회하는 API입니다.")
+    public ApiResponse<UserInterestListResponse> getUserInterestList(){
+        UserInterestListResponse response = userService.getUserInterest();
+
+        return ApiResponse.onSuccess(response);
+    }
+
+    @GetMapping("/email/exists")
+    @Operation(summary = "이메일 중복 확인 API",
+            description = """
+            ### RequestParam
+            ---
+            - `email`: 사용자 이메일 (String)
+            """)
+    public ApiResponse<UserResponseDTO.EmailExistsDto> getEmailExists(@RequestParam String email) {
+        return ApiResponse.onSuccess(userService.getEmailExists(email));
     }
 }

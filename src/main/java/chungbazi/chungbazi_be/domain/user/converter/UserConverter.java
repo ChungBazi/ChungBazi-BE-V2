@@ -1,9 +1,7 @@
 package chungbazi.chungbazi_be.domain.user.converter;
 
-import chungbazi.chungbazi_be.domain.user.dto.UserResponseDTO;
+import chungbazi.chungbazi_be.domain.user.dto.response.UserResponseDTO;
 import chungbazi.chungbazi_be.domain.user.entity.User;
-import chungbazi.chungbazi_be.domain.user.entity.enums.RewardLevel;
-import java.util.List;
 
 public class UserConverter {
     public static UserResponseDTO.ProfileDto toProfileDto(User user) {
@@ -11,6 +9,7 @@ public class UserConverter {
                 .userId(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
+                .oAuthProvider(user.getOAuthProvider().getDescription())
                 .characterImg(user.getCharacterImg())
                 .build();
     }
@@ -25,6 +24,12 @@ public class UserConverter {
                 .rewardLevel(rewardLevel)
                 .postCount(postCount)
                 .commentCount(commentCount)
+                .build();
+    }
+
+    public static UserResponseDTO.EmailExistsDto toEmailExistsDto(boolean isExist) {
+        return UserResponseDTO.EmailExistsDto.builder()
+                .isExist(isExist)
                 .build();
     }
 }

@@ -8,7 +8,7 @@ import chungbazi.chungbazi_be.domain.community.repository.CommentHeartRepository
 import chungbazi.chungbazi_be.domain.community.repository.CommentRepository;
 import chungbazi.chungbazi_be.domain.community.repository.HeartRepository;
 import chungbazi.chungbazi_be.domain.community.repository.PostRepository;
-import chungbazi.chungbazi_be.domain.notification.dto.NotificationRequest;
+import chungbazi.chungbazi_be.domain.notification.dto.internal.NotificationData;
 import chungbazi.chungbazi_be.domain.notification.entity.enums.NotificationType;
 import chungbazi.chungbazi_be.domain.notification.service.NotificationService;
 import chungbazi.chungbazi_be.domain.policy.entity.Category;
@@ -16,7 +16,7 @@ import chungbazi.chungbazi_be.domain.report.entity.enums.ReportType;
 import chungbazi.chungbazi_be.domain.report.repository.ReportRepository;
 import chungbazi.chungbazi_be.domain.user.entity.User;
 import chungbazi.chungbazi_be.domain.user.repository.UserBlockRepository.UserBlockRepository;
-import chungbazi.chungbazi_be.domain.user.utils.UserHelper;
+import chungbazi.chungbazi_be.domain.user.support.UserHelper;
 import chungbazi.chungbazi_be.global.apiPayload.code.status.ErrorStatus;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.BadRequestHandler;
 import chungbazi.chungbazi_be.global.apiPayload.exception.handler.NotFoundHandler;
@@ -179,10 +179,11 @@ public class CommunityService {
             if (user.getNotificationSetting().isCommunityAlarm()
                     && !parentAuthor.getId().equals(user.getId())) {
                 String message = user.getName() + "님이 회원님의 댓글에 답글을 달았습니다.";
-                NotificationRequest request = NotificationRequest.builder()
-                        .user(user)
-                        .type(NotificationType.COMMUNITY_ALARM)
-                        .post(post)
+                NotificationData request = NotificationData.builder()
+                        .user(parentAuthor)
+                        .message(message)
+                        .type(NotificationType.COMMUNITY)
+                        .targetId(post.getId())
                         .build();
 
                 notificationService.sendNotification(request);
@@ -287,11 +288,11 @@ public class CommunityService {
         User author=post.getAuthor();
         String message=user.getName()+"님이 회원님의 게시글에 댓글을 달았습니다.";
 
-        NotificationRequest request = NotificationRequest.builder()
+        NotificationData request = NotificationData.builder()
                 .user(author)
-                .type(NotificationType.COMMUNITY_ALARM)
+                .type(NotificationType.COMMUNITY)
                 .message(message)
-                .post(post)
+                .targetId(post.getId())
                 .build();
 
         notificationService.sendNotification(request);
@@ -305,11 +306,11 @@ public class CommunityService {
         User author=post.getAuthor();
         String message = user.getName()+"님이 회원님의 게시글에 좋아요를 누르셨습니다.";
 
-        NotificationRequest request = NotificationRequest.builder()
+        NotificationData request = NotificationData.builder()
                 .user(author)
-                .type(NotificationType.COMMUNITY_ALARM)
+                .type(NotificationType.COMMUNITY)
                 .message(message)
-                .post(post)
+                .targetId(post.getId())
                 .build();
 
         notificationService.sendNotification(request);
@@ -324,12 +325,11 @@ public class CommunityService {
         User author=comment.getAuthor();
         String message = user.getName()+"님이 회원님의 댓글에 좋아요를 누르셨습니다.";
 
-        NotificationRequest request = NotificationRequest.builder()
+        NotificationData request = NotificationData.builder()
                 .user(author)
-                .type(NotificationType.COMMUNITY_ALARM)
+                .type(NotificationType.COMMUNITY)
                 .message(message)
-                .post(post)
-                .comment(comment)
+                .targetId(post.getId())
                 .build();
 
         notificationService.sendNotification(request);
