@@ -171,7 +171,7 @@ public class PolicyService {
         }
 
         //안 읽은 알림 개수 & 유저 관심분야
-        boolean isReadAllNotifications=notificationService.isReadAllNotification();
+        boolean isReadAllNotifications=notificationService.isReadAllNotification(user);
         Set<Category> userCategories = getUserInterests(user);
 
         return PolicyRecommendResponse.of(policies, userCategories, hasNext, isReadAllNotifications, user.getName(), nextCursor);

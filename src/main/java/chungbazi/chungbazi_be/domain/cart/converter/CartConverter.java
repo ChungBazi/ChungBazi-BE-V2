@@ -15,7 +15,7 @@ public class CartConverter {
         if (policy.getEndDate() == null) {
             dDay = null;
         } else {
-            dDay = (int) ChronoUnit.DAYS.between(policy.getEndDate(), LocalDate.now());
+            dDay = (int) ChronoUnit.DAYS.between(LocalDate.now(), policy.getEndDate());
         }
         return CartResponseDTO.CartPolicy.builder()
                 .name(policy.getName())
