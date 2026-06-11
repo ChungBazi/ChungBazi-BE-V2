@@ -1,0 +1,30 @@
+name: 📝 문서 작업
+description: README, 이슈/PR 템플릿, 가이드 등 문서 관련 작업을 기록하는 템플릿입니다.
+title: "docs: "
+labels: ["📝docs"]
+assignees: []
+
+body:
+  - type: textarea
+    id: doc_type
+    attributes:
+      label: 📄 어떤 문서인가요?
+      description: 작성하거나 수정하려는 문서의 종류와 목적을 간단히 설명해주세요.
+      placeholder: |
+        예) README에 프로젝트 빌드 방법 추가
+      value: "- "
+    validations:
+      required: true
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: 📝 작업 상세 내용
+      description: 문서 작업의 주요 내용을 체크리스트로 정리해주세요.
+      placeholder: |
+        - [ ] README에 빌드 및 실행 방법 추가
+        - [ ] CONTRIBUTING.md 작성
+        - [ ] API 사용 가이드 업데이트
+      value: "- [ ] "
+    validations:
+      required: false

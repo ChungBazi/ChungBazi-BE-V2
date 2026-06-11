@@ -1,0 +1,30 @@
+name: ⚙️ 작업
+description: 세팅, 배포, 환경설정 등 기능 외 작업을 기록하는 템플릿입니다.
+title: "chore: "
+labels: ["⚙️setting"]
+assignees: []
+
+body:
+  - type: textarea
+    id: chore_type
+    attributes:
+      label: ⚙️ 어떤 작업인가요?
+      description: 작업의 범위와 목적을 간단히 설명해주세요. (CI/CD 파이프라인 세팅, Dockerfile 수정 등)
+      placeholder: |
+        예) GitHub Actions 워크플로우에서 테스트 단계 추가
+      value: "- "
+    validations:
+      required: true
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: 📝 작업 상세 내용
+      description: 작업해야 할 항목들을 체크리스트 형식으로 정리해주세요.
+      placeholder: |
+        - [ ] Dockerfile 수정
+        - [ ] Nginx 설정 업데이트
+        - [ ] 배포 스크립트 개선
+      value: "- [ ] "
+    validations:
+      required: false

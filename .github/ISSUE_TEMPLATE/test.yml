@@ -1,0 +1,40 @@
+name: 🧪 테스트 코드 작성
+description: 테스트 코드 작성 이슈를 기록하는 템플릿입니다.
+title: "test: "
+labels: ["🧪test"]
+assignees: []
+
+body:
+  - type: textarea
+    id: test_scope
+    attributes:
+      label: 🧪 어떤 테스트인가요?
+      description: 작성할 테스트의 범위와 목적을 간단히 설명해주세요.
+      placeholder: |
+        예) UserService 회원가입 로직 단위 테스트
+      value: "- "
+    validations:
+      required: true
+
+  - type: textarea
+    id: test_items
+    attributes:
+      label: 📝 테스트 항목
+      description: 작성할 테스트 케이스들을 체크리스트로 정리해주세요.
+      placeholder: |
+        - [ ] 잘못된 ID로 조회 시 404 반환
+        - [ ] 유효한 입력값으로 저장 시 정상적으로 데이터가 반영됨
+      value: "- [ ] "
+    validations:
+      required: false
+
+  - type: textarea
+    id: expected_result
+    attributes:
+      label: 🎯 기대 결과
+      description: 테스트가 통과해야 하는 기준이나 시나리오를 작성해주세요.
+      placeholder: |
+        예) 잘못된 ID로 조회 시 404 반환
+      value: "- "
+    validations:
+      required: false
