@@ -12,6 +12,4 @@ public class ErrorReasonDto {
     private final boolean isSuccess;
     private final String code;
     private final String message;
-
-    public boolean getIsSuceess() {return isSuccess;}
 }
