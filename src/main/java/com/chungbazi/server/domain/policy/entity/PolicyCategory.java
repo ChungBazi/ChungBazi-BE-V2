@@ -1,6 +1,7 @@
 package com.chungbazi.server.domain.policy.entity;
 
 import com.chungbazi.server.domain.policy.enums.PolicyCategoryType;
+import com.chungbazi.server.domain.policy.enums.PolicySubCategoryType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -36,6 +37,10 @@ public class PolicyCategory {
     @Column(name = "category", nullable = false, length = 30)
     private PolicyCategoryType category;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "sub_category", nullable = false, length = 40)
+    private PolicySubCategoryType subCategory;
+
     @Column(name = "weight", nullable = false, precision = 3, scale = 2)
     private BigDecimal weight;
 
@@ -45,12 +50,14 @@ public class PolicyCategory {
     public static PolicyCategory createPolicyCategory(
             Policy policy,
             PolicyCategoryType category,
+            PolicySubCategoryType subCategory,
             BigDecimal weight,
             boolean primary
     ) {
         PolicyCategory policyCategory = new PolicyCategory();
         policyCategory.policy = policy;
         policyCategory.category = category;
+        policyCategory.subCategory = subCategory;
         policyCategory.weight = weight == null ? BigDecimal.ONE : weight;
         policyCategory.primary = primary;
 
