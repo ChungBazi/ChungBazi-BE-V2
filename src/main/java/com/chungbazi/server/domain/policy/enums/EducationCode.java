@@ -6,16 +6,15 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum EducationCode {
-    LESS_THAN_HIGH_SCHOOL("고졸 미만"),
-    HIGH_SCHOOL_ENROLLED("고교 재학"),
-    HIGH_SCHOOL_EXPECTED("고졸 예정"),
-    HIGH_SCHOOL_GRADUATED("고교 졸업"),
-    UNIVERSITY_ENROLLED("대학 재학"),
-    UNIVERSITY_EXPECTED("대졸 예정"),
-    UNIVERSITY_GRADUATED("대학 졸업"),
-    MASTER_DOCTOR("석·박사"),
-    ETC("기타"),
-    NO_LIMIT("제한없음");
+    HIGH_SCHOOL_ATTENDING("고등학교 재학 중 (검정고시 포함)"),
+    HIGH_SCHOOL_GRADUATED_NOT_ATTENDING("고등학교 졸업 후 미진학"),
+    UNIVERSITY_ATTENDING_OR_ON_LEAVE("대학교 재학/휴학 중"),
+    UNIVERSITY_GRADUATED("대학교 졸업 (학사 학위 취득자)"),
+    GRADUATE_SCHOOL_ATTENDING_OR_COMPLETED("대학원 재학/휴학 중 또는 수료"),
+    GRADUATE_SCHOOL_GRADUATED("대학원 졸업 (석·박사 학위 취득자)"),
+    ETC_OR_NONE("기타 / 해당 없음"),
+    NONE_RESCRICT("제한 없음")
+    ;
 
     private final String description;
 }
