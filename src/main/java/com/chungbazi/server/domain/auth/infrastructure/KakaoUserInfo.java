@@ -37,7 +37,7 @@ public class KakaoUserInfo implements OAuth2UserInfo {
 
     @SuppressWarnings("unchecked")
     private Map<String, Object> getKakaoProfile() {
-        Object profile = attributes.get("profile");
+        Object profile = getKakaoAccount().get("profile");
         if (profile instanceof Map) {
             return (Map<String, Object>) profile;
         }

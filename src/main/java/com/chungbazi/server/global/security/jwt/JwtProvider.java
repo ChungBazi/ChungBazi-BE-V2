@@ -7,6 +7,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +17,7 @@ import java.util.Date;
 @Component
 @RequiredArgsConstructor
 public class JwtProvider {
+
     private final JwtProperties jwtProperties;
 
     public String createAccessToken(Long userId) {
@@ -68,5 +70,14 @@ public class JwtProvider {
             // TODO: 에러 코드 수정
             throw new GeneralException(ErrorStatus._UNAUTHORIZED);
         }
+    }
+
+    public String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 }

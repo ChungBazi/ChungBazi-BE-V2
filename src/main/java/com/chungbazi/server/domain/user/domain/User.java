@@ -61,39 +61,21 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false)
     private boolean onboardingCompleted;
 
-    @Builder
-    private User(
+    public static User create(
             String providerId,
             SocialType socialType,
             String email,
             String nickname,
             String fcmToken
     ) {
-        this.providerId = providerId;
-        this.socialType = socialType;
-        this.email = email;
-        this.nickname = nickname;
-        this.fcmToken = fcmToken;
-        this.onboardingCompleted = false;
-    }
-
-    public void completeOnboarding(
-            SidoCode sidoCode,
-            String sidoName,
-            String sigunguCode,
-            String sigunguName,
-            EducationCode educationCode,
-            JobCode jobCode,
-            IncomeLevel incomeLevel
-    ) {
-        this.sidoCode = sidoCode;
-        this.sidoName = sidoName;
-        this.sigunguCode = sigunguCode;
-        this.sigunguName = sigunguName;
-        this.educationCode = educationCode;
-        this.jobCode = jobCode;
-        this.incomeLevel = incomeLevel;
-        this.onboardingCompleted = true;
+        User user = new User();
+        user.providerId = providerId;
+        user.socialType = socialType;
+        user.email = email;
+        user.nickname = nickname;
+        user.fcmToken = fcmToken;
+        user.onboardingCompleted = false;
+        return user;
     }
 
     public void updateFcmToken(String fcmToken) {

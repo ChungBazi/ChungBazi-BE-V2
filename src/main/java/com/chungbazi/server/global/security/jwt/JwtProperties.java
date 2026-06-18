@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "jwt")
 public record JwtProperties(
         String secret,
-        String accessExp,
-        String refreshExp
+        Long accessExp,
+        Long refreshExp
 ) {
 }
