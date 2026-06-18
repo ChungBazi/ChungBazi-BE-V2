@@ -12,13 +12,20 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "policy_region")
+@Table(
+        name = "policy_region",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_policy_region_policy_sigungu",
+                columnNames = {"policy_id", "sigungu_code"}
+        )
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PolicyRegion {
 
@@ -47,14 +54,18 @@ public class PolicyRegion {
     public static PolicyRegion createPolicyRegion(
             Policy policy,
             SidoCode sidoCode,
-            String sidoName,
             String sigunguCode,
             String sigunguName
     ) {
+        SidoCode derivedSidoCode = SidoCode.fromSigunguCode(sigunguCode);
+        if (sidoCode == null || sidoCode != derivedSidoCode) {
+            throw new IllegalArgumentException("시도 코드와 시군구 코드가 일치하지 않습니다.");
+        }
+
         PolicyRegion policyRegion = new PolicyRegion();
         policyRegion.policy = policy;
         policyRegion.sidoCode = sidoCode;
-        policyRegion.sidoName = sidoName;
+        policyRegion.sidoName = sidoCode.getName();
         policyRegion.sigunguCode = sigunguCode;
         policyRegion.sigunguName = sigunguName;
         return policyRegion;

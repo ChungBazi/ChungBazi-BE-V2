@@ -34,14 +34,18 @@ public class RegionCode {
     public static RegionCode createRegionCode(
             String sigunguCode,
             String sigunguName,
-            SidoCode sidoCode,
-            String sidoName
+            SidoCode sidoCode
     ) {
+        SidoCode derivedSidoCode = SidoCode.fromSigunguCode(sigunguCode);
+        if (sidoCode == null || sidoCode != derivedSidoCode) {
+            throw new IllegalArgumentException("시도 코드와 시군구 코드가 일치하지 않습니다.");
+        }
+
         RegionCode regionCode = new RegionCode();
         regionCode.sigunguCode = sigunguCode;
         regionCode.sigunguName = sigunguName;
         regionCode.sidoCode = sidoCode;
-        regionCode.sidoName = sidoName;
+        regionCode.sidoName = sidoCode.getName();
         return regionCode;
     }
 }

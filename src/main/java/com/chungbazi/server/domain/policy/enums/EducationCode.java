@@ -13,7 +13,7 @@ public enum EducationCode {
     GRADUATE_SCHOOL_ATTENDING_OR_COMPLETED("대학원 재학/휴학 중 또는 수료"),
     GRADUATE_SCHOOL_GRADUATED("대학원 졸업 (석·박사 학위 취득자)"),
     ETC_OR_NONE("기타 / 해당 없음"),
-    NONE_RESCRICT("제한 없음")
+    NONE_RESTRICT("제한 없음")
     ;
 
     private final String description;

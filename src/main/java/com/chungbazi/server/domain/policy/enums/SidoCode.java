@@ -33,7 +33,12 @@ public enum SidoCode {
             return null;
         }
 
-        int sidoPrefix = Integer.parseInt(sigunguCode.substring(0, 2));
+        String prefix = sigunguCode.substring(0, 2);
+        if (!prefix.chars().allMatch(Character::isDigit)) {
+            return null;
+        }
+
+        int sidoPrefix = Integer.parseInt(prefix);
         return Arrays.stream(values())
                 .filter(sidoCode -> sidoCode.code == sidoPrefix)
                 .findFirst()
