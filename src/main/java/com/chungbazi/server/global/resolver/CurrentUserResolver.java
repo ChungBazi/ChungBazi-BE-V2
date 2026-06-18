@@ -1,7 +1,7 @@
 package com.chungbazi.server.global.resolver;
 
 import com.chungbazi.server.domain.user.domain.User;
-import com.chungbazi.server.domain.user.exception.UserErrorCode;
+import com.chungbazi.server.domain.user.exception.code.UserErrorCode;
 import com.chungbazi.server.domain.user.exception.UserException;
 import com.chungbazi.server.domain.user.infrastructure.UserRepository;
 import com.chungbazi.server.global.security.SecurityUtils;

@@ -1,4 +1,4 @@
-package com.chungbazi.server.domain.user.exception;
+package com.chungbazi.server.domain.user.exception.code;
 
 import com.chungbazi.server.global.common.code.BaseErrorCode;
 import com.chungbazi.server.global.common.code.ErrorReasonDto;
