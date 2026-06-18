@@ -1,4 +1,4 @@
-package com.chungbazi.server.global.security.jwt;
+﻿package com.chungbazi.server.global.security.jwt;
 
 import com.chungbazi.server.global.common.code.exception.GeneralException;
 import com.chungbazi.server.global.common.code.status.ErrorStatus;
@@ -58,8 +58,6 @@ public class JwtProvider {
 
     public boolean validateToken(String token) {
         try {
-            Claims claims = getClaims(token);
-
             Jwts.parserBuilder()
                     .setSigningKey(Keys.hmacShaKeyFor(jwtProperties.secret().getBytes(StandardCharsets.UTF_8)))
                     .build()
@@ -67,8 +65,9 @@ public class JwtProvider {
 
             return true;
         } catch (ExpiredJwtException e) {
-            // TODO: 에러 코드 수정
-            throw new GeneralException(ErrorStatus._UNAUTHORIZED);
+            throw new GeneralException(ErrorStatus._EXPIRED_TOKEN);
+        } catch (Exception e) {
+            throw new GeneralException(ErrorStatus._INVALID_TOKEN);
         }
     }
 
