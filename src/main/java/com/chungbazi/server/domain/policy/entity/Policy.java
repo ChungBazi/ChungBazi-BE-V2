@@ -3,6 +3,7 @@ package com.chungbazi.server.domain.policy.entity;
 import com.chungbazi.server.domain.policy.enums.EducationCode;
 import com.chungbazi.server.domain.policy.enums.EmploymentCode;
 import com.chungbazi.server.domain.policy.enums.RecruitmentStatus;
+import com.chungbazi.server.domain.policy.enums.RecruitmentType;
 import com.chungbazi.server.global.common.BaseTimeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -51,6 +52,10 @@ public class Policy extends BaseTimeEntity {
     private String applyPeriodText;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "recruitment_type", nullable = false, length = 20)
+    private RecruitmentType recruitmentType;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "recruitment_status", nullable = false, length = 20)
     private RecruitmentStatus recruitmentStatus = RecruitmentStatus.UNKNOWN;
 
@@ -97,6 +102,7 @@ public class Policy extends BaseTimeEntity {
             LocalDate applyStartDate,
             LocalDate applyEndDate,
             String applyPeriodText,
+            RecruitmentType recruitmentType,
             RecruitmentStatus recruitmentStatus,
             Integer minAge,
             Integer maxAge,
@@ -118,6 +124,7 @@ public class Policy extends BaseTimeEntity {
         policy.applyStartDate = applyStartDate;
         policy.applyEndDate = applyEndDate;
         policy.applyPeriodText = applyPeriodText;
+        policy.recruitmentType = recruitmentType;
         policy.recruitmentStatus = recruitmentStatus == null ? RecruitmentStatus.UNKNOWN : recruitmentStatus;
         policy.minAge = minAge;
         policy.maxAge = maxAge;
