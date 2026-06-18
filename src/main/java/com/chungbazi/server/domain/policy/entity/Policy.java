@@ -97,7 +97,7 @@ public class Policy extends BaseTimeEntity {
     private int saveCount;
 
     @Column(name = "registered_at", nullable = false)
-    private LocalDateTime registeredAt = LocalDateTime.now();
+    private LocalDateTime registeredAt;
 
     public static Policy createPolicy(
             String plcyNo,
