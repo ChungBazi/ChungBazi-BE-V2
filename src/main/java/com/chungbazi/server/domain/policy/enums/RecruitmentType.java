@@ -5,11 +5,9 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum RecruitmentStatus {
-    OPEN("모집중"),
-    UPCOMING("모집예정"),
-    CLOSED("마감"),
-    UNKNOWN("알 수 없음");
+public enum RecruitmentType {
+    FIXED_PERIOD("특정 기간 모집"),
+    ALWAYS("상시 모집");
 
     private final String description;
 }
