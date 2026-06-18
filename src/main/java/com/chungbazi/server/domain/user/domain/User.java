@@ -1,12 +1,16 @@
 package com.chungbazi.server.domain.user.domain;
 
+import com.chungbazi.server.domain.policy.enums.EducationCode;
+import com.chungbazi.server.domain.policy.enums.EmploymentCode;
+import com.chungbazi.server.domain.policy.enums.SidoCode;
 import com.chungbazi.server.domain.user.domain.type.*;
 import com.chungbazi.server.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -28,8 +32,8 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false)
     private String email;
 
-    @Column(nullable = false, length = 50)
-    private String nickname;
+    @Column(name = "name", nullable = false)
+    private String name;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "sido_code")
@@ -49,32 +53,40 @@ public class User extends BaseTimeEntity {
     private EducationCode educationCode;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "job_code")
-    private JobCode jobCode;
+    @Column(name = "employment_code")
+    private EmploymentCode employmentCode;
 
-    @Column(name = "income_level")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "income_level", length = 20)
     private IncomeLevel incomeLevel;
 
-    @Column(length = 512)
+    @Column(name = "fcm_token", length = 512)
     private String fcmToken;
 
     @Column(nullable = false)
     private boolean onboardingCompleted;
 
+    @Column(name = "is_deleted", nullable = false)
+    private boolean deleted;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     public static User create(
             String providerId,
             SocialType socialType,
             String email,
-            String nickname,
+            String name,
             String fcmToken
     ) {
         User user = new User();
         user.providerId = providerId;
         user.socialType = socialType;
         user.email = email;
-        user.nickname = nickname;
+        user.name = name;
         user.fcmToken = fcmToken;
         user.onboardingCompleted = false;
+        user.deleted = false;
         return user;
     }
 
@@ -82,7 +94,7 @@ public class User extends BaseTimeEntity {
         this.fcmToken = fcmToken;
     }
 
-    public void updateNickname(String nickname) {
-        this.nickname = nickname;
+    public void updateName(String name) {
+        this.name = name;
     }
 }
