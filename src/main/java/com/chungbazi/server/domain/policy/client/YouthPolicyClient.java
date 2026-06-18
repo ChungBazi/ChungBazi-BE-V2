@@ -2,6 +2,7 @@ package com.chungbazi.server.domain.policy.client;
 
 import com.chungbazi.server.domain.policy.client.dto.YouthPolicyListResponse;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -14,14 +15,14 @@ public class YouthPolicyClient {
     private static final String SIZE_PARAM_NAME = "pageSize";
 
     private final RestClient restClient;
-    private final YouthPolicyProperties properties;
+    private final String apiKey;
 
     public YouthPolicyClient(
             @Qualifier("youthPolicyRestClient") RestClient restClient,
-            YouthPolicyProperties properties
+            @Value("${external.youth-policy.api-key}") String apiKey
     ) {
         this.restClient = restClient;
-        this.properties = properties;
+        this.apiKey = apiKey;
     }
 
     public YouthPolicyListResponse fetchPolicies(int pageNum, int pageSize) {
@@ -32,8 +33,8 @@ public class YouthPolicyClient {
                             .queryParam(SIZE_PARAM_NAME, pageSize)
                             .queryParam("rtnType", "json");
 
-                    if (properties.apiKey() != null && !properties.apiKey().isBlank()) {
-                        uriBuilder.queryParam(API_KEY_PARAM_NAME, properties.apiKey());
+                    if (apiKey != null && !apiKey.isBlank()) {
+                        uriBuilder.queryParam(API_KEY_PARAM_NAME, apiKey);
                     }
 
                     return uriBuilder.build();
