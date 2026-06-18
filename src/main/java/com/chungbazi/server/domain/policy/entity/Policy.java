@@ -2,8 +2,6 @@ package com.chungbazi.server.domain.policy.entity;
 
 import com.chungbazi.server.domain.policy.enums.EducationCode;
 import com.chungbazi.server.domain.policy.enums.EmploymentCode;
-import com.chungbazi.server.domain.policy.enums.PolicyCategoryType;
-import com.chungbazi.server.domain.policy.enums.PolicySubCategoryType;
 import com.chungbazi.server.domain.policy.enums.RecruitmentStatus;
 import com.chungbazi.server.global.common.BaseTimeEntity;
 import jakarta.persistence.Column;
@@ -42,14 +40,6 @@ public class Policy extends BaseTimeEntity {
 
     @Column(name = "support_content", columnDefinition = "text")
     private String supportContent;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "category", nullable = false, length = 30)
-    private PolicyCategoryType category;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "sub_category", nullable = false, length = 40)
-    private PolicySubCategoryType subCategory;
 
     @Column(name = "apply_start_date")
     private LocalDate applyStartDate;
@@ -104,8 +94,6 @@ public class Policy extends BaseTimeEntity {
             String title,
             String summary,
             String supportContent,
-            PolicyCategoryType category,
-            PolicySubCategoryType subCategory,
             LocalDate applyStartDate,
             LocalDate applyEndDate,
             String applyPeriodText,
@@ -127,8 +115,6 @@ public class Policy extends BaseTimeEntity {
         policy.title = title;
         policy.summary = summary;
         policy.supportContent = supportContent;
-        policy.category = category;
-        policy.subCategory = subCategory;
         policy.applyStartDate = applyStartDate;
         policy.applyEndDate = applyEndDate;
         policy.applyPeriodText = applyPeriodText;
