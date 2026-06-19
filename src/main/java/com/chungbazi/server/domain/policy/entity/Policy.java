@@ -2,8 +2,12 @@ package com.chungbazi.server.domain.policy.entity;
 
 import com.chungbazi.server.domain.policy.enums.EducationCode;
 import com.chungbazi.server.domain.policy.enums.EmploymentCode;
+import com.chungbazi.server.domain.policy.enums.PolicyCategoryType;
+import com.chungbazi.server.domain.policy.enums.PolicySubCategoryType;
 import com.chungbazi.server.domain.policy.enums.RecruitmentStatus;
 import com.chungbazi.server.domain.policy.enums.RecruitmentType;
+import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
+import com.chungbazi.server.domain.policy.exception.PolicyException;
 import com.chungbazi.server.global.common.BaseTimeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,6 +16,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,7 +26,13 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "policy")
+@Table(
+        name = "policy",
+        indexes = {
+                @Index(name = "idx_policy_category", columnList = "category"),
+                @Index(name = "idx_policy_sub_category", columnList = "sub_category")
+        }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Policy extends BaseTimeEntity {
 
@@ -41,6 +52,14 @@ public class Policy extends BaseTimeEntity {
 
     @Column(name = "support_content", columnDefinition = "text")
     private String supportContent;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "category", nullable = false, length = 30)
+    private PolicyCategoryType category;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "sub_category", nullable = false, length = 40)
+    private PolicySubCategoryType subCategory;
 
     @Column(name = "is_national", nullable = false)
     private boolean national;
@@ -102,6 +121,7 @@ public class Policy extends BaseTimeEntity {
             String title,
             String summary,
             String supportContent,
+            PolicySubCategoryType subCategory,
             boolean national,
             LocalDate applyStartDate,
             LocalDate applyEndDate,
@@ -120,11 +140,17 @@ public class Policy extends BaseTimeEntity {
             int saveCount,
             LocalDateTime registeredAt
     ) {
+        if (subCategory == null) {
+            throw new PolicyException(PolicyErrorCode.INVALID_POLICY_CATEGORY);
+        }
+
         Policy policy = new Policy();
         policy.plcyNo = plcyNo;
         policy.title = title;
         policy.summary = summary;
         policy.supportContent = supportContent;
+        policy.category = subCategory.getCategory();
+        policy.subCategory = subCategory;
         policy.national = national;
         policy.applyStartDate = applyStartDate;
         policy.applyEndDate = applyEndDate;
