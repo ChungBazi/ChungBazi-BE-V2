@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PolicyRepository extends JpaRepository<Policy, Long> {
     Optional<Policy> findByPlcyNo(String plcyNo);
+
+    boolean existsByPlcyNo(String plcyNo);
 }
