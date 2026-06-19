@@ -1,4 +1,4 @@
-﻿package com.chungbazi.server.global.security.jwt;
+package com.chungbazi.server.global.security.jwt;
 
 import com.chungbazi.server.global.common.code.exception.GeneralException;
 import com.chungbazi.server.global.common.code.status.ErrorStatus;
