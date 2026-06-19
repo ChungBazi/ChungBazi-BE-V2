@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@Table(name = "user")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseTimeEntity {
 
@@ -39,14 +40,8 @@ public class User extends BaseTimeEntity {
     @Column(name = "sido_code")
     private SidoCode sidoCode;
 
-    @Column(name = "sido_name", length = 50)
-    private String sidoName;
-
     @Column(name = "sigungu_code", length = 10)
     private String sigunguCode;
-
-    @Column(name = "sigungu_name", length = 50)
-    private String sigunguName;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "education_code")
