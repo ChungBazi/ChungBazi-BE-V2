@@ -1,11 +1,6 @@
 package com.chungbazi.server.domain.policy.entity;
 
-import com.chungbazi.server.domain.policy.enums.EducationCode;
-import com.chungbazi.server.domain.policy.enums.EmploymentCode;
-import com.chungbazi.server.domain.policy.enums.PolicyCategoryType;
-import com.chungbazi.server.domain.policy.enums.PolicySubCategoryType;
-import com.chungbazi.server.domain.policy.enums.RecruitmentStatus;
-import com.chungbazi.server.domain.policy.enums.RecruitmentType;
+import com.chungbazi.server.domain.policy.enums.*;
 import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
 import com.chungbazi.server.domain.policy.exception.PolicyException;
 import com.chungbazi.server.global.common.BaseTimeEntity;
@@ -95,6 +90,10 @@ public class Policy extends BaseTimeEntity {
     @Column(name = "employment_code", length = 30)
     private EmploymentCode employmentCode;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "income_condition_type", nullable = false, length = 20)
+    private IncomeConditionType incomeConditionType;
+
     @Column(name = "min_income")
     private Integer minIncome;
 
@@ -132,12 +131,11 @@ public class Policy extends BaseTimeEntity {
             Integer maxAge,
             EducationCode educationCode,
             EmploymentCode jobCode,
+            IncomeConditionType incomeConditionType,
             Integer minIncome,
             Integer maxIncome,
             String incomeDescription,
             String organizationName,
-            int viewCount,
-            int saveCount,
             LocalDateTime registeredAt
     ) {
         if (subCategory == null) {
@@ -161,12 +159,13 @@ public class Policy extends BaseTimeEntity {
         policy.maxAge = maxAge;
         policy.educationCode = educationCode;
         policy.employmentCode = jobCode;
+        policy.incomeConditionType = incomeConditionType;
         policy.minIncome = minIncome;
         policy.maxIncome = maxIncome;
         policy.incomeDescription = incomeDescription;
         policy.organizationName = organizationName;
-        policy.viewCount = viewCount;
-        policy.saveCount = saveCount;
+        policy.viewCount = 0;
+        policy.saveCount = 0;
         policy.registeredAt = registeredAt == null ? LocalDateTime.now() : registeredAt;
         return policy;
     }
