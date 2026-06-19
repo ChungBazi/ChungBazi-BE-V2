@@ -1,10 +1,12 @@
 package com.chungbazi.server.domain.policy.entity;
 
+import com.chungbazi.server.domain.policy.converter.SidoCodeConverter;
 import com.chungbazi.server.domain.policy.enums.SidoCode;
+import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
+import com.chungbazi.server.domain.policy.exception.PolicyException;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -18,18 +20,15 @@ import lombok.NoArgsConstructor;
 public class RegionCode {
 
     @Id
-    @Column(name = "sigungu_code", length = 10)
+    @Column(name = "sigungu_code", length = 5)
     private String sigunguCode;
 
     @Column(name = "sigungu_name", nullable = false, length = 50)
     private String sigunguName;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "sido_code", nullable = false, length = 30)
+    @Convert(converter = SidoCodeConverter.class)
+    @Column(name = "sido_code", nullable = false, length = 2)
     private SidoCode sidoCode;
-
-    @Column(name = "sido_name", nullable = false, length = 50)
-    private String sidoName;
 
     public static RegionCode createRegionCode(
             String sigunguCode,
@@ -38,14 +37,13 @@ public class RegionCode {
     ) {
         SidoCode derivedSidoCode = SidoCode.fromSigunguCode(sigunguCode);
         if (sidoCode == null || sidoCode != derivedSidoCode) {
-            throw new IllegalArgumentException("시도 코드와 시군구 코드가 일치하지 않습니다.");
+            throw new PolicyException(PolicyErrorCode.REGION_CODE_MISMATCH);
         }
 
         RegionCode regionCode = new RegionCode();
         regionCode.sigunguCode = sigunguCode;
         regionCode.sigunguName = sigunguName;
         regionCode.sidoCode = sidoCode;
-        regionCode.sidoName = sidoCode.getName();
         return regionCode;
     }
 }

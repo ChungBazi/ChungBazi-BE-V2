@@ -42,6 +42,9 @@ public class Policy extends BaseTimeEntity {
     @Column(name = "support_content", columnDefinition = "text")
     private String supportContent;
 
+    @Column(name = "is_national", nullable = false)
+    private boolean national;
+
     @Column(name = "apply_start_date")
     private LocalDate applyStartDate;
 
@@ -99,6 +102,7 @@ public class Policy extends BaseTimeEntity {
             String title,
             String summary,
             String supportContent,
+            boolean national,
             LocalDate applyStartDate,
             LocalDate applyEndDate,
             String applyPeriodText,
@@ -121,6 +125,7 @@ public class Policy extends BaseTimeEntity {
         policy.title = title;
         policy.summary = summary;
         policy.supportContent = supportContent;
+        policy.national = national;
         policy.applyStartDate = applyStartDate;
         policy.applyEndDate = applyEndDate;
         policy.applyPeriodText = applyPeriodText;

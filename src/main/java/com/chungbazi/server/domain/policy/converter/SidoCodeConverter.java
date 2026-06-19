@@ -1,0 +1,29 @@
+package com.chungbazi.server.domain.policy.converter;
+
+import com.chungbazi.server.domain.policy.enums.SidoCode;
+import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
+import com.chungbazi.server.domain.policy.exception.PolicyException;
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
+
+@Converter
+public class SidoCodeConverter implements AttributeConverter<SidoCode, String> {
+
+    @Override
+    public String convertToDatabaseColumn(SidoCode attribute) {
+        return attribute == null ? null : attribute.getCode();
+    }
+
+    @Override
+    public SidoCode convertToEntityAttribute(String dbData) {
+        if (dbData == null) {
+            return null;
+        }
+
+        SidoCode sidoCode = SidoCode.fromCode(dbData);
+        if (sidoCode == null) {
+            throw new PolicyException(PolicyErrorCode.INVALID_SIDO_CODE);
+        }
+        return sidoCode;
+    }
+}
