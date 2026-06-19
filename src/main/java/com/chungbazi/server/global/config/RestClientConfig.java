@@ -15,22 +15,21 @@ public class RestClientConfig {
     private static final int READ_TIMEOUT_MILLISECONDS = 5000;
 
     @Bean
-    public RestClient.Builder restClientBuilder() {
+    public RestClient restClient() {
+        return baseRestClientBuilder().build();
+    }
+
+    @Bean
+    public RestClient youthPolicyRestClient() {
+        return baseRestClientBuilder()
+                .baseUrl(YOUTH_POLICY_BASE_URL)
+                .build();
+    }
+
+    private RestClient.Builder baseRestClientBuilder() {
         return RestClient.builder()
                 .requestFactory(clientHttpRequestFactory())
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-    }
-
-    @Bean
-    public RestClient restClient(RestClient.Builder restClientBuilder) {
-        return restClientBuilder.build();
-    }
-
-    @Bean
-    public RestClient youthPolicyRestClient(RestClient.Builder restClientBuilder) {
-        return restClientBuilder
-                .baseUrl(YOUTH_POLICY_BASE_URL)
-                .build();
     }
 
     private SimpleClientHttpRequestFactory clientHttpRequestFactory() {

@@ -8,7 +8,7 @@ import com.chungbazi.server.domain.policy.entity.RegionCode;
 import com.chungbazi.server.domain.policy.enums.SidoCode;
 import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
 import com.chungbazi.server.domain.policy.exception.PolicyException;
-import com.chungbazi.server.domain.policy.repository.RegionCodeRepository;
+import com.chungbazi.server.domain.policy.service.RegionCodeProvider;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -26,20 +26,24 @@ public class YouthPolicyRegionMapper {
 
     private static final int SIGUNGU_CODE_LENGTH = 5;
 
-    private final RegionCodeRepository regionCodeRepository;
+    private final RegionCodeProvider regionCodeProvider;
 
     public PolicyRegionMapping toRegionMapping(String policyZipCode) {
-        List<RegionCode> regionMaster = regionCodeRepository.findAll(); //추후 캐시 도입?
+        List<RegionCode> regionMaster = regionCodeProvider.getRegionCodes();
         if (regionMaster.isEmpty()) {
             throw new PolicyException(PolicyErrorCode.REGION_NOT_INITIALIZED);
         }
 
-        Set<String> requestedCodes = parseSigunguCodes(policyZipCode); //지역코드 리스트로 파싱
+        Set<String> requestedCodes = parseSigunguCodes(policyZipCode);
         Map<String, RegionCode> regionByCode = regionMaster.stream()
                 .collect(Collectors.toMap(RegionCode::getSigunguCode, Function.identity()));
+
+        if (!regionByCode.keySet().containsAll(requestedCodes)) {
+            throw new PolicyException(PolicyErrorCode.INVALID_POLICY_REGION);
+        }
+
         List<RegionCode> requestedRegions = requestedCodes.stream()
                 .map(regionByCode::get)
-                .filter(regionCode -> regionCode != null)
                 .toList();
 
         //전국 정책일 경우
@@ -66,13 +70,17 @@ public class YouthPolicyRegionMapper {
     private Set<String> parseSigunguCodes(String value) {
         String normalized = YouthPolicyTextUtils.trimToNull(value);
         if (normalized == null) {
-            return Set.of();
+            throw new PolicyException(PolicyErrorCode.INVALID_POLICY_REGION);
         }
 
-        return Arrays.stream(normalized.split(","))
+        Set<String> codes = Arrays.stream(normalized.split(","))
                 .map(YouthPolicyTextUtils::trimToNull)
-                .filter(this::isSigunguCode)
                 .collect(Collectors.toSet());
+
+        if (codes.isEmpty() || codes.contains(null) || codes.stream().anyMatch(code -> !isSigunguCode(code))) {
+            throw new PolicyException(PolicyErrorCode.INVALID_POLICY_REGION);
+        }
+        return codes;
     }
 
     private boolean isSigunguCode(String value) {

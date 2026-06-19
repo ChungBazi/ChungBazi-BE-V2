@@ -30,10 +30,10 @@ public class YouthPolicyPersistenceService {
     @Transactional
     public boolean saveIfNew(YouthPolicyItem item) {
         String applyPeriodCode = item.aplyPrdSeCd() == null ? null : item.aplyPrdSeCd().trim();
+        String plcyNo = normalizePolicyNumber(item.plcyNo());
         if (CLOSED_PERIOD_CODE.equals(applyPeriodCode)
-                || item.plcyNo() == null
-                || item.plcyNo().isBlank()
-                || policyRepository.existsByPlcyNo(item.plcyNo())) {
+                || plcyNo == null
+                || policyRepository.existsByPlcyNo(plcyNo)) {
             return false;
         }
 
@@ -41,12 +41,19 @@ public class YouthPolicyPersistenceService {
 
         PolicySubCategoryType subCategory = policyCategoryMapper.toCategory(item);
 
-        Policy policy = policyEntityMapper.toPolicy(item, subCategory, regionMapping.national());
+        Policy policy = policyEntityMapper.toPolicy(item, plcyNo, subCategory, regionMapping.national());
         Policy savedPolicy = policyRepository.save(policy);
 
         policyDetailRepository.save(policyEntityMapper.toPolicyDetail(savedPolicy, item));
         policyRegionRepository.saveAll(policyRegionMapper.toPolicyRegions(savedPolicy, regionMapping));
 
         return true;
+    }
+
+    private String normalizePolicyNumber(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return value.trim();
     }
 }

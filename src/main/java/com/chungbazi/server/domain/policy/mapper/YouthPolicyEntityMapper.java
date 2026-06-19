@@ -19,6 +19,7 @@ public class YouthPolicyEntityMapper {
 
     public Policy toPolicy(
             YouthPolicyItem item,
+            String plcyNo,
             PolicySubCategoryType subCategory,
             boolean national
     ) {
@@ -26,7 +27,7 @@ public class YouthPolicyEntityMapper {
         IncomeCondition incomeCondition = incomeMapper.toIncomeCondition(item);
 
         return Policy.createPolicy(
-                YouthPolicyTextUtils.trimToNull(item.plcyNo()),
+                plcyNo,
                 YouthPolicyTextUtils.trimToNull(item.plcyNm()),
                 YouthPolicyTextUtils.trimToNull(item.plcyExplnCn()),
                 YouthPolicyTextUtils.trimToNull(item.plcySprtCn()),

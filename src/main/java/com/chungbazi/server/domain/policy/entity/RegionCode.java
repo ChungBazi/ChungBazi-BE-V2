@@ -35,6 +35,10 @@ public class RegionCode {
             String sigunguName,
             SidoCode sidoCode
     ) {
+        if (sigunguCode == null || sigunguCode.length()!=5) {
+            throw new PolicyException(PolicyErrorCode.INVALID_POLICY_REGION);
+        }
+
         SidoCode derivedSidoCode = SidoCode.fromSigunguCode(sigunguCode);
         if (sidoCode == null || sidoCode != derivedSidoCode) {
             throw new PolicyException(PolicyErrorCode.REGION_CODE_MISMATCH);

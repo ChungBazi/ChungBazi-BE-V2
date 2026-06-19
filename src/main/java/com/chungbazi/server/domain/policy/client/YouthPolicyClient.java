@@ -19,7 +19,7 @@ public class YouthPolicyClient {
 
     public YouthPolicyClient(
             @Qualifier("youthPolicyRestClient") RestClient restClient,
-            @Value("${external.youth-policy.api-key}") String apiKey
+            @Value("${external.youth-policy.api-key:}") String apiKey
     ) {
         this.restClient = restClient;
         this.apiKey = apiKey;
