@@ -1,6 +1,8 @@
 package com.chungbazi.server.domain.auth.infrastructure;
 
 import com.chungbazi.server.domain.auth.domain.OAuth2UserInfo;
+import com.chungbazi.server.global.common.code.exception.GeneralException;
+import com.chungbazi.server.global.common.code.status.ErrorStatus;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Collections;
@@ -13,17 +15,31 @@ public class KakaoUserInfo implements OAuth2UserInfo {
 
     @Override
     public String getProviderId() {
-        return String.valueOf(attributes.get("id"));
+        Object id = attributes.get("id");
+        if (id == null) {
+            throw new GeneralException(ErrorStatus._KAKAO_REQUIRED_INFO_MISSING);
+        }
+        return String.valueOf(id);
     }
 
     @Override
     public String getEmail() {
-        return (String) getKakaoAccount().get("email");
+        String email = (String) getKakaoAccount().get("email");
+
+        if (email == null || email.isBlank()) {
+            throw new GeneralException(ErrorStatus._KAKAO_REQUIRED_INFO_MISSING);
+        }
+        return email;
     }
 
     @Override
     public String getName() {
-        return (String) getKakaoProfile().get("nickname");
+        String nickname = (String) getKakaoProfile().get("nickname");
+
+        if (nickname == null || nickname.isBlank()) {
+            throw new GeneralException(ErrorStatus._KAKAO_REQUIRED_INFO_MISSING);
+        }
+        return nickname;
     }
 
     @SuppressWarnings("unchecked")

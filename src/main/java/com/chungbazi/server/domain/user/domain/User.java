@@ -23,14 +23,14 @@ public class User extends BaseTimeEntity {
     @Column(name = "user_id")
     private Long id;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 100, unique = true)
     private String providerId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private SocialType socialType;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 254)
     private String email;
 
     @Column(name = "name", nullable = false)

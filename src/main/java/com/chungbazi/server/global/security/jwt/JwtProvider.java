@@ -47,7 +47,7 @@ public class JwtProvider {
     public Claims getClaims(String token) {
         try {
             return Jwts.parserBuilder()
-                    .setSigningKey(Keys.hmacShaKeyFor(jwtProperties.secret().getBytes()))
+                    .setSigningKey(Keys.hmacShaKeyFor(jwtProperties.secret().getBytes(StandardCharsets.UTF_8)))
                     .build()
                     .parseClaimsJws(token)
                     .getBody();

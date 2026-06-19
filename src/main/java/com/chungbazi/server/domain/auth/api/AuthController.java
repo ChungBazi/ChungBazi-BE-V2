@@ -5,6 +5,7 @@ import com.chungbazi.server.domain.auth.api.dto.request.KakaoLoginRequest;
 import com.chungbazi.server.domain.auth.api.dto.response.AuthTokenResponse;
 import com.chungbazi.server.domain.auth.application.AuthService;
 import com.chungbazi.server.global.common.CommonResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,7 +21,7 @@ public class AuthController implements AuthDocs {
 
     @Override
     @PostMapping("/kakao")
-    public CommonResponse<AuthTokenResponse> loginWithKakao(@RequestBody KakaoLoginRequest request) {
+    public CommonResponse<AuthTokenResponse> loginWithKakao(@Valid @RequestBody KakaoLoginRequest request) {
         return CommonResponse.onSuccess(authService.loginWithKakao(request));
     }
 }
