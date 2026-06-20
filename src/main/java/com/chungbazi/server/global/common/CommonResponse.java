@@ -1,6 +1,7 @@
 package com.chungbazi.server.global.common;
 
 import com.chungbazi.server.global.common.code.BaseCode;
+import com.chungbazi.server.global.common.code.BaseErrorCode;
 import com.chungbazi.server.global.common.code.status.SuccessStatus;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -32,5 +33,9 @@ public class CommonResponse<T> {
     //실패한 경우 응답 생성
     public static <T> CommonResponse<T> onFailure(String code, String message, T data){
         return new CommonResponse<>(false, code, message, data);
+    }
+
+    public static <T> CommonResponse<T> onFailure(BaseErrorCode code) {
+        return new CommonResponse<>(false, code.getReasonHttpStatus().getCode(), code.getReasonHttpStatus().getMessage(), null);
     }
 }
