@@ -4,7 +4,7 @@ WORKDIR /app
 RUN addgroup --system app && adduser --system --ingroup app app \
     && chown -R app:app /app
 
-ARG JAR_FILE=build/libs/app.jar
+ARG JAR_FILE=build/libs/*.jar
 COPY ${JAR_FILE} ./app.jar
 
 USER app
