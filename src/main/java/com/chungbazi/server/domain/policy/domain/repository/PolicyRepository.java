@@ -60,6 +60,160 @@ public interface PolicyRepository extends JpaRepository<Policy, Long> {
     );
 
     @Query("""
+            SELECT COUNT(p)
+            FROM Policy p
+            WHERE p.applyEndDate IS NOT NULL
+              AND p.applyEndDate >= :today
+              AND p.recruitmentStatus <> :closedStatus
+              AND (p.national = true OR EXISTS (
+                    SELECT policyRegion.id
+                    FROM PolicyRegion policyRegion
+                    WHERE policyRegion.policy = p
+                      AND policyRegion.sidoCode = :sidoCode
+                      AND (policyRegion.regionCode IS NULL
+                           OR policyRegion.regionCode.sigunguCode = :sigunguCode)
+              ))
+            """)
+    long countVisibleUpcomingDeadlinePolicies(
+            @Param("closedStatus") RecruitmentStatus closedStatus,
+            @Param("today") LocalDate today,
+            @Param("sidoCode") SidoCode sidoCode,
+            @Param("sigunguCode") String sigunguCode
+    );
+
+    @Query("""
+            SELECT COUNT(p)
+            FROM Policy p
+            WHERE p.category = :category
+              AND p.applyEndDate IS NOT NULL
+              AND p.applyEndDate >= :today
+              AND p.recruitmentStatus <> :closedStatus
+              AND (p.national = true OR EXISTS (
+                    SELECT policyRegion.id
+                    FROM PolicyRegion policyRegion
+                    WHERE policyRegion.policy = p
+                      AND policyRegion.sidoCode = :sidoCode
+                      AND (policyRegion.regionCode IS NULL
+                           OR policyRegion.regionCode.sigunguCode = :sigunguCode)
+              ))
+            """)
+    long countVisibleUpcomingDeadlinePoliciesByCategory(
+            @Param("category") PolicyCategoryType category,
+            @Param("closedStatus") RecruitmentStatus closedStatus,
+            @Param("today") LocalDate today,
+            @Param("sidoCode") SidoCode sidoCode,
+            @Param("sigunguCode") String sigunguCode
+    );
+
+    @Query("""
+            SELECT p
+            FROM Policy p
+            WHERE p.applyEndDate IS NOT NULL
+              AND p.applyEndDate >= :today
+              AND p.recruitmentStatus <> :closedStatus
+              AND (p.national = true OR EXISTS (
+                    SELECT policyRegion.id
+                    FROM PolicyRegion policyRegion
+                    WHERE policyRegion.policy = p
+                      AND policyRegion.sidoCode = :sidoCode
+                      AND (policyRegion.regionCode IS NULL
+                           OR policyRegion.regionCode.sigunguCode = :sigunguCode)
+              ))
+            ORDER BY p.applyEndDate ASC, p.id DESC
+            """)
+    List<Policy> findAllUpcomingDeadlinePolicies(
+            @Param("closedStatus") RecruitmentStatus closedStatus,
+            @Param("today") LocalDate today,
+            @Param("sidoCode") SidoCode sidoCode,
+            @Param("sigunguCode") String sigunguCode,
+            Pageable pageable
+    );
+
+    @Query("""
+            SELECT p
+            FROM Policy p
+            WHERE p.applyEndDate IS NOT NULL
+              AND p.applyEndDate >= :today
+              AND p.recruitmentStatus <> :closedStatus
+              AND (p.national = true OR EXISTS (
+                    SELECT policyRegion.id
+                    FROM PolicyRegion policyRegion
+                    WHERE policyRegion.policy = p
+                      AND policyRegion.sidoCode = :sidoCode
+                      AND (policyRegion.regionCode IS NULL
+                           OR policyRegion.regionCode.sigunguCode = :sigunguCode)
+              ))
+              AND (p.applyEndDate > :applyEndDate
+                   OR (p.applyEndDate = :applyEndDate AND p.id < :policyId))
+            ORDER BY p.applyEndDate ASC, p.id DESC
+            """)
+    List<Policy> findAllUpcomingDeadlinePoliciesAfter(
+            @Param("closedStatus") RecruitmentStatus closedStatus,
+            @Param("today") LocalDate today,
+            @Param("sidoCode") SidoCode sidoCode,
+            @Param("sigunguCode") String sigunguCode,
+            @Param("applyEndDate") LocalDate applyEndDate,
+            @Param("policyId") Long policyId,
+            Pageable pageable
+    );
+
+    @Query("""
+            SELECT p
+            FROM Policy p
+            WHERE p.category = :category
+              AND p.applyEndDate IS NOT NULL
+              AND p.applyEndDate >= :today
+              AND p.recruitmentStatus <> :closedStatus
+              AND (p.national = true OR EXISTS (
+                    SELECT policyRegion.id
+                    FROM PolicyRegion policyRegion
+                    WHERE policyRegion.policy = p
+                      AND policyRegion.sidoCode = :sidoCode
+                      AND (policyRegion.regionCode IS NULL
+                           OR policyRegion.regionCode.sigunguCode = :sigunguCode)
+              ))
+            ORDER BY p.applyEndDate ASC, p.id DESC
+            """)
+    List<Policy> findUpcomingDeadlinePolicies(
+            @Param("category") PolicyCategoryType category,
+            @Param("closedStatus") RecruitmentStatus closedStatus,
+            @Param("today") LocalDate today,
+            @Param("sidoCode") SidoCode sidoCode,
+            @Param("sigunguCode") String sigunguCode,
+            Pageable pageable
+    );
+
+    @Query("""
+            SELECT p
+            FROM Policy p
+            WHERE p.category = :category
+              AND p.applyEndDate IS NOT NULL
+              AND p.applyEndDate >= :today
+              AND p.recruitmentStatus <> :closedStatus
+              AND (p.national = true OR EXISTS (
+                    SELECT policyRegion.id
+                    FROM PolicyRegion policyRegion
+                    WHERE policyRegion.policy = p
+                      AND policyRegion.sidoCode = :sidoCode
+                      AND (policyRegion.regionCode IS NULL
+                           OR policyRegion.regionCode.sigunguCode = :sigunguCode)
+              ))
+              AND (p.applyEndDate > :applyEndDate
+                   OR (p.applyEndDate = :applyEndDate AND p.id < :policyId))
+            ORDER BY p.applyEndDate ASC, p.id DESC
+            """)
+    List<Policy> findUpcomingDeadlinePoliciesAfter(
+            @Param("category") PolicyCategoryType category,
+            @Param("closedStatus") RecruitmentStatus closedStatus,
+            @Param("today") LocalDate today,
+            @Param("sidoCode") SidoCode sidoCode,
+            @Param("sigunguCode") String sigunguCode,
+            @Param("applyEndDate") LocalDate applyEndDate,
+            @Param("policyId") Long policyId,
+            Pageable pageable
+    );
+
+    @Query("""
             SELECT p
             FROM Policy p
             WHERE p.recruitmentStatus <> :closedStatus

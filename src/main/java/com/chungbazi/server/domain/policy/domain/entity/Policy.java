@@ -37,6 +37,10 @@ import lombok.NoArgsConstructor;
                 @Index(
                         name = "idx_policy_category_status_deadline",
                         columnList = "category,recruitment_status,apply_end_date,policy_id"
+                ),
+                @Index(
+                        name = "idx_policy_status_deadline",
+                        columnList = "recruitment_status,apply_end_date,policy_id"
                 )
         }
 )

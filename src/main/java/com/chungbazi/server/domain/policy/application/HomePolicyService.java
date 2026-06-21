@@ -13,6 +13,7 @@ import com.chungbazi.server.domain.user.domain.User;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashSet;
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class HomePolicyService {
 
+    private static final ZoneId SERVICE_ZONE_ID = ZoneId.of("Asia/Seoul");
     private static final String CURSOR_SEPARATOR = "\\|";
     private static final String CURSOR_JOINER = "|";
     private static final String NULL_DATE = "NULL";
@@ -77,6 +79,49 @@ public class HomePolicyService {
                 category,
                 PolicySortType.LATEST,
                 cursor,
+                size
+        );
+    }
+
+    public PolicyListResponse getUpcomingDeadlinePolicies(
+            User user,
+            PolicyCategoryType category,
+            String cursor,
+            int size
+    ) {
+        Cursor decodedCursor = decodeCursor(cursor, PolicySortType.DEADLINE);
+        if (decodedCursor != null && decodedCursor.applyEndDate() == null) {
+            throw new PolicyException(PolicyErrorCode.INVALID_POLICY_CURSOR);
+        }
+
+        LocalDate today = LocalDate.now(SERVICE_ZONE_ID);
+        List<Policy> fetchedPolicies = fetchUpcomingDeadlinePolicies(
+                user,
+                category,
+                decodedCursor,
+                today,
+                PageRequest.of(0, size + 1)
+        );
+        long totalCount = category == null
+                ? policyRepository.countVisibleUpcomingDeadlinePolicies(
+                        RecruitmentStatus.CLOSED,
+                        today,
+                        user.getSidoCode(),
+                        user.getSigunguCode()
+                )
+                : policyRepository.countVisibleUpcomingDeadlinePoliciesByCategory(
+                        category,
+                        RecruitmentStatus.CLOSED,
+                        today,
+                        user.getSidoCode(),
+                        user.getSigunguCode()
+                );
+
+        return createResponse(
+                user,
+                PolicySortType.DEADLINE,
+                fetchedPolicies,
+                totalCount,
                 size
         );
     }
@@ -191,6 +236,56 @@ public class HomePolicyService {
         return policyRepository.findDeadlinePoliciesAfterDatedCursor(
                 category,
                 RecruitmentStatus.CLOSED,
+                user.getSidoCode(),
+                user.getSigunguCode(),
+                cursor.applyEndDate(),
+                cursor.policyId(),
+                pageRequest
+        );
+    }
+
+    private List<Policy> fetchUpcomingDeadlinePolicies(
+            User user,
+            PolicyCategoryType category,
+            Cursor cursor,
+            LocalDate today,
+            PageRequest pageRequest
+    ) {
+        if (category == null) {
+            if (cursor == null) {
+                return policyRepository.findAllUpcomingDeadlinePolicies(
+                        RecruitmentStatus.CLOSED,
+                        today,
+                        user.getSidoCode(),
+                        user.getSigunguCode(),
+                        pageRequest
+                );
+            }
+            return policyRepository.findAllUpcomingDeadlinePoliciesAfter(
+                    RecruitmentStatus.CLOSED,
+                    today,
+                    user.getSidoCode(),
+                    user.getSigunguCode(),
+                    cursor.applyEndDate(),
+                    cursor.policyId(),
+                    pageRequest
+            );
+        }
+
+        if (cursor == null) {
+            return policyRepository.findUpcomingDeadlinePolicies(
+                    category,
+                    RecruitmentStatus.CLOSED,
+                    today,
+                    user.getSidoCode(),
+                    user.getSigunguCode(),
+                    pageRequest
+            );
+        }
+        return policyRepository.findUpcomingDeadlinePoliciesAfter(
+                category,
+                RecruitmentStatus.CLOSED,
+                today,
                 user.getSidoCode(),
                 user.getSigunguCode(),
                 cursor.applyEndDate(),
