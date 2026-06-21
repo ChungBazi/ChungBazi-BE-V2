@@ -42,9 +42,9 @@ jobs:
       - name: Build
         run: ./gradlew build -x test
 
-      - name: Upload Test Report      # 실패 시 리포트 확인용
-        if: failure()
+      - name: Upload JAR artifact
         uses: actions/upload-artifact@v4
         with:
-          name: test-report
-          path: build/reports/tests/
+          name: app-jar
+          path: build/libs/*.jar
+          retention-days: 1
