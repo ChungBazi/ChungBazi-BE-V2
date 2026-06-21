@@ -13,6 +13,7 @@ public enum PolicyErrorCode implements BaseErrorCode {
     REGION_CODE_MISMATCH(HttpStatus.BAD_REQUEST, "POLICY4002", "시도 코드와 시군구 코드가 일치하지 않습니다."),
     INVALID_POLICY_CATEGORY(HttpStatus.BAD_REQUEST, "POLICY4003", "유효하지 않은 정책 카테고리입니다."),
     INVALID_POLICY_REGION(HttpStatus.BAD_REQUEST, "POLICY4004", "유효하지 않은 정책 지역입니다."),
+    INVALID_POLICY_CURSOR(HttpStatus.BAD_REQUEST, "POLICY4005", "유효하지 않은 정책 조회 커서입니다."),
     REGION_NOT_INITIALIZED(HttpStatus.INTERNAL_SERVER_ERROR, "POLICY5001", "시군구 코드 데이터가 초기화되지 않았습니다.")
 
     ;

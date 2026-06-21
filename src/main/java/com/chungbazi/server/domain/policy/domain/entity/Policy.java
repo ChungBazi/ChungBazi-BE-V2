@@ -25,7 +25,15 @@ import lombok.NoArgsConstructor;
         name = "policy",
         indexes = {
                 @Index(name = "idx_policy_category", columnList = "category"),
-                @Index(name = "idx_policy_sub_category", columnList = "sub_category")
+                @Index(name = "idx_policy_sub_category", columnList = "sub_category"),
+                @Index(
+                        name = "idx_policy_category_status_registered",
+                        columnList = "category,recruitment_status,registered_at,policy_id"
+                ),
+                @Index(
+                        name = "idx_policy_category_status_deadline",
+                        columnList = "category,recruitment_status,apply_end_date,policy_id"
+                )
         }
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

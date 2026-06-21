@@ -2,6 +2,7 @@ package com.chungbazi.server.domain.policy.api;
 
 import com.chungbazi.server.domain.policy.api.docs.HomeDocs;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
+import com.chungbazi.server.domain.policy.application.HomePolicyService;
 import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
 import com.chungbazi.server.domain.policy.domain.type.PolicySortType;
 import com.chungbazi.server.domain.user.domain.User;
@@ -22,6 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/v1/home")
 public class HomeController implements HomeDocs {
 
+    private final HomePolicyService homePolicyService;
+
     @Override
     @GetMapping("/policies")
     public CommonResponse<PolicyListResponse> getPoliciesByCategory(
@@ -31,6 +34,8 @@ public class HomeController implements HomeDocs {
             @RequestParam(required = false) String cursor,
             @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
     ) {
-        throw new UnsupportedOperationException("분야별 정책 조회 서비스가 아직 구현되지 않았습니다.");
+        return CommonResponse.onSuccess(
+                homePolicyService.getPolicies(user, category, sort, cursor, size)
+        );
     }
 }
