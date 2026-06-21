@@ -1,0 +1,12 @@
+package com.chungbazi.server.domain.policy.domain.repository.policyRepository;
+
+import com.chungbazi.server.domain.policy.domain.entity.Policy;
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface PolicyRepository extends JpaRepository<Policy, Long>, PolicyRepositoryCustom {
+    Optional<Policy> findByPlcyNo(String plcyNo);
+
+    boolean existsByPlcyNo(String plcyNo);
+}

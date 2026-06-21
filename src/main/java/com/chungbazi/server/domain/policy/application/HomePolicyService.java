@@ -3,7 +3,7 @@ package com.chungbazi.server.domain.policy.application;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.repository.PolicyLikeRepository;
-import com.chungbazi.server.domain.policy.domain.repository.PolicyRepository;
+import com.chungbazi.server.domain.policy.domain.repository.policyRepository.PolicyRepository;
 import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
 import com.chungbazi.server.domain.policy.domain.type.PolicySortType;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
