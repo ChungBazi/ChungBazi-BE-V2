@@ -1,7 +1,8 @@
 package com.chungbazi.server.domain.user.domain;
 
-import com.chungbazi.server.domain.policy.enums.PolicyCategoryType;
-import com.chungbazi.server.domain.policy.enums.PolicySubCategoryType;
+
+import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
+import com.chungbazi.server.domain.policy.domain.type.PolicySubCategoryType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
