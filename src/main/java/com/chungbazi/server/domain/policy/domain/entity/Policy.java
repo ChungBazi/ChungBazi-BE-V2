@@ -1,8 +1,8 @@
 package com.chungbazi.server.domain.policy.domain.entity;
 
-import com.chungbazi.server.domain.policy.domain.vo.*;
-import com.chungbazi.server.domain.policy.domain.exception.PolicyErrorCode;
-import com.chungbazi.server.domain.policy.domain.exception.PolicyException;
+import com.chungbazi.server.domain.policy.domain.type.*;
+import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
+import com.chungbazi.server.domain.policy.exception.PolicyException;
 import com.chungbazi.server.global.common.BaseTimeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

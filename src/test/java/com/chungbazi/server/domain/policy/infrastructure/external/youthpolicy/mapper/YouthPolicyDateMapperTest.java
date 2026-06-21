@@ -2,9 +2,9 @@ package com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.m
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.chungbazi.server.domain.policy.domain.vo.ApplyPeriod;
-import com.chungbazi.server.domain.policy.domain.vo.RecruitmentStatus;
-import com.chungbazi.server.domain.policy.domain.vo.RecruitmentType;
+import com.chungbazi.server.domain.policy.domain.type.internal.ApplyPeriod;
+import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
+import com.chungbazi.server.domain.policy.domain.type.RecruitmentType;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 

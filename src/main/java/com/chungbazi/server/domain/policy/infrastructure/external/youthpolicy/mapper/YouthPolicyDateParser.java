@@ -1,7 +1,7 @@
 package com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.mapper;
 
-import com.chungbazi.server.domain.policy.domain.vo.DateRange;
-import com.chungbazi.server.domain.policy.domain.vo.ParsedPeriod;
+import com.chungbazi.server.domain.policy.domain.type.internal.DateRange;
+import com.chungbazi.server.domain.policy.domain.type.internal.ParsedPeriod;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;

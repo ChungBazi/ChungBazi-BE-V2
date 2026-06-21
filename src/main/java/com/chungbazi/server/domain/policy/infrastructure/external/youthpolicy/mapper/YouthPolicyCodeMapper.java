@@ -1,7 +1,7 @@
 package com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.mapper;
 
-import com.chungbazi.server.domain.policy.domain.vo.EducationCode;
-import com.chungbazi.server.domain.policy.domain.vo.EmploymentCode;
+import com.chungbazi.server.domain.policy.domain.type.EducationCode;
+import com.chungbazi.server.domain.policy.domain.type.EmploymentCode;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -2,7 +2,7 @@ package com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.m
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.chungbazi.server.domain.policy.domain.vo.IncomeCondition;
+import com.chungbazi.server.domain.policy.domain.type.internal.IncomeCondition;
 import org.junit.jupiter.api.Test;
 
 class YouthPolicyIncomeMapperTest {

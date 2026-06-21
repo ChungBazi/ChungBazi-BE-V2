@@ -1,8 +1,8 @@
 package com.chungbazi.server.domain.policy.infrastructure.persistence.converter;
 
-import com.chungbazi.server.domain.policy.domain.vo.SidoCode;
-import com.chungbazi.server.domain.policy.domain.exception.PolicyErrorCode;
-import com.chungbazi.server.domain.policy.domain.exception.PolicyException;
+import com.chungbazi.server.domain.policy.domain.type.SidoCode;
+import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
+import com.chungbazi.server.domain.policy.exception.PolicyException;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 

@@ -1,13 +1,13 @@
 package com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.mapper;
 
-import com.chungbazi.server.domain.policy.domain.vo.PolicyRegionMapping;
-import com.chungbazi.server.domain.policy.domain.vo.RegionScope;
+import com.chungbazi.server.domain.policy.domain.type.internal.PolicyRegionMapping;
+import com.chungbazi.server.domain.policy.domain.type.internal.RegionScope;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.entity.PolicyRegion;
 import com.chungbazi.server.domain.policy.domain.entity.RegionCode;
-import com.chungbazi.server.domain.policy.domain.vo.SidoCode;
-import com.chungbazi.server.domain.policy.domain.exception.PolicyErrorCode;
-import com.chungbazi.server.domain.policy.domain.exception.PolicyException;
+import com.chungbazi.server.domain.policy.domain.type.SidoCode;
+import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
+import com.chungbazi.server.domain.policy.exception.PolicyException;
 import com.chungbazi.server.domain.policy.infrastructure.persistence.RegionCodeProvider;
 import java.util.Arrays;
 import java.util.Comparator;

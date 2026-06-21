@@ -1,7 +1,7 @@
 package com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.mapper;
 
 import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.client.dto.YouthPolicyItem;
-import com.chungbazi.server.domain.policy.domain.vo.PolicySubCategoryType;
+import com.chungbazi.server.domain.policy.domain.type.PolicySubCategoryType;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

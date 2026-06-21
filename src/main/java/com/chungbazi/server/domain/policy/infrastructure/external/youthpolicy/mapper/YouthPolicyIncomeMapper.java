@@ -1,8 +1,8 @@
 package com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.mapper;
 
 import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.client.dto.YouthPolicyItem;
-import com.chungbazi.server.domain.policy.domain.vo.IncomeCondition;
-import com.chungbazi.server.domain.policy.domain.vo.IncomeConditionType;
+import com.chungbazi.server.domain.policy.domain.type.internal.IncomeCondition;
+import com.chungbazi.server.domain.policy.domain.type.IncomeConditionType;
 import org.springframework.stereotype.Component;
 
 @Component

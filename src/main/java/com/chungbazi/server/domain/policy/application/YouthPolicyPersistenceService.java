@@ -1,9 +1,9 @@
 package com.chungbazi.server.domain.policy.application;
 
 import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.client.dto.YouthPolicyItem;
-import com.chungbazi.server.domain.policy.domain.vo.PolicyRegionMapping;
+import com.chungbazi.server.domain.policy.domain.type.internal.PolicyRegionMapping;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
-import com.chungbazi.server.domain.policy.domain.vo.PolicySubCategoryType;
+import com.chungbazi.server.domain.policy.domain.type.PolicySubCategoryType;
 import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.mapper.YouthPolicyCategoryMapper;
 import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.mapper.YouthPolicyEntityMapper;
 import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.mapper.YouthPolicyRegionMapper;

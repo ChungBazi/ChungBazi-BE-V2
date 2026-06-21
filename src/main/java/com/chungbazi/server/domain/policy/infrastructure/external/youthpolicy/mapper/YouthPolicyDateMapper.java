@@ -1,11 +1,11 @@
 package com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.mapper;
 
 import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.client.dto.YouthPolicyItem;
-import com.chungbazi.server.domain.policy.domain.vo.ApplyPeriod;
-import com.chungbazi.server.domain.policy.domain.vo.DateRange;
-import com.chungbazi.server.domain.policy.domain.vo.ParsedPeriod;
-import com.chungbazi.server.domain.policy.domain.vo.RecruitmentStatus;
-import com.chungbazi.server.domain.policy.domain.vo.RecruitmentType;
+import com.chungbazi.server.domain.policy.domain.type.internal.ApplyPeriod;
+import com.chungbazi.server.domain.policy.domain.type.internal.DateRange;
+import com.chungbazi.server.domain.policy.domain.type.internal.ParsedPeriod;
+import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
+import com.chungbazi.server.domain.policy.domain.type.RecruitmentType;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;

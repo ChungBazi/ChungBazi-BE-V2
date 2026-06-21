@@ -2,9 +2,9 @@ package com.chungbazi.server.domain.policy.domain.entity;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.chungbazi.server.domain.policy.domain.vo.SidoCode;
-import com.chungbazi.server.domain.policy.domain.exception.PolicyErrorCode;
-import com.chungbazi.server.domain.policy.domain.exception.PolicyException;
+import com.chungbazi.server.domain.policy.domain.type.SidoCode;
+import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
+import com.chungbazi.server.domain.policy.exception.PolicyException;
 import org.junit.jupiter.api.Test;
 
 class RegionCodeTest {

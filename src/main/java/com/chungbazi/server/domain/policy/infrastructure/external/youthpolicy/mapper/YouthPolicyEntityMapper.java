@@ -1,11 +1,11 @@
 package com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.mapper;
 
 import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.client.dto.YouthPolicyItem;
-import com.chungbazi.server.domain.policy.domain.vo.ApplyPeriod;
-import com.chungbazi.server.domain.policy.domain.vo.IncomeCondition;
+import com.chungbazi.server.domain.policy.domain.type.internal.ApplyPeriod;
+import com.chungbazi.server.domain.policy.domain.type.internal.IncomeCondition;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.entity.PolicyDetail;
-import com.chungbazi.server.domain.policy.domain.vo.PolicySubCategoryType;
+import com.chungbazi.server.domain.policy.domain.type.PolicySubCategoryType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
