@@ -47,6 +47,8 @@ public class HomeController implements HomeDocs {
             @RequestParam(required = false) String cursor,
             @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
     ) {
-        throw new UnsupportedOperationException("최신순 정책 조회 서비스가 아직 구현되지 않았습니다.");
+        return CommonResponse.onSuccess(
+                homePolicyService.getLatestPolicies(user, category, cursor, size)
+        );
     }
 }

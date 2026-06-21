@@ -22,6 +22,34 @@ public interface PolicyRepository extends JpaRepository<Policy, Long> {
             RecruitmentStatus recruitmentStatus
     );
 
+    long countByRecruitmentStatusNot(RecruitmentStatus recruitmentStatus);
+
+    @Query("""
+            SELECT p
+            FROM Policy p
+            WHERE p.recruitmentStatus <> :closedStatus
+            ORDER BY p.registeredAt DESC, p.id DESC
+            """)
+    List<Policy> findAllLatestPolicies(
+            @Param("closedStatus") RecruitmentStatus closedStatus,
+            Pageable pageable
+    );
+
+    @Query("""
+            SELECT p
+            FROM Policy p
+            WHERE p.recruitmentStatus <> :closedStatus
+              AND (p.registeredAt < :registeredAt
+                   OR (p.registeredAt = :registeredAt AND p.id < :policyId))
+            ORDER BY p.registeredAt DESC, p.id DESC
+            """)
+    List<Policy> findAllLatestPoliciesAfter(
+            @Param("closedStatus") RecruitmentStatus closedStatus,
+            @Param("registeredAt") LocalDateTime registeredAt,
+            @Param("policyId") Long policyId,
+            Pageable pageable
+    );
+
     @Query("""
             SELECT p
             FROM Policy p

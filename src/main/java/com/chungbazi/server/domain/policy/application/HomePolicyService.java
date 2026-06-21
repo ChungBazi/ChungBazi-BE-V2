@@ -44,16 +44,44 @@ public class HomePolicyService {
     ) {
         Cursor decodedCursor = decodeCursor(cursor, sort);
         List<Policy> fetchedPolicies = fetchPoliciesByCategory(category, sort, decodedCursor, size + 1);
+        long totalCount = category == null
+                ? policyRepository.countByRecruitmentStatusNot(RecruitmentStatus.CLOSED)
+                : policyRepository.countByCategoryAndRecruitmentStatusNot(
+                        category,
+                        RecruitmentStatus.CLOSED
+                );
+
+        return createResponse(user, sort, fetchedPolicies, totalCount, size);
+    }
+
+    public PolicyListResponse getLatestPolicies(
+            User user,
+            PolicyCategoryType category,
+            String cursor,
+            int size
+    ) {
+        return getPolicies(
+                user,
+                category,
+                PolicySortType.LATEST,
+                cursor,
+                size
+        );
+    }
+
+    private PolicyListResponse createResponse(
+            User user,
+            PolicySortType sort,
+            List<Policy> fetchedPolicies,
+            long totalCount,
+            int size
+    ) {
         boolean hasNext = fetchedPolicies.size() > size;
         List<Policy> policies = hasNext
                 ? new ArrayList<>(fetchedPolicies.subList(0, size))
                 : fetchedPolicies;
 
         Set<Long> likedPolicyIds = findLikedPolicyIds(user.getId(), policies);
-        long totalCount = policyRepository.countByCategoryAndRecruitmentStatusNot(
-                category,
-                RecruitmentStatus.CLOSED
-        );
         String nextCursor = hasNext ? encodeCursor(sort, policies.getLast()) : null;
 
         return PolicyListResponse.of(
@@ -83,6 +111,20 @@ public class HomePolicyService {
             Cursor cursor,
             PageRequest pageRequest
     ) {
+        if (category == null) {
+            if (cursor == null) {
+                return policyRepository.findAllLatestPolicies(
+                        RecruitmentStatus.CLOSED,
+                        pageRequest
+                );
+            }
+            return policyRepository.findAllLatestPoliciesAfter(
+                    RecruitmentStatus.CLOSED,
+                    cursor.registeredAt(),
+                    cursor.policyId(),
+                    pageRequest
+            );
+        }
         if (cursor == null) {
             return policyRepository.findLatestPolicies(
                     category,
