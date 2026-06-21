@@ -38,4 +38,15 @@ public class HomeController implements HomeDocs {
                 homePolicyService.getPolicies(user, category, sort, cursor, size)
         );
     }
+
+    @Override
+    @GetMapping("/policies/latest")
+    public CommonResponse<PolicyListResponse> getLatestPolicies(
+            @CurrentUser User user,
+            @RequestParam(required = false) PolicyCategoryType category,
+            @RequestParam(required = false) String cursor,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
+    ) {
+        throw new UnsupportedOperationException("최신순 정책 조회 서비스가 아직 구현되지 않았습니다.");
+    }
 }
