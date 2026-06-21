@@ -43,12 +43,24 @@ public class HomePolicyService {
             int size
     ) {
         Cursor decodedCursor = decodeCursor(cursor, sort);
-        List<Policy> fetchedPolicies = fetchPoliciesByCategory(category, sort, decodedCursor, size + 1);
+        List<Policy> fetchedPolicies = fetchPoliciesByCategory(
+                user,
+                category,
+                sort,
+                decodedCursor,
+                size + 1
+        );
         long totalCount = category == null
-                ? policyRepository.countByRecruitmentStatusNot(RecruitmentStatus.CLOSED)
-                : policyRepository.countByCategoryAndRecruitmentStatusNot(
+                ? policyRepository.countVisiblePolicies(
+                        RecruitmentStatus.CLOSED,
+                        user.getSidoCode(),
+                        user.getSigunguCode()
+                )
+                : policyRepository.countVisiblePoliciesByCategory(
                         category,
-                        RecruitmentStatus.CLOSED
+                        RecruitmentStatus.CLOSED,
+                        user.getSidoCode(),
+                        user.getSigunguCode()
                 );
 
         return createResponse(user, sort, fetchedPolicies, totalCount, size);
@@ -94,6 +106,7 @@ public class HomePolicyService {
     }
 
     private List<Policy> fetchPoliciesByCategory(
+            User user,
             PolicyCategoryType category,
             PolicySortType sort,
             Cursor cursor,
@@ -101,12 +114,13 @@ public class HomePolicyService {
     ) {
         PageRequest pageRequest = PageRequest.of(0, fetchSize);
         if (sort == PolicySortType.LATEST) {
-            return fetchLatestPolicies(category, cursor, pageRequest);
+            return fetchLatestPolicies(user, category, cursor, pageRequest);
         }
-        return fetchDeadlinePolicies(category, cursor, pageRequest);
+        return fetchDeadlinePolicies(user, category, cursor, pageRequest);
     }
 
     private List<Policy> fetchLatestPolicies(
+            User user,
             PolicyCategoryType category,
             Cursor cursor,
             PageRequest pageRequest
@@ -115,11 +129,15 @@ public class HomePolicyService {
             if (cursor == null) {
                 return policyRepository.findAllLatestPolicies(
                         RecruitmentStatus.CLOSED,
+                        user.getSidoCode(),
+                        user.getSigunguCode(),
                         pageRequest
                 );
             }
             return policyRepository.findAllLatestPoliciesAfter(
                     RecruitmentStatus.CLOSED,
+                    user.getSidoCode(),
+                    user.getSigunguCode(),
                     cursor.registeredAt(),
                     cursor.policyId(),
                     pageRequest
@@ -129,12 +147,16 @@ public class HomePolicyService {
             return policyRepository.findLatestPolicies(
                     category,
                     RecruitmentStatus.CLOSED,
+                    user.getSidoCode(),
+                    user.getSigunguCode(),
                     pageRequest
             );
         }
         return policyRepository.findLatestPoliciesAfter(
                 category,
                 RecruitmentStatus.CLOSED,
+                user.getSidoCode(),
+                user.getSigunguCode(),
                 cursor.registeredAt(),
                 cursor.policyId(),
                 pageRequest
@@ -142,6 +164,7 @@ public class HomePolicyService {
     }
 
     private List<Policy> fetchDeadlinePolicies(
+            User user,
             PolicyCategoryType category,
             Cursor cursor,
             PageRequest pageRequest
@@ -150,6 +173,8 @@ public class HomePolicyService {
             return policyRepository.findDeadlinePolicies(
                     category,
                     RecruitmentStatus.CLOSED,
+                    user.getSidoCode(),
+                    user.getSigunguCode(),
                     pageRequest
             );
         }
@@ -157,6 +182,8 @@ public class HomePolicyService {
             return policyRepository.findDeadlinePoliciesAfterOpenEndedCursor(
                     category,
                     RecruitmentStatus.CLOSED,
+                    user.getSidoCode(),
+                    user.getSigunguCode(),
                     cursor.policyId(),
                     pageRequest
             );
@@ -164,6 +191,8 @@ public class HomePolicyService {
         return policyRepository.findDeadlinePoliciesAfterDatedCursor(
                 category,
                 RecruitmentStatus.CLOSED,
+                user.getSidoCode(),
+                user.getSigunguCode(),
                 cursor.applyEndDate(),
                 cursor.policyId(),
                 pageRequest

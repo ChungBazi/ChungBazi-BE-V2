@@ -21,6 +21,7 @@ public interface HomeDocs {
     @Operation(
             summary = "분야별 정책 목록 조회 API",
             description = """
+                    전국 정책과 현재 사용자의 지역에 해당하는 정책 중에서,
                     선택한 정책 분야의 정책을 커서 기반 무한스크롤로 조회합니다.
 
                     - `category`: 정책 분야
@@ -49,7 +50,8 @@ public interface HomeDocs {
     @Operation(
             summary = "최신순 정책 목록 조회 API",
             description = """
-                    최신 등록 정책을 커서 기반 무한스크롤로 조회합니다.
+                    전국 정책과 현재 사용자의 지역에 해당하는 최신 등록 정책을
+                    커서 기반 무한스크롤로 조회합니다.
 
                     - `category`: 선택 정책 분야. 생략하면 전체 분야를 조회합니다.
                     - `cursor`: 최초 요청에서는 생략하고, 다음 요청부터 응답의 `nextCursor`를 전달합니다.
