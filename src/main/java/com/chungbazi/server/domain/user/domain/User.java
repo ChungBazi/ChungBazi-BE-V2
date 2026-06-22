@@ -1,8 +1,8 @@
 package com.chungbazi.server.domain.user.domain;
 
-import com.chungbazi.server.domain.policy.enums.EducationCode;
-import com.chungbazi.server.domain.policy.enums.EmploymentCode;
-import com.chungbazi.server.domain.policy.enums.SidoCode;
+import com.chungbazi.server.domain.policy.domain.type.EducationCode;
+import com.chungbazi.server.domain.policy.domain.type.EmploymentCode;
+import com.chungbazi.server.domain.policy.domain.type.SidoCode;
 import com.chungbazi.server.domain.user.domain.type.*;
 import com.chungbazi.server.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
