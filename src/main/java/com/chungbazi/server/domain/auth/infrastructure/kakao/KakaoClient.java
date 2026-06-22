@@ -3,14 +3,10 @@ package com.chungbazi.server.domain.auth.infrastructure.kakao;
 import com.chungbazi.server.global.common.code.exception.GeneralException;
 import com.chungbazi.server.global.common.code.status.ErrorStatus;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
 
@@ -18,30 +14,22 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class KakaoClient {
 
-    private static final String KAKAO_USER_INFO_URI = "https://kapi.kakao.com/v2/user/me";
-    private final RestTemplate restTemplate;
+    private static final String KAKAO_USER_INFO_PATH = "/v2/user/me";
+    private final RestClient kakaoRestClient;
 
     public KakaoUserInfo getUserInfo(String accessToken) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
-
-        HttpEntity<Void> request = new HttpEntity<>(headers);
-
         try {
-            ResponseEntity<Map> response = restTemplate.exchange(
-                    KAKAO_USER_INFO_URI,
-                    HttpMethod.GET,
-                    request,
-                    Map.class
-            );
+            Map<String, Object> response = kakaoRestClient.get()
+                    .uri(KAKAO_USER_INFO_PATH)
+                    .headers(headers -> headers.setBearerAuth(accessToken))
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<Map<String, Object>>() {
+                    });
 
-            Map<String, Object> body = response.getBody();
-            if (body == null) {
+            if (response == null) {
                 throw new GeneralException(ErrorStatus._KAKAO_API_ERROR);
             }
-            return new KakaoUserInfo(body);
-        } catch (HttpClientErrorException.Unauthorized | HttpClientErrorException.Forbidden e) {
-            throw new GeneralException(ErrorStatus._INVALID_TOKEN);
+            return new KakaoUserInfo(response);
         } catch (RestClientException e) {
             throw new GeneralException(ErrorStatus._KAKAO_API_ERROR);
         }
