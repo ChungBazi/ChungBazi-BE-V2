@@ -1,9 +1,12 @@
 package com.chungbazi.server.domain.auth.application;
 
+import com.chungbazi.server.domain.auth.api.dto.request.AppleLoginRequest;
 import com.chungbazi.server.domain.auth.api.dto.request.KakaoLoginRequest;
 import com.chungbazi.server.domain.auth.api.dto.response.AuthTokenResponse;
-import com.chungbazi.server.domain.auth.infrastructure.KakaoClient;
-import com.chungbazi.server.domain.auth.infrastructure.KakaoUserInfo;
+import com.chungbazi.server.domain.auth.infrastructure.apple.AppleTokenVerifier;
+import com.chungbazi.server.domain.auth.infrastructure.apple.AppleUserInfo;
+import com.chungbazi.server.domain.auth.infrastructure.kakao.KakaoClient;
+import com.chungbazi.server.domain.auth.infrastructure.kakao.KakaoUserInfo;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.domain.user.domain.type.SocialType;
 import com.chungbazi.server.domain.user.infrastructure.UserRepository;
@@ -20,6 +23,7 @@ public class AuthService {
     private final KakaoClient kakaoClient;
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
+    private final AppleTokenVerifier appleTokenVerifier;
 
     @Transactional
     public AuthTokenResponse loginWithKakao(KakaoLoginRequest request) {
@@ -28,6 +32,23 @@ public class AuthService {
         return loginOrSignUp(
                 userInfo.getProviderId(),
                 SocialType.KAKAO,
+                userInfo.getEmail(),
+                userInfo.getName(),
+                request.fcmToken()
+        );
+    }
+
+    @Transactional
+    public AuthTokenResponse loginWithApple(AppleLoginRequest request) {
+        AppleUserInfo userInfo = appleTokenVerifier.verify(
+                request.idToken(),
+                request.email(),
+                request.name()
+        );
+
+        return loginOrSignUp(
+                userInfo.getProviderId(),
+                SocialType.APPLE,
                 userInfo.getEmail(),
                 userInfo.getName(),
                 request.fcmToken()

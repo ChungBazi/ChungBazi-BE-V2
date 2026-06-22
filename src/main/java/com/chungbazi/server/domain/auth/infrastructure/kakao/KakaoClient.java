@@ -1,4 +1,4 @@
-package com.chungbazi.server.domain.auth.infrastructure;
+package com.chungbazi.server.domain.auth.infrastructure.kakao;
 
 import com.chungbazi.server.global.common.code.exception.GeneralException;
 import com.chungbazi.server.global.common.code.status.ErrorStatus;
