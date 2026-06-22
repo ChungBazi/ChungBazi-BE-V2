@@ -9,7 +9,7 @@ import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.ma
 import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.mapper.YouthPolicyRegionMapper;
 import com.chungbazi.server.domain.policy.domain.repository.PolicyDetailRepository;
 import com.chungbazi.server.domain.policy.domain.repository.PolicyRegionRepository;
-import com.chungbazi.server.domain.policy.domain.repository.PolicyRepository;
+import com.chungbazi.server.domain.policy.domain.repository.policyRepository.PolicyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
