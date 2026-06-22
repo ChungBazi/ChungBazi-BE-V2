@@ -26,6 +26,7 @@ public class AuthController implements AuthDocs {
         return CommonResponse.onSuccess(authService.loginWithKakao(request));
     }
 
+    @Override
     @PostMapping("/apple")
     public CommonResponse<AuthTokenResponse> loginWithApple(@Valid @RequestBody AppleLoginRequest request) {
         return CommonResponse.onSuccess(authService.loginWithApple(request));

@@ -6,19 +6,34 @@ import lombok.Builder;
 
 @Builder
 public record AuthTokenResponse(
-        @Schema(description = "청바지 accessToken")
+        @Schema(
+                description = "청바지 accessToken",
+                example = "eyJhbGciOiJIUzI1NiJ9.ey..."
+        )
         String accessToken,
 
-        @Schema(description = "청바지 refreshToken")
+        @Schema(
+                description = "청바지 refreshToken",
+                example = "eyJhbGciOiJIUzI1NiJ9.ey..."
+        )
         String refreshToken,
 
-        @Schema(description = "사용자 이메일")
+        @Schema(
+                description = "사용자 이메일",
+                example = "user@example.com"
+        )
         String email,
 
-        @Schema(description = "소셜 로그인 타입", example = "KAKAO")
+        @Schema(
+                description = "소셜 로그인 타입",
+                example = "KAKAO"
+        )
         SocialType socialType,
 
-        @Schema(description = "온보딩 완료 여부")
+        @Schema(
+                description = "온보딩 완료 여부",
+                example = "false"
+        )
         boolean onboardingCompleted
 ) {
     public static AuthTokenResponse of(
