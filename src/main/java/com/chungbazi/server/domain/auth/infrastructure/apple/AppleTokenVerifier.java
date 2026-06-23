@@ -78,7 +78,7 @@ public class AppleTokenVerifier {
 
         Date expirationTime = claims.getExpirationTime();
         if (expirationTime == null || expirationTime.before(new Date())) {
-            throw new AuthException(AuthErrorCode.INVALID_TOKEN);
+            throw new AuthException(AuthErrorCode.EXPIRED_TOKEN);
         }
     }
 }

@@ -39,7 +39,7 @@ public class User extends BaseTimeEntity {
     @Column(name = "email", nullable = false, length = 254)
     private String email;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "name")
     private String name;
 
     @Enumerated(EnumType.STRING)

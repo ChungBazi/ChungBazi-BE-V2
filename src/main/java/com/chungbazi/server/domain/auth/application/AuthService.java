@@ -12,25 +12,15 @@ import com.chungbazi.server.domain.auth.infrastructure.kakao.KakaoUserInfo;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.domain.user.domain.type.SocialType;
 import com.chungbazi.server.domain.user.infrastructure.UserRepository;
-import com.chungbazi.server.global.common.code.exception.GeneralException;
-import com.chungbazi.server.global.common.code.status.ErrorStatus;
 import com.chungbazi.server.global.security.jwt.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.concurrent.ThreadLocalRandom;
-
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class AuthService {
-
-    private static final String DEFAULT_APPLE_USER_NAME = "바로";
-    private static final String[] DEFAULT_APPLE_USER_NAME_PREFIXES = {
-            "든든한", "야무진", "똑똑한", "부지런한", "귀여운",
-            "성실한", "희망찬", "알찬", "힘찬", "빛나는"
-    };
 
     private final KakaoClient kakaoClient;
     private final UserRepository userRepository;
@@ -112,20 +102,13 @@ public class AuthService {
         if (tokenEmail != null && !tokenEmail.isBlank()) {
             return tokenEmail;
         }
-        throw new AuthException(AuthErrorCode.KAKAO_API_ERROR);
+        throw new AuthException(AuthErrorCode.INVALID_TOKEN);
     }
 
     private String resolveAppleName(String requestName) {
         if (requestName != null && !requestName.isBlank()) {
             return requestName;
         }
-        return generateDefaultAppleName();
-    }
-
-    private String generateDefaultAppleName() {
-        String prefix = DEFAULT_APPLE_USER_NAME_PREFIXES[
-                ThreadLocalRandom.current().nextInt(DEFAULT_APPLE_USER_NAME_PREFIXES.length)
-                ];
-        return prefix + " " + DEFAULT_APPLE_USER_NAME;
+        return null;
     }
 }

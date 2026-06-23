@@ -38,7 +38,6 @@ public interface AuthDocs {
                      ### RequestBody
                      ---
                      - `idToken`: iOS Apple 로그인 성공 후 발급받은 identityToken
-                     - `email`: Apple에서 전달받은 이메일, 최초 로그인 이후에는 null일 수 있음
                      - `name`: Apple에서 전달받은 사용자 이름, 최초 로그인 이후에는 null일 수 있음
                      - `fcmToken`: 현재 로그인한 기기의 fcmToken
                     """

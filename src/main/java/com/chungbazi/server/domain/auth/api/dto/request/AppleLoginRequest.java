@@ -15,13 +15,6 @@ public record AppleLoginRequest(
         String idToken,
 
         @Schema(
-                description = "Apple에서 전달받은 이메일, 최초 로그인 이후에는 null일 수 있음",
-                example = "user@example.com",
-                nullable = true
-        )
-        String email,
-
-        @Schema(
                 description = "Apple에서 전달받은 이름, 최초 로그인 이후에는 null일 수 있음",
                 example = "바로",
                 nullable = true
