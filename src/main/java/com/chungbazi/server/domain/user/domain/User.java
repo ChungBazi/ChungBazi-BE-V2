@@ -29,14 +29,14 @@ public class User extends BaseTimeEntity {
     @Column(name = "user_id")
     private Long id;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "provider_id", nullable = false, length = 100)
     private String providerId;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(name = "social_type", nullable = false, length = 20)
     private SocialType socialType;
 
-    @Column(nullable = false, length = 254)
+    @Column(name = "email", nullable = false, length = 254)
     private String email;
 
     @Column(name = "name", nullable = false)
@@ -64,7 +64,7 @@ public class User extends BaseTimeEntity {
     @Column(name = "fcm_token", length = 512)
     private String fcmToken;
 
-    @Column(nullable = false)
+    @Column(name = "onboarding_completed", nullable = false)
     private boolean onboardingCompleted;
 
     @Column(name = "is_deleted", nullable = false)
