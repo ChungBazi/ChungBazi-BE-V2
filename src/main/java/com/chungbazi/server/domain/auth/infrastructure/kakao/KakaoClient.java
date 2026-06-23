@@ -1,7 +1,7 @@
 package com.chungbazi.server.domain.auth.infrastructure.kakao;
 
-import com.chungbazi.server.global.common.code.exception.GeneralException;
-import com.chungbazi.server.global.common.code.status.ErrorStatus;
+import com.chungbazi.server.domain.auth.exception.AuthException;
+import com.chungbazi.server.domain.auth.exception.code.AuthErrorCode;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
@@ -30,11 +30,11 @@ public class KakaoClient {
                     });
 
             if (response == null) {
-                throw new GeneralException(ErrorStatus._KAKAO_API_ERROR);
+                throw new AuthException(AuthErrorCode.KAKAO_API_ERROR);
             }
             return new KakaoUserInfo(response);
         } catch (RestClientException e) {
-            throw new GeneralException(ErrorStatus._KAKAO_API_ERROR);
+            throw new AuthException(AuthErrorCode.KAKAO_API_ERROR);
         }
     }
 }

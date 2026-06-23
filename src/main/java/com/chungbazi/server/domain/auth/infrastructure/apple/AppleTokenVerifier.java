@@ -1,7 +1,8 @@
 package com.chungbazi.server.domain.auth.infrastructure.apple;
 
+import com.chungbazi.server.domain.auth.exception.AuthException;
+import com.chungbazi.server.domain.auth.exception.code.AuthErrorCode;
 import com.chungbazi.server.global.common.code.exception.GeneralException;
-import com.chungbazi.server.global.common.code.status.ErrorStatus;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jose.jwk.JWK;
@@ -34,7 +35,7 @@ public class AppleTokenVerifier {
 
             JWSVerifier verifier = new RSASSAVerifier(publicKey);
             if (!signedJWT.verify(verifier)) {
-                throw new GeneralException(ErrorStatus._INVALID_TOKEN);
+                throw new AuthException(AuthErrorCode.INVALID_TOKEN);
             }
 
             JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
@@ -42,16 +43,15 @@ public class AppleTokenVerifier {
 
             String providerId = claims.getSubject();
             if (providerId == null || providerId.isBlank()) {
-                throw new GeneralException(ErrorStatus._INVALID_TOKEN);
+                throw new AuthException(AuthErrorCode.INVALID_TOKEN);
             }
-
             String email = claims.getStringClaim("email");
 
             return AppleTokenInfo.of(providerId, email);
         } catch (GeneralException e) {
             throw e;
         } catch (Exception e) {
-            throw new GeneralException(ErrorStatus._INVALID_TOKEN);
+            throw new AuthException(AuthErrorCode.INVALID_TOKEN);
         }
     }
 
@@ -61,7 +61,7 @@ public class AppleTokenVerifier {
         JWK jwk = jwkSet.getKeyByKeyId(signedJWT.getHeader().getKeyID());
 
         if (!(jwk instanceof RSAKey rsaKey)) {
-            throw new GeneralException(ErrorStatus._INVALID_TOKEN);
+            throw new AuthException(AuthErrorCode.INVALID_TOKEN);
         }
 
         return rsaKey;
@@ -69,16 +69,16 @@ public class AppleTokenVerifier {
 
     private void validateClaims(JWTClaimsSet claims) {
         if (!APPLE_ISSUER.equals(claims.getIssuer())) {
-            throw new GeneralException(ErrorStatus._INVALID_TOKEN);
+            throw new AuthException(AuthErrorCode.INVALID_TOKEN);
         }
 
         if (!claims.getAudience().contains(appleProperties.audience())) {
-            throw new GeneralException(ErrorStatus._INVALID_TOKEN);
+            throw new AuthException(AuthErrorCode.INVALID_TOKEN);
         }
 
         Date expirationTime = claims.getExpirationTime();
         if (expirationTime == null || expirationTime.before(new Date())) {
-            throw new GeneralException(ErrorStatus._EXPIRED_TOKEN);
+            throw new AuthException(AuthErrorCode.INVALID_TOKEN);
         }
     }
 }

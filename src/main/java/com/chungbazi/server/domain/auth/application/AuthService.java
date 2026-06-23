@@ -3,6 +3,8 @@ package com.chungbazi.server.domain.auth.application;
 import com.chungbazi.server.domain.auth.api.dto.request.AppleLoginRequest;
 import com.chungbazi.server.domain.auth.api.dto.request.KakaoLoginRequest;
 import com.chungbazi.server.domain.auth.api.dto.response.AuthTokenResponse;
+import com.chungbazi.server.domain.auth.exception.AuthException;
+import com.chungbazi.server.domain.auth.exception.code.AuthErrorCode;
 import com.chungbazi.server.domain.auth.infrastructure.apple.AppleTokenInfo;
 import com.chungbazi.server.domain.auth.infrastructure.apple.AppleTokenVerifier;
 import com.chungbazi.server.domain.auth.infrastructure.kakao.KakaoClient;
@@ -110,7 +112,7 @@ public class AuthService {
         if (tokenEmail != null && !tokenEmail.isBlank()) {
             return tokenEmail;
         }
-        throw new GeneralException(ErrorStatus._INVALID_TOKEN);
+        throw new AuthException(AuthErrorCode.KAKAO_API_ERROR);
     }
 
     private String resolveAppleName(String requestName) {
