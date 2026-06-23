@@ -3,10 +3,8 @@ package com.chungbazi.server.domain.auth.application;
 import com.chungbazi.server.domain.auth.api.dto.request.AppleLoginRequest;
 import com.chungbazi.server.domain.auth.api.dto.request.KakaoLoginRequest;
 import com.chungbazi.server.domain.auth.api.dto.response.AuthTokenResponse;
-import com.chungbazi.server.domain.auth.domain.OAuth2UserInfo;
 import com.chungbazi.server.domain.auth.infrastructure.apple.AppleTokenInfo;
 import com.chungbazi.server.domain.auth.infrastructure.apple.AppleTokenVerifier;
-import com.chungbazi.server.domain.auth.infrastructure.apple.AppleUserInfo;
 import com.chungbazi.server.domain.auth.infrastructure.kakao.KakaoClient;
 import com.chungbazi.server.domain.auth.infrastructure.kakao.KakaoUserInfo;
 import com.chungbazi.server.domain.user.domain.User;
@@ -40,38 +38,62 @@ public class AuthService {
     @Transactional
     public AuthTokenResponse loginWithKakao(KakaoLoginRequest request) {
         KakaoUserInfo userInfo = kakaoClient.getUserInfo(request.accessToken());
-        return loginOrSignUp(userInfo, SocialType.KAKAO, request.fcmToken());
+        User user = loginOrSignUp(
+                SocialType.KAKAO,
+                userInfo.getProviderId(),
+                userInfo.getEmail(),
+                userInfo.getName(),
+                request.fcmToken()
+        );
+        return issueTokenResponse(user);
     }
 
     @Transactional
     public AuthTokenResponse loginWithApple(AppleLoginRequest request) {
         AppleTokenInfo tokenInfo = appleTokenVerifier.verify(request.idToken());
-
-        AppleUserInfo userInfo = AppleUserInfo.of(
-                tokenInfo.providerId(),
-                resolveAppleEmail(tokenInfo.email(), request.email()),
-                resolveAppleName(request.name())
-        );
-        return loginOrSignUp(userInfo, SocialType.APPLE, request.fcmToken());
+        User user = loginOrSignUpWithApple(tokenInfo, request.name(), request.fcmToken());
+        return issueTokenResponse(user);
     }
 
-    private AuthTokenResponse loginOrSignUp(
-            OAuth2UserInfo userInfo,
+    private User loginOrSignUp(
             SocialType socialType,
+            String providerId,
+            String email,
+            String name,
             String fcmToken
     ) {
-        User user = userRepository.findBySocialTypeAndProviderId(socialType, userInfo.getProviderId())
+        User user = userRepository.findBySocialTypeAndProviderId(socialType, providerId)
                 .orElseGet(() -> userRepository.save(
                         User.create(
-                                userInfo.getProviderId(),
+                                providerId,
                                 socialType,
-                                userInfo.getEmail(),
-                                userInfo.getName(),
+                                email,
+                                name,
                                 fcmToken
                         )
                 ));
         user.updateFcmToken(fcmToken);
 
+        return user;
+    }
+
+    private User loginOrSignUpWithApple(AppleTokenInfo tokenInfo, String name, String fcmToken) {
+        User user = userRepository.findBySocialTypeAndProviderId(SocialType.APPLE, tokenInfo.providerId())
+                .orElseGet(() -> userRepository.save(
+                        User.create(
+                                tokenInfo.providerId(),
+                                SocialType.APPLE,
+                                resolveAppleEmail(tokenInfo.email()),
+                                resolveAppleName(name),
+                                fcmToken
+                        )
+                ));
+        user.updateFcmToken(fcmToken);
+
+        return user;
+    }
+
+    private AuthTokenResponse issueTokenResponse(User user) {
         String accessToken = jwtProvider.createAccessToken(user.getId());
         String refreshToken = jwtProvider.createRefreshToken(user.getId());
 
@@ -84,15 +106,10 @@ public class AuthService {
         );
     }
 
-    private String resolveAppleEmail(String tokenEmail, String requestEmail) {
+    private String resolveAppleEmail(String tokenEmail) {
         if (tokenEmail != null && !tokenEmail.isBlank()) {
             return tokenEmail;
         }
-
-        if (requestEmail != null && !requestEmail.isBlank()) {
-            return requestEmail;
-        }
-
         throw new GeneralException(ErrorStatus._INVALID_TOKEN);
     }
 
@@ -100,7 +117,6 @@ public class AuthService {
         if (requestName != null && !requestName.isBlank()) {
             return requestName;
         }
-
         return generateDefaultAppleName();
     }
 

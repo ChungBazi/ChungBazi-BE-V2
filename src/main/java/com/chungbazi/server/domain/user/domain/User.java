@@ -14,7 +14,13 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Table(name = "user")
+@Table(
+        name = "user",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_user_social_provider",
+                columnNames = {"social_type", "provider_id"}
+        )
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseTimeEntity {
 
@@ -23,7 +29,7 @@ public class User extends BaseTimeEntity {
     @Column(name = "user_id")
     private Long id;
 
-    @Column(nullable = false, length = 100, unique = true)
+    @Column(nullable = false, length = 100)
     private String providerId;
 
     @Enumerated(EnumType.STRING)

@@ -55,6 +55,7 @@ public class AppleTokenVerifier {
         }
     }
 
+    // TODO: Apple JWK Set 캐싱 적용
     private RSAKey getMatchedRsaKey(SignedJWT signedJWT) throws Exception {
         JWKSet jwkSet = JWKSet.load(new URL(APPLE_KEYS_URL));
         JWK jwk = jwkSet.getKeyByKeyId(signedJWT.getHeader().getKeyID());

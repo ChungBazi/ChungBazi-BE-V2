@@ -2,7 +2,7 @@ package com.chungbazi.server.domain.auth.infrastructure.kakao;
 
 import com.chungbazi.server.global.common.code.exception.GeneralException;
 import com.chungbazi.server.global.common.code.status.ErrorStatus;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -11,15 +11,18 @@ import org.springframework.web.client.RestClientException;
 import java.util.Map;
 
 @Component
-@RequiredArgsConstructor
 public class KakaoClient {
 
     private static final String KAKAO_USER_INFO_PATH = "/v2/user/me";
-    private final RestClient kakaoRestClient;
+    private final RestClient restClient;
+
+    public KakaoClient(@Qualifier("kakaoRestClient") RestClient restClient) {
+        this.restClient = restClient;
+    }
 
     public KakaoUserInfo getUserInfo(String accessToken) {
         try {
-            Map<String, Object> response = kakaoRestClient.get()
+            Map<String, Object> response = restClient.get()
                     .uri(KAKAO_USER_INFO_PATH)
                     .headers(headers -> headers.setBearerAuth(accessToken))
                     .retrieve()
