@@ -1,6 +1,7 @@
 package com.chungbazi.server.domain.auth.api;
 
 import com.chungbazi.server.domain.auth.api.docs.AuthDocs;
+import com.chungbazi.server.domain.auth.api.dto.request.AppleLoginRequest;
 import com.chungbazi.server.domain.auth.api.dto.request.KakaoLoginRequest;
 import com.chungbazi.server.domain.auth.api.dto.response.AuthTokenResponse;
 import com.chungbazi.server.domain.auth.application.AuthService;
@@ -23,5 +24,11 @@ public class AuthController implements AuthDocs {
     @PostMapping("/kakao")
     public CommonResponse<AuthTokenResponse> loginWithKakao(@Valid @RequestBody KakaoLoginRequest request) {
         return CommonResponse.onSuccess(authService.loginWithKakao(request));
+    }
+
+    @Override
+    @PostMapping("/apple")
+    public CommonResponse<AuthTokenResponse> loginWithApple(@Valid @RequestBody AppleLoginRequest request) {
+        return CommonResponse.onSuccess(authService.loginWithApple(request));
     }
 }

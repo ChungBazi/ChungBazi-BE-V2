@@ -11,6 +11,7 @@ import org.springframework.web.client.RestClient;
 public class RestClientConfig {
 
     private static final String YOUTH_POLICY_BASE_URL = "https://www.youthcenter.go.kr";
+    private static final String KAKAO_BASE_URL = "https://kapi.kakao.com";
     private static final int CONNECT_TIMEOUT_MILLISECONDS = 5000;
     private static final int READ_TIMEOUT_MILLISECONDS = 5000;
 
@@ -23,6 +24,13 @@ public class RestClientConfig {
     public RestClient youthPolicyRestClient() {
         return baseRestClientBuilder()
                 .baseUrl(YOUTH_POLICY_BASE_URL)
+                .build();
+    }
+
+    @Bean
+    public RestClient kakaoRestClient() {
+        return baseRestClientBuilder()
+                .baseUrl(KAKAO_BASE_URL)
                 .build();
     }
 

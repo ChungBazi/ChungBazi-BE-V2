@@ -1,8 +1,8 @@
-package com.chungbazi.server.domain.auth.infrastructure;
+package com.chungbazi.server.domain.auth.infrastructure.kakao;
 
 import com.chungbazi.server.domain.auth.domain.OAuth2UserInfo;
-import com.chungbazi.server.global.common.code.exception.GeneralException;
-import com.chungbazi.server.global.common.code.status.ErrorStatus;
+import com.chungbazi.server.domain.auth.exception.AuthException;
+import com.chungbazi.server.domain.auth.exception.code.AuthErrorCode;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Collections;
@@ -17,7 +17,7 @@ public class KakaoUserInfo implements OAuth2UserInfo {
     public String getProviderId() {
         Object id = attributes.get("id");
         if (id == null) {
-            throw new GeneralException(ErrorStatus._KAKAO_REQUIRED_INFO_MISSING);
+            throw new AuthException(AuthErrorCode.KAKAO_REQUIRED_INFO_MISSING);
         }
         return String.valueOf(id);
     }
@@ -27,7 +27,7 @@ public class KakaoUserInfo implements OAuth2UserInfo {
         String email = (String) getKakaoAccount().get("email");
 
         if (email == null || email.isBlank()) {
-            throw new GeneralException(ErrorStatus._KAKAO_REQUIRED_INFO_MISSING);
+            throw new AuthException(AuthErrorCode.KAKAO_REQUIRED_INFO_MISSING);
         }
         return email;
     }
@@ -37,7 +37,7 @@ public class KakaoUserInfo implements OAuth2UserInfo {
         String nickname = (String) getKakaoProfile().get("nickname");
 
         if (nickname == null || nickname.isBlank()) {
-            throw new GeneralException(ErrorStatus._KAKAO_REQUIRED_INFO_MISSING);
+            throw new AuthException(AuthErrorCode.KAKAO_REQUIRED_INFO_MISSING);
         }
         return nickname;
     }

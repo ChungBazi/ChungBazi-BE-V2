@@ -1,5 +1,7 @@
 package com.chungbazi.server.global.security.jwt;
 
+import com.chungbazi.server.domain.auth.exception.AuthException;
+import com.chungbazi.server.domain.auth.exception.code.AuthErrorCode;
 import com.chungbazi.server.global.common.code.exception.GeneralException;
 import com.chungbazi.server.global.common.code.status.ErrorStatus;
 import io.jsonwebtoken.Claims;
@@ -65,9 +67,9 @@ public class JwtProvider {
 
             return true;
         } catch (ExpiredJwtException e) {
-            throw new GeneralException(ErrorStatus._EXPIRED_TOKEN);
+            throw new AuthException(AuthErrorCode.EXPIRED_TOKEN);
         } catch (Exception e) {
-            throw new GeneralException(ErrorStatus._INVALID_TOKEN);
+            throw new AuthException(AuthErrorCode.INVALID_TOKEN);
         }
     }
 

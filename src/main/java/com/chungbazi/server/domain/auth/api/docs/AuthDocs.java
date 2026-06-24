@@ -1,5 +1,6 @@
 package com.chungbazi.server.domain.auth.api.docs;
 
+import com.chungbazi.server.domain.auth.api.dto.request.AppleLoginRequest;
 import com.chungbazi.server.domain.auth.api.dto.request.KakaoLoginRequest;
 import com.chungbazi.server.domain.auth.api.dto.response.AuthTokenResponse;
 import com.chungbazi.server.global.common.CommonResponse;
@@ -29,5 +30,25 @@ public interface AuthDocs {
     })
     CommonResponse<AuthTokenResponse> loginWithKakao(
             @Valid @RequestBody KakaoLoginRequest request
+    );
+
+    @Operation(
+            summary = "애플 로그인 API",
+            description = """
+                     ### RequestBody
+                     ---
+                     - `idToken`: iOS Apple 로그인 성공 후 발급받은 identityToken
+                     - `name`: Apple에서 전달받은 사용자 이름, 최초 로그인 이후에는 null일 수 있음
+                     - `fcmToken`: 현재 로그인한 기기의 fcmToken
+                    """
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "애플 로그인이 성공적으로 실행됐습니다."
+            )
+    })
+    CommonResponse<AuthTokenResponse> loginWithApple(
+            @Valid @RequestBody AppleLoginRequest request
     );
 }
