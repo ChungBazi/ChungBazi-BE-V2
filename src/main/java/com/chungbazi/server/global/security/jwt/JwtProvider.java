@@ -2,18 +2,16 @@ package com.chungbazi.server.global.security.jwt;
 
 import com.chungbazi.server.domain.auth.exception.AuthException;
 import com.chungbazi.server.domain.auth.exception.code.AuthErrorCode;
-import com.chungbazi.server.global.common.code.exception.GeneralException;
-import com.chungbazi.server.global.common.code.status.ErrorStatus;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Date;
 
 @Component
@@ -73,12 +71,10 @@ public class JwtProvider {
         }
     }
 
-    public String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
+    public Duration getRemainingExpiration(String token) {
+        Date expiration = getClaims(token).getExpiration();
+        long remainingMillis = expiration.getTime() - System.currentTimeMillis();
 
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        return null;
+        return Duration.ofMillis(Math.max(remainingMillis, 0));
     }
 }

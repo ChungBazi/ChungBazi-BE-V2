@@ -8,7 +8,7 @@ import com.chungbazi.server.domain.auth.api.dto.response.AuthTokenResponse;
 import com.chungbazi.server.domain.auth.domain.RefreshToken;
 import com.chungbazi.server.domain.auth.exception.AuthException;
 import com.chungbazi.server.domain.auth.exception.code.AuthErrorCode;
-import com.chungbazi.server.domain.auth.infrastructure.RefreshTokenRepository;
+import com.chungbazi.server.domain.auth.infrastructure.redis.RefreshTokenRepository;
 import com.chungbazi.server.domain.auth.infrastructure.apple.AppleTokenInfo;
 import com.chungbazi.server.domain.auth.infrastructure.apple.AppleTokenVerifier;
 import com.chungbazi.server.domain.auth.infrastructure.kakao.KakaoClient;
@@ -24,6 +24,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -34,6 +36,7 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtProvider jwtProvider;
     private final AppleTokenVerifier appleTokenVerifier;
+    private final TokenBlacklist tokenBlacklist;
 
     @Transactional
     public AuthTokenResponse loginWithKakao(KakaoLoginRequest request) {
@@ -70,6 +73,17 @@ public class AuthService {
         refreshTokenRepository.save(savedToken);
 
         return AuthReissueResponse.of(newAccessToken, newRefreshToken);
+    }
+
+    @Transactional
+    public void logout(Long userId, String accessToken) {
+        refreshTokenRepository.deleteById(userId);
+
+        Duration remainingExpiration = jwtProvider.getRemainingExpiration(accessToken);
+
+        if (!remainingExpiration.isZero()) {
+            tokenBlacklist.add(accessToken, remainingExpiration);
+        }
     }
 
     private User loginOrSignUp(
@@ -141,6 +155,11 @@ public class AuthService {
 
         return userRepository.findById(Long.valueOf(userId))
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+    }
+
+    private RefreshToken getRefreshTokenByUserId(Long userId) {
+        return refreshTokenRepository.findByUserId(userId)
+                .orElseThrow(() -> new AuthException(AuthErrorCode.REFRESH_TOKEN_NOT_FOUND));
     }
 
     private String resolveAppleEmail(String tokenEmail) {
