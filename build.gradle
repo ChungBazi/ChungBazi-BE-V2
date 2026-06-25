@@ -54,6 +54,9 @@ dependencies {
 
 	// nimbus
 	implementation 'com.nimbusds:nimbus-jose-jwt:10.0.2'
+
+	// redis
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 }
 
 tasks.named('test') {
