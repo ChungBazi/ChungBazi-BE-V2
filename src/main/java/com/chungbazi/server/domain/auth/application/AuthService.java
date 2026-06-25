@@ -77,13 +77,12 @@ public class AuthService {
 
     @Transactional
     public void logout(Long userId, String accessToken) {
-        refreshTokenRepository.deleteById(userId);
-
         Duration remainingExpiration = jwtProvider.getRemainingExpiration(accessToken);
 
         if (!remainingExpiration.isZero()) {
             tokenBlacklist.add(accessToken, remainingExpiration);
         }
+        refreshTokenRepository.deleteById(userId);
     }
 
     private User loginOrSignUp(
