@@ -157,11 +157,6 @@ public class AuthService {
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
     }
 
-    private RefreshToken getRefreshTokenByUserId(Long userId) {
-        return refreshTokenRepository.findByUserId(userId)
-                .orElseThrow(() -> new AuthException(AuthErrorCode.REFRESH_TOKEN_NOT_FOUND));
-    }
-
     private String resolveAppleEmail(String tokenEmail) {
         if (tokenEmail != null && !tokenEmail.isBlank()) {
             return tokenEmail;
