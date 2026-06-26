@@ -139,7 +139,7 @@ public class AuthService {
     }
 
     private RefreshToken validateRefreshToken(Long userId, String token) {
-        RefreshToken savedToken = refreshTokenRepository.findByUserId(userId)
+        RefreshToken savedToken = refreshTokenRepository.findById(userId)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.REFRESH_TOKEN_NOT_FOUND));
 
         if (!savedToken.getRefreshToken().equals(token)) {
