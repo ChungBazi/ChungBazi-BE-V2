@@ -27,7 +27,9 @@ public class SecurityConfig {
             "/swagger-ui/**",
             "/v3/api-docs/**",
             "/v1/global/health-check",
-            "/v1/auth/**"
+            "/v1/auth/kakao",
+            "/v1/auth/apple",
+            "/v1/auth/reissue"
     };
 
     @Bean

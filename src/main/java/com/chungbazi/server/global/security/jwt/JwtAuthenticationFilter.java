@@ -1,12 +1,16 @@
 package com.chungbazi.server.global.security.jwt;
 
+import com.chungbazi.server.domain.auth.application.TokenBlacklist;
+import com.chungbazi.server.global.security.BearerTokenExtractor;
 import com.chungbazi.server.global.security.CustomUserDetailService;
+import com.chungbazi.server.global.security.handler.TokenBlacklistHandler;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,6 +25,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
     private final CustomUserDetailService customUserDetailService;
+    private final TokenBlacklist tokenBlacklist;
+    private final TokenBlacklistHandler tokenBlacklistHandler;
 
     @Override
     protected void doFilterInternal(
@@ -28,11 +34,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-        String token = jwtProvider.resolveToken(request);
-
-        // TODO: 로그아웃 구현 후 관련 로직 추가
+        String token = BearerTokenExtractor.extractOrNull(request.getHeader(HttpHeaders.AUTHORIZATION));
 
         if (token != null && jwtProvider.validateToken(token)) {
+            if (tokenBlacklist.contains(token)) {
+                tokenBlacklistHandler.handleBlacklistedToken(response);
+                return;
+            }
             Claims claims = jwtProvider.getClaims(token);
             String userId = claims.getSubject();
 
