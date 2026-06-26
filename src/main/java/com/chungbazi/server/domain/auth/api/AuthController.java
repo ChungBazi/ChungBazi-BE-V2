@@ -36,11 +36,13 @@ public class AuthController implements AuthDocs {
         return CommonResponse.onSuccess(authService.loginWithApple(request));
     }
 
+    @Override
     @PostMapping("/reissue")
     public CommonResponse<AuthReissueResponse> reissueToken(@Valid @RequestBody AuthReissueRequest request) {
         return CommonResponse.onSuccess(authService.reissueToken(request));
     }
 
+    @Override
     @PostMapping("/logout")
     public CommonResponse<String> logout(
             @CurrentUser User user,
