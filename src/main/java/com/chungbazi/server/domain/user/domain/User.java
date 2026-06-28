@@ -42,6 +42,9 @@ public class User extends BaseTimeEntity {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "birth")
+    private String birth;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "sido_code")
     private SidoCode sidoCode;
@@ -97,5 +100,24 @@ public class User extends BaseTimeEntity {
 
     public void updateName(String name) {
         this.name = name;
+    }
+
+    public void saveUserOnboarding(
+            String name,
+            String birth,
+            SidoCode sidoCode,
+            String sigunguCode,
+            EducationCode educationCode,
+            EmploymentCode employmentCode,
+            IncomeLevel incomeLevel
+    ) {
+        this.name = name;
+        this.birth = birth;
+        this.sidoCode = sidoCode;
+        this.sigunguCode = sigunguCode;
+        this.educationCode = educationCode;
+        this.employmentCode = employmentCode;
+        this.incomeLevel = incomeLevel;
+        this.onboardingCompleted = true;
     }
 }
