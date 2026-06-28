@@ -20,25 +20,4 @@ public record UserOnboardingRequest(
         IncomeLevel incomeLevel,
         Set<PolicySubCategoryType> interestCategories
 ) {
-    public static UserOnboardingRequest of(
-            String name,
-            String bitrh,
-            SidoCode sidoCode,
-            String sigunguCode,
-            EducationCode educationCode,
-            EmploymentCode employmentCode,
-            IncomeLevel incomeLevel,
-            Set<PolicySubCategoryType> interestCategories
-    ) {
-        return UserOnboardingRequest.builder()
-                .name(name)
-                .birth(bitrh)
-                .sidoCode(sidoCode)
-                .sigunguCode(sigunguCode)
-                .educationCode(educationCode)
-                .employmentCode(employmentCode)
-                .incomeLevel(incomeLevel)
-                .interestCategories(interestCategories)
-                .build();
-    }
 }

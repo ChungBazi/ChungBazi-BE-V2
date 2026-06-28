@@ -1,5 +1,6 @@
 package com.chungbazi.server.domain.user.application;
 
+import com.chungbazi.server.domain.user.api.dto.UserNameRequest;
 import com.chungbazi.server.domain.user.api.dto.UserOnboardingRequest;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.domain.user.domain.UserInterest;
@@ -37,5 +38,10 @@ public class UserService {
         userInterestRepository.saveAll(userInterests);
 
         // TODO: 온보딩 가중치 로직 추가
+    }
+
+    @Transactional
+    public void updateUserName(User user, UserNameRequest request) {
+        user.updateName(request.name());
     }
 }
