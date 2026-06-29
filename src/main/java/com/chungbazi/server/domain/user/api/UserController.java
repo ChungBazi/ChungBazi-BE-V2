@@ -51,13 +51,15 @@ public class UserController implements UserDocs {
         return CommonResponse.onSuccess("사용자 정책 추천 기준이 성공적으로 수정되었습니다.");
     }
 
+    @Override
     @GetMapping("/me")
     public CommonResponse<UserInfoResponse> getUserInfo(@CurrentUser User user) {
         return CommonResponse.onSuccess(userService.getUserInfo(user));
     }
 
+    @Override
     @GetMapping("/policy-profile")
-    CommonResponse<UserPolicyResponse> getUserPolicy(@CurrentUser User user) {
+    public CommonResponse<UserPolicyResponse> getUserPolicy(@CurrentUser User user) {
         return CommonResponse.onSuccess(userService.getUserPolicy(user));
     }
 }

@@ -12,6 +12,7 @@ import lombok.Builder;
 import java.util.Set;
 
 @Builder
+@Schema(description = "사용자 정책 추천 기준 조회 API")
 public record UserPolicyResponse(
         @Schema(description = "생년월일", example = "2002-03-15")
         String birth,
