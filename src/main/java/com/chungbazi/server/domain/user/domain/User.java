@@ -120,4 +120,21 @@ public class User extends BaseTimeEntity {
         this.incomeLevel = incomeLevel;
         this.onboardingCompleted = true;
     }
+
+    public void updateUserPolicy(
+            String birth,
+            SidoCode sidoCode,
+            String sigunguCode,
+            EducationCode educationCode,
+            EmploymentCode employmentCode,
+            IncomeLevel incomeLevel
+    ) {
+        this.name = name;
+        this.birth = birth;
+        this.sidoCode = sidoCode;
+        this.sigunguCode = sigunguCode;
+        this.educationCode = educationCode;
+        this.employmentCode = employmentCode;
+        this.incomeLevel = incomeLevel;
+    }
 }

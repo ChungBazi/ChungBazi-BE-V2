@@ -2,6 +2,7 @@ package com.chungbazi.server.domain.user.api;
 
 import com.chungbazi.server.domain.user.api.dto.UserNameRequest;
 import com.chungbazi.server.domain.user.api.dto.UserOnboardingRequest;
+import com.chungbazi.server.domain.user.api.dto.UserPolicyRequest;
 import com.chungbazi.server.domain.user.application.UserService;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.global.common.CommonResponse;
@@ -33,5 +34,14 @@ public class UserController {
     ) {
         userService.updateUserName(user, request);
         return CommonResponse.onSuccess("사용자 이름이 성공적으로 수정되었습니다.");
+    }
+
+    @PatchMapping("/policy-profile")
+    public CommonResponse<String> updateUserPolicy(
+            @CurrentUser User user,
+            @Valid @RequestBody UserPolicyRequest request
+    ) {
+        userService.updateUserPolicy(user, request);
+        return CommonResponse.onSuccess("사용자 정책 추천 기준이 성공적으로 수정되었습니다.");
     }
 }
