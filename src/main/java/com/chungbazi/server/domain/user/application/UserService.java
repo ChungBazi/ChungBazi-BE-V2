@@ -4,6 +4,7 @@ import com.chungbazi.server.domain.policy.domain.type.PolicySubCategoryType;
 import com.chungbazi.server.domain.user.api.dto.UserNameRequest;
 import com.chungbazi.server.domain.user.api.dto.UserOnboardingRequest;
 import com.chungbazi.server.domain.user.api.dto.UserPolicyRequest;
+import com.chungbazi.server.domain.user.application.validator.UserValidator;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.domain.user.domain.UserInterest;
 import com.chungbazi.server.domain.user.infrastructure.UserInterestRepository;
@@ -21,9 +22,12 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserInterestRepository userInterestRepository;
+    private final UserValidator userValidator;
 
     @Transactional
     public void saveUserOnboarding(User user, UserOnboardingRequest request) {
+        userValidator.validateOnboarding(request);
+
         user.saveUserOnboarding(
                 request.name(),
                 request.birth(),
@@ -45,11 +49,13 @@ public class UserService {
 
     @Transactional
     public void updateUserName(User user, UserNameRequest request) {
+        userValidator.validateName(request.name());
         user.updateName(request.name());
     }
 
     @Transactional
     public void updateUserPolicy(User user, UserPolicyRequest request) {
+        userValidator.validatePolicy(request);
         user.updateUserPolicy(
                 request.birth(),
                 request.sidoCode(),
