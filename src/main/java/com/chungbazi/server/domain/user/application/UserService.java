@@ -4,6 +4,7 @@ import com.chungbazi.server.domain.policy.domain.type.PolicySubCategoryType;
 import com.chungbazi.server.domain.user.api.dto.UserNameRequest;
 import com.chungbazi.server.domain.user.api.dto.UserOnboardingRequest;
 import com.chungbazi.server.domain.user.api.dto.UserPolicyRequest;
+import com.chungbazi.server.domain.user.api.dto.response.UserInfoResponse;
 import com.chungbazi.server.domain.user.application.validator.UserValidator;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.domain.user.domain.UserInterest;
@@ -68,6 +69,10 @@ public class UserService {
         updateUserInterests(user, request.interestCategories());
 
         // TODO: 온보딩 가중치 로직 추가
+    }
+
+    public UserInfoResponse getUserInfo(User user) {
+        return UserInfoResponse.from(user);
     }
 
     private void updateUserInterests(User user, Set<PolicySubCategoryType> requestedCategories) {

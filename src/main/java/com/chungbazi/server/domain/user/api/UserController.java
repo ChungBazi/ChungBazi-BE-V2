@@ -4,6 +4,7 @@ import com.chungbazi.server.domain.user.api.docs.UserDocs;
 import com.chungbazi.server.domain.user.api.dto.UserNameRequest;
 import com.chungbazi.server.domain.user.api.dto.UserOnboardingRequest;
 import com.chungbazi.server.domain.user.api.dto.UserPolicyRequest;
+import com.chungbazi.server.domain.user.api.dto.response.UserInfoResponse;
 import com.chungbazi.server.domain.user.application.UserService;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.global.common.CommonResponse;
@@ -47,5 +48,10 @@ public class UserController implements UserDocs {
     ) {
         userService.updateUserPolicy(user, request);
         return CommonResponse.onSuccess("사용자 정책 추천 기준이 성공적으로 수정되었습니다.");
+    }
+
+    @GetMapping("/me")
+    public CommonResponse<UserInfoResponse> getUserInfo(@CurrentUser User user) {
+        return CommonResponse.onSuccess(userService.getUserInfo(user));
     }
 }
