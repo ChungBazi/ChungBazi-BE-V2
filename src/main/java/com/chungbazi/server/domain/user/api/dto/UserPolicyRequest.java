@@ -22,7 +22,7 @@ public record UserPolicyRequest(
         @Schema(description = "시군구 코드", example = "11110")
         String sigunguCode,
 
-        @Schema(description = "학력 코드", example = "UNIVERSITY_GRADUATE")
+        @Schema(description = "학력 코드", example = "UNIVERSITY_GRADUATED")
         EducationCode educationCode,
 
         @Schema(description = "취업 상태 코드", example = "EMPLOYED")
