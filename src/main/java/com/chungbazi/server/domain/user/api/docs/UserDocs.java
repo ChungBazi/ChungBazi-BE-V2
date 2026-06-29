@@ -1,8 +1,8 @@
 package com.chungbazi.server.domain.user.api.docs;
 
-import com.chungbazi.server.domain.user.api.dto.UserNameRequest;
-import com.chungbazi.server.domain.user.api.dto.UserOnboardingRequest;
-import com.chungbazi.server.domain.user.api.dto.UserPolicyRequest;
+import com.chungbazi.server.domain.user.api.dto.request.UserNameRequest;
+import com.chungbazi.server.domain.user.api.dto.request.UserOnboardingRequest;
+import com.chungbazi.server.domain.user.api.dto.request.UserPolicyRequest;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.global.common.CommonResponse;
 import com.chungbazi.server.global.resolver.CurrentUser;

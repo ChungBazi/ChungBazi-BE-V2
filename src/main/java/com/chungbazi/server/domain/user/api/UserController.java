@@ -1,9 +1,9 @@
 package com.chungbazi.server.domain.user.api;
 
 import com.chungbazi.server.domain.user.api.docs.UserDocs;
-import com.chungbazi.server.domain.user.api.dto.UserNameRequest;
-import com.chungbazi.server.domain.user.api.dto.UserOnboardingRequest;
-import com.chungbazi.server.domain.user.api.dto.UserPolicyRequest;
+import com.chungbazi.server.domain.user.api.dto.request.UserNameRequest;
+import com.chungbazi.server.domain.user.api.dto.request.UserOnboardingRequest;
+import com.chungbazi.server.domain.user.api.dto.request.UserPolicyRequest;
 import com.chungbazi.server.domain.user.api.dto.response.UserInfoResponse;
 import com.chungbazi.server.domain.user.api.dto.response.UserPolicyResponse;
 import com.chungbazi.server.domain.user.application.UserService;

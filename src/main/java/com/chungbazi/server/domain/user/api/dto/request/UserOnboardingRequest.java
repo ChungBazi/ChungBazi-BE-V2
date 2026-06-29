@@ -1,4 +1,4 @@
-package com.chungbazi.server.domain.user.api.dto;
+package com.chungbazi.server.domain.user.api.dto.request;
 
 import com.chungbazi.server.domain.policy.domain.type.EducationCode;
 import com.chungbazi.server.domain.policy.domain.type.EmploymentCode;
