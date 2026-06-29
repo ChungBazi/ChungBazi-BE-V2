@@ -39,12 +39,7 @@ public class UserService {
                 request.employmentCode(),
                 request.incomeLevel()
         );
-
-        List<UserInterest> userInterests = request.interestCategories().stream()
-                .map(subCategory -> UserInterest.createUserInterest(user, subCategory))
-                .toList();
-
-        userInterestRepository.saveAll(userInterests);
+        updateUserInterests(user, request.interestCategories());
 
         // TODO: 온보딩 가중치 로직 추가
     }

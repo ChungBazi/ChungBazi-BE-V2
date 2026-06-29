@@ -12,6 +12,8 @@ import com.chungbazi.server.domain.user.exception.code.UserErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.Set;
 
 @Component
@@ -19,6 +21,7 @@ import java.util.Set;
 public class UserValidator {
 
     private static final int MIN_INTEREST_CATEGORY_COUNT = 3;
+    private static final int MAX_SIGUNGU_CODE_LENGTH = 10;
 
     public void validateOnboarding(UserOnboardingRequest request) {
         validateName(request.name());
@@ -60,7 +63,7 @@ public class UserValidator {
             IncomeLevel incomeLevel,
             Set<PolicySubCategoryType> interestCategories
     ) {
-        if (birth == null || birth.isBlank()) {
+        if (!isValidBirth(birth)) {
             throw new UserException(UserErrorCode.INVALID_BIRTH);
         }
 
@@ -68,7 +71,7 @@ public class UserValidator {
             throw new UserException(UserErrorCode.INVALID_SIDO_CODE);
         }
 
-        if (sigunguCode == null || sigunguCode.isBlank()) {
+        if (sigunguCode == null || sigunguCode.isBlank() || sigunguCode.length() > MAX_SIGUNGU_CODE_LENGTH) {
             throw new UserException(UserErrorCode.INVALID_SIGUNGU_CODE);
         }
 
@@ -86,6 +89,19 @@ public class UserValidator {
 
         if (interestCategories == null || interestCategories.size() < MIN_INTEREST_CATEGORY_COUNT) {
             throw new UserException(UserErrorCode.INVALID_INTEREST_CATEGORY_COUNT);
+        }
+    }
+
+    private boolean isValidBirth(String birth) {
+        if (birth == null || birth.isBlank()) {
+            return false;
+        }
+
+        try {
+            LocalDate.parse(birth);
+            return true;
+        } catch (DateTimeParseException e) {
+            return false;
         }
     }
 }

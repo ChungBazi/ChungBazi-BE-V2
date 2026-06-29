@@ -14,7 +14,7 @@ import java.util.Set;
 @Builder
 @Schema(description = "사용자 정책 추천 기준 조회 API")
 public record UserPolicyResponse(
-        @Schema(description = "생년월일", example = "2002-03-15")
+        @Schema(description = "생년월일", example = "2002-03-15", pattern = "^\\d{4}-\\d{2}-\\d{2}$")
         String birth,
 
         @Schema(description = "시도 코드", example = "SEOUL")

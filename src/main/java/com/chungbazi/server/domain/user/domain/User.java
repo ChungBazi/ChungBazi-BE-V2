@@ -129,7 +129,6 @@ public class User extends BaseTimeEntity {
             EmploymentCode employmentCode,
             IncomeLevel incomeLevel
     ) {
-        this.name = name;
         this.birth = birth;
         this.sidoCode = sidoCode;
         this.sigunguCode = sigunguCode;

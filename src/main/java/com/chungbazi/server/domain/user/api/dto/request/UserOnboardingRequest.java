@@ -16,7 +16,7 @@ public record UserOnboardingRequest(
         @Schema(description = "사용자 이름", example = "주정빈")
         String name,
 
-        @Schema(description = "생년월일", example = "2002-03-15")
+        @Schema(description = "생년월일", example = "2002-03-15", pattern = "^\\d{4}-\\d{2}-\\d{2}$")
         String birth,
 
         @Schema(description = "시도 코드", example = "SEOUL")
