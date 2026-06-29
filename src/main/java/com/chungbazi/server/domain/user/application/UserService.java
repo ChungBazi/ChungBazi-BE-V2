@@ -56,6 +56,7 @@ public class UserService {
     @Transactional
     public void updateUserPolicy(User user, UserPolicyRequest request) {
         userValidator.validatePolicy(request);
+
         user.updateUserPolicy(
                 request.birth(),
                 request.sidoCode(),
