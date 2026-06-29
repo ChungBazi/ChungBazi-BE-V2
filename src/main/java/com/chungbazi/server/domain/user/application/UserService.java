@@ -5,6 +5,7 @@ import com.chungbazi.server.domain.user.api.dto.UserNameRequest;
 import com.chungbazi.server.domain.user.api.dto.UserOnboardingRequest;
 import com.chungbazi.server.domain.user.api.dto.UserPolicyRequest;
 import com.chungbazi.server.domain.user.api.dto.response.UserInfoResponse;
+import com.chungbazi.server.domain.user.api.dto.response.UserPolicyResponse;
 import com.chungbazi.server.domain.user.application.validator.UserValidator;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.domain.user.domain.UserInterest;
@@ -73,6 +74,14 @@ public class UserService {
 
     public UserInfoResponse getUserInfo(User user) {
         return UserInfoResponse.from(user);
+    }
+
+    public UserPolicyResponse getUserPolicy(User user) {
+        Set<PolicySubCategoryType> interestCategories = userInterestRepository.findAllByUser(user).stream()
+                .map(UserInterest::getSubCategory)
+                .collect(Collectors.toSet());
+
+        return UserPolicyResponse.of(user, interestCategories);
     }
 
     private void updateUserInterests(User user, Set<PolicySubCategoryType> requestedCategories) {

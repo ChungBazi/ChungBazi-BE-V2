@@ -5,6 +5,7 @@ import com.chungbazi.server.domain.user.api.dto.UserNameRequest;
 import com.chungbazi.server.domain.user.api.dto.UserOnboardingRequest;
 import com.chungbazi.server.domain.user.api.dto.UserPolicyRequest;
 import com.chungbazi.server.domain.user.api.dto.response.UserInfoResponse;
+import com.chungbazi.server.domain.user.api.dto.response.UserPolicyResponse;
 import com.chungbazi.server.domain.user.application.UserService;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.global.common.CommonResponse;
@@ -53,5 +54,10 @@ public class UserController implements UserDocs {
     @GetMapping("/me")
     public CommonResponse<UserInfoResponse> getUserInfo(@CurrentUser User user) {
         return CommonResponse.onSuccess(userService.getUserInfo(user));
+    }
+
+    @GetMapping("/policy-profile")
+    CommonResponse<UserPolicyResponse> getUserPolicy(@CurrentUser User user) {
+        return CommonResponse.onSuccess(userService.getUserPolicy(user));
     }
 }
