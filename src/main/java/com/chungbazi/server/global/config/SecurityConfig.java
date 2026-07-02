@@ -29,7 +29,8 @@ public class SecurityConfig {
             "/v1/global/health-check",
             "/v1/auth/kakao",
             "/v1/auth/apple",
-            "/v1/auth/reissue"
+            "/v1/auth/reissue",
+            "/v1/regions/**"
     };
 
     @Bean
