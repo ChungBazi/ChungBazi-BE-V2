@@ -14,8 +14,8 @@ public enum PolicyErrorCode implements BaseErrorCode {
     INVALID_POLICY_CATEGORY(HttpStatus.BAD_REQUEST, "POLICY4003", "유효하지 않은 정책 카테고리입니다."),
     INVALID_POLICY_REGION(HttpStatus.BAD_REQUEST, "POLICY4004", "유효하지 않은 정책 지역입니다."),
     INVALID_POLICY_CURSOR(HttpStatus.BAD_REQUEST, "POLICY4005", "유효하지 않은 정책 조회 커서입니다."),
-    REGION_NOT_INITIALIZED(HttpStatus.INTERNAL_SERVER_ERROR, "POLICY5001", "시군구 코드 데이터가 초기화되지 않았습니다.")
-
+    REGION_NOT_INITIALIZED(HttpStatus.INTERNAL_SERVER_ERROR, "POLICY5001", "시군구 코드 데이터가 초기화되지 않았습니다."),
+    INVALID_SEARCH_KEYWORD(HttpStatus.BAD_REQUEST, "POLICY4006", "검색어를 입력해주세요."),
     ;
 
     private final HttpStatus httpStatus;

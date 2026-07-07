@@ -191,6 +191,46 @@ public class PolicyRepositoryCustomImpl implements PolicyRepositoryCustom {
                 pageable, nullableDeadlineOrder());
     }
 
+    @Override
+    public long countSearchPolicies(
+            String keyword,
+            RecruitmentStatus closedStatus,
+            SidoCode sidoCode,
+            String sigunguCode
+    ) {
+        return count(
+                basePredicate(null, closedStatus, sidoCode, sigunguCode)
+                        .and(keywordPredicate(keyword))
+        );
+    }
+
+    @Override
+    public List<Policy> searchPolicies(
+            String keyword,
+            RecruitmentStatus closedStatus,
+            SidoCode sidoCode,
+            String sigunguCode,
+            LocalDateTime registeredAt,
+            Long policyId,
+            Pageable pageable
+    ) {
+        BooleanExpression predicate = basePredicate(null, closedStatus, sidoCode, sigunguCode)
+                .and(keywordPredicate(keyword));
+
+        if (policyId != null) {
+            predicate = predicate.and(latestCursor(registeredAt, policyId));
+        }
+
+        return fetch(predicate, pageable, latestOrder());
+    }
+
+    private BooleanExpression keywordPredicate(String keyword) {
+        return policy.title.containsIgnoreCase(keyword)
+                .or(policy.summary.containsIgnoreCase(keyword))
+                .or(policy.supportContent.containsIgnoreCase(keyword))
+                .or(policy.organizationName.containsIgnoreCase(keyword));
+    }
+
     private BooleanExpression basePredicate(PolicyCategoryType category,
                                             RecruitmentStatus closedStatus,
                                             SidoCode sidoCode,

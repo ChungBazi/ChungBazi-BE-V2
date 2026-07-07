@@ -137,4 +137,21 @@ public interface PolicyRepositoryCustom {
             Long policyId,
             Pageable pageable
     );
+
+    long countSearchPolicies(
+            String keyword,
+            RecruitmentStatus closedStatus,
+            SidoCode sidoCode,
+            String sigunguCode
+    );
+
+    List<Policy> searchPolicies(
+            String keyword,
+            RecruitmentStatus closedStatus,
+            SidoCode sidoCode,
+            String sigunguCode,
+            LocalDateTime registeredAt,
+            Long policyId,
+            Pageable pageable
+    );
 }
