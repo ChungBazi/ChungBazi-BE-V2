@@ -60,6 +60,20 @@ public class PolicySearchService {
         return RecentSearchPolicyListResponse.from(recentSearchPolicies);
     }
 
+    @Transactional
+    public void deleteRecentSearchPolicy(User user, Long keywordId) {
+        RecentSearchPolicy recentSearchPolicy = recentSearchPolicyRepository
+                .findByUserIdAndId(user.getId(), keywordId)
+                .orElseThrow(() -> new PolicyException(PolicyErrorCode.RECENT_SEARCH_KEYWORD_NOT_FOUND));
+
+        recentSearchPolicyRepository.delete(recentSearchPolicy);
+    }
+
+    @Transactional
+    public void deleteAllRecentSearchPolicies(User user) {
+        recentSearchPolicyRepository.deleteAllByUserId(user.getId());
+    }
+
     private String normalizeKeyword(String keyword) {
         if (keyword == null || keyword.isBlank()) {
             throw new PolicyException(PolicyErrorCode.INVALID_SEARCH_KEYWORD);

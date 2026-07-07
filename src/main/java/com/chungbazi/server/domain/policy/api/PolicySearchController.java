@@ -10,10 +10,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Validated
 @RestController
@@ -36,5 +33,20 @@ public class PolicySearchController {
     @GetMapping("/recent-search")
     public CommonResponse<RecentSearchPolicyListResponse> getRecentSearchPolicies(@CurrentUser User user) {
         return CommonResponse.onSuccess(policySearchService.getRecentSearchPolicies(user));
+    }
+
+    @DeleteMapping("/recent-search/{keywordId}")
+    public CommonResponse<String> deleteRecentSearchPolicy(
+            @CurrentUser User user,
+            @PathVariable Long keywordId
+    ) {
+        policySearchService.deleteRecentSearchPolicy(user, keywordId);
+        return CommonResponse.onSuccess("최근 검색어 삭제가 완료되었습니다.");
+    }
+
+    @DeleteMapping("/recent-search")
+    public CommonResponse<String> deleteAllRecentSearchPolicies(@CurrentUser User user) {
+        policySearchService.deleteAllRecentSearchPolicies(user);
+        return CommonResponse.onSuccess("최근 검색어 전체 삭제가 완료되었습니다.");
     }
 }
