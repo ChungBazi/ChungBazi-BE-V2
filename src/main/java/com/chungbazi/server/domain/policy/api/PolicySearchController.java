@@ -1,6 +1,7 @@
 package com.chungbazi.server.domain.policy.api;
 
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
+import com.chungbazi.server.domain.policy.api.dto.response.RecentSearchPolicyListResponse;
 import com.chungbazi.server.domain.policy.application.PolicySearchService;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.global.common.CommonResponse;
@@ -30,5 +31,10 @@ public class PolicySearchController {
             @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
     ) {
         return CommonResponse.onSuccess(policySearchService.searchPolicies(user, keyword, cursor, size));
+    }
+
+    @GetMapping("/recent-search")
+    public CommonResponse<RecentSearchPolicyListResponse> getRecentSearchPolicies(@CurrentUser User user) {
+        return CommonResponse.onSuccess(policySearchService.getRecentSearchPolicies(user));
     }
 }
