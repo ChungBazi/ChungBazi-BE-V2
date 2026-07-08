@@ -8,6 +8,7 @@ import java.util.Optional;
 
 public interface RecentSearchPolicyRepository extends JpaRepository<RecentSearchPolicy, Long> {
     List<RecentSearchPolicy> findTop5ByUserIdOrderByLastSearchedAtDesc(Long userId);
+    Optional<RecentSearchPolicy> findByUserIdAndKeyword(Long userId, String keyword);
     Optional<RecentSearchPolicy> findByUserIdAndId(Long userId, Long id);
     void deleteAllByUserId(Long userId);
 }

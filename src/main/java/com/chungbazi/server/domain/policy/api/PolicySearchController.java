@@ -1,5 +1,6 @@
 package com.chungbazi.server.domain.policy.api;
 
+import com.chungbazi.server.domain.policy.api.dto.request.SearchPolicyAutoSaveRequest;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.RecentSearchPolicyListResponse;
 import com.chungbazi.server.domain.policy.application.PolicySearchService;
@@ -28,6 +29,15 @@ public class PolicySearchController {
             @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
     ) {
         return CommonResponse.onSuccess(policySearchService.searchPolicies(user, keyword, cursor, size));
+    }
+
+    @PatchMapping("/recent-search/auto-save")
+    public CommonResponse<String> updateSearchPolicyAutoSaveEnabled(
+            @CurrentUser User user,
+            @RequestBody SearchPolicyAutoSaveRequest request
+    ) {
+        policySearchService.updateSearchPolicyAutoSaveEnabled(user, request.enabled());
+        return CommonResponse.onSuccess("자동 저장 설정이 완료되었습니다.");
     }
 
     @GetMapping("/recent-search")

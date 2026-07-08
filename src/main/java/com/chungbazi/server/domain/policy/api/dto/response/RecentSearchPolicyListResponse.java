@@ -1,22 +1,27 @@
 package com.chungbazi.server.domain.policy.api.dto.response;
 
 import com.chungbazi.server.domain.policy.domain.entity.RecentSearchPolicy;
+import com.chungbazi.server.domain.user.domain.User;
 import lombok.Builder;
 
 import java.util.List;
 
 @Builder
 public record RecentSearchPolicyListResponse(
+        boolean autoSaveEnabled,
         List<RecentSearchPolicyResponse> keywords
 ) {
-    public static RecentSearchPolicyListResponse from(List<RecentSearchPolicy> policies) {
+    public static RecentSearchPolicyListResponse of(
+            User user,
+            List<RecentSearchPolicy> policies
+    ) {
         return RecentSearchPolicyListResponse.builder()
+                .autoSaveEnabled(user.isSearchPolicyAutoSaveEnabled())
                 .keywords(
                         policies.stream()
                                 .map(RecentSearchPolicyResponse::from)
                                 .toList()
-                )
-                .build();
+                ).build();
     }
 
     @Builder

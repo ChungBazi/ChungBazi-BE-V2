@@ -33,6 +33,10 @@ public class PolicySearchService {
         PolicySortType sort = PolicySortType.LATEST;
         String normalizedKeyword = normalizeKeyword(keyword);
         PolicyCursor decodedCursor = PolicyCursorParser.decode(cursor, sort);
+        // 최근 검색어 저장
+        if (user.isSearchPolicyAutoSaveEnabled()) {
+            saveRecentSearchPolicy(user, normalizedKeyword);
+        }
 
         List<Policy> fetchedPolicies = policyRepository.searchPolicies(
                 normalizedKeyword,
@@ -57,7 +61,23 @@ public class PolicySearchService {
         List<RecentSearchPolicy> recentSearchPolicies =
                 recentSearchPolicyRepository.findTop5ByUserIdOrderByLastSearchedAtDesc(user.getId());
 
-        return RecentSearchPolicyListResponse.from(recentSearchPolicies);
+        return RecentSearchPolicyListResponse.of(user, recentSearchPolicies);
+    }
+
+    @Transactional
+    public void updateSearchPolicyAutoSaveEnabled(User user, boolean enabled) {
+        user.updateSearchPolicyAutoSaveEnabled(enabled);
+    }
+
+    @Transactional
+    public void saveRecentSearchPolicy(User user, String keyword) {
+        recentSearchPolicyRepository.findByUserIdAndKeyword(user.getId(), keyword)
+                .ifPresentOrElse(
+                        RecentSearchPolicy::refresh,
+                        () -> recentSearchPolicyRepository.save(
+                                RecentSearchPolicy.create(user.getId(), keyword)
+                        )
+                );
     }
 
     @Transactional
