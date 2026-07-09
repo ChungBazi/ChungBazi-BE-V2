@@ -42,6 +42,9 @@ public class User extends BaseTimeEntity {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "birth")
+    private String birth;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "sido_code")
     private SidoCode sidoCode;
@@ -68,7 +71,7 @@ public class User extends BaseTimeEntity {
     private boolean onboardingCompleted;
 
     @Column(name = "search_policy_auto_save_enabled", nullable = false)
-    private boolean searchPolicyAutoSaveEnabled = true;
+    private boolean searchPolicyAutoSaveEnabled;
 
     @Column(name = "is_deleted", nullable = false)
     private boolean deleted;
@@ -101,6 +104,41 @@ public class User extends BaseTimeEntity {
 
     public void updateName(String name) {
         this.name = name;
+    }
+
+    public void saveUserOnboarding(
+            String name,
+            String birth,
+            SidoCode sidoCode,
+            String sigunguCode,
+            EducationCode educationCode,
+            EmploymentCode employmentCode,
+            IncomeLevel incomeLevel
+    ) {
+        this.name = name;
+        this.birth = birth;
+        this.sidoCode = sidoCode;
+        this.sigunguCode = sigunguCode;
+        this.educationCode = educationCode;
+        this.employmentCode = employmentCode;
+        this.incomeLevel = incomeLevel;
+        this.onboardingCompleted = true;
+    }
+
+    public void updateUserPolicy(
+            String birth,
+            SidoCode sidoCode,
+            String sigunguCode,
+            EducationCode educationCode,
+            EmploymentCode employmentCode,
+            IncomeLevel incomeLevel
+    ) {
+        this.birth = birth;
+        this.sidoCode = sidoCode;
+        this.sigunguCode = sigunguCode;
+        this.educationCode = educationCode;
+        this.employmentCode = employmentCode;
+        this.incomeLevel = incomeLevel;
     }
 
     public void updateSearchPolicyAutoSaveEnabled(boolean enabled) {

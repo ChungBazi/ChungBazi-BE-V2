@@ -1,6 +1,9 @@
 package com.chungbazi.server.global.security;
 
 import com.chungbazi.server.domain.user.domain.User;
+import com.chungbazi.server.domain.user.exception.UserException;
+import com.chungbazi.server.domain.user.exception.code.UserErrorCode;
+import com.chungbazi.server.domain.user.infrastructure.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -8,7 +11,11 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CurrentUserProvider {
 
+    private final UserRepository userRepository;
+
     public User getCurrentUser() {
-        return SecurityUtils.getCurrentUser();
+        Long userId = SecurityUtils.getCurrentUserId();
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
     }
 }

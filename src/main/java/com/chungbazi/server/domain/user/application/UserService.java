@@ -1,0 +1,101 @@
+package com.chungbazi.server.domain.user.application;
+
+import com.chungbazi.server.domain.policy.domain.type.PolicySubCategoryType;
+import com.chungbazi.server.domain.user.api.dto.request.UserNameRequest;
+import com.chungbazi.server.domain.user.api.dto.request.UserOnboardingRequest;
+import com.chungbazi.server.domain.user.api.dto.request.UserPolicyRequest;
+import com.chungbazi.server.domain.user.api.dto.response.UserInfoResponse;
+import com.chungbazi.server.domain.user.api.dto.response.UserPolicyResponse;
+import com.chungbazi.server.domain.user.application.validator.UserValidator;
+import com.chungbazi.server.domain.user.domain.User;
+import com.chungbazi.server.domain.user.domain.UserInterest;
+import com.chungbazi.server.domain.user.infrastructure.UserInterestRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class UserService {
+
+    private final UserInterestRepository userInterestRepository;
+    private final UserValidator userValidator;
+
+    @Transactional
+    public void saveUserOnboarding(User user, UserOnboardingRequest request) {
+        userValidator.validateOnboarding(request);
+
+        user.saveUserOnboarding(
+                request.name(),
+                request.birth(),
+                request.sidoCode(),
+                request.sigunguCode(),
+                request.educationCode(),
+                request.employmentCode(),
+                request.incomeLevel()
+        );
+        updateUserInterests(user, request.interestCategories());
+
+        // TODO: 온보딩 가중치 로직 추가
+    }
+
+    @Transactional
+    public void updateUserName(User user, UserNameRequest request) {
+        userValidator.validateName(request.name());
+        user.updateName(request.name());
+    }
+
+    @Transactional
+    public void updateUserPolicy(User user, UserPolicyRequest request) {
+        userValidator.validatePolicy(request);
+
+        user.updateUserPolicy(
+                request.birth(),
+                request.sidoCode(),
+                request.sigunguCode(),
+                request.educationCode(),
+                request.employmentCode(),
+                request.incomeLevel()
+        );
+        updateUserInterests(user, request.interestCategories());
+
+        // TODO: 온보딩 가중치 로직 추가
+    }
+
+    public UserInfoResponse getUserInfo(User user) {
+        return UserInfoResponse.from(user);
+    }
+
+    public UserPolicyResponse getUserPolicy(User user) {
+        Set<PolicySubCategoryType> interestCategories = userInterestRepository.findAllByUser(user).stream()
+                .map(UserInterest::getSubCategory)
+                .collect(Collectors.toSet());
+
+        return UserPolicyResponse.of(user, interestCategories);
+    }
+
+    private void updateUserInterests(User user, Set<PolicySubCategoryType> requestedCategories) {
+        List<UserInterest> existingInterests = userInterestRepository.findAllByUser(user);
+
+        List<UserInterest> deleteTargets = existingInterests.stream()
+                .filter(interest -> !requestedCategories.contains(interest.getSubCategory()))
+                .toList();
+
+        Set<PolicySubCategoryType> existingCategories = existingInterests.stream()
+                .map(UserInterest::getSubCategory)
+                .collect(Collectors.toSet());
+
+        List<UserInterest> addTargets = requestedCategories.stream()
+                .filter(category -> !existingCategories.contains(category))
+                .map(category -> UserInterest.createUserInterest(user, category))
+                .toList();
+
+        userInterestRepository.deleteAll(deleteTargets);
+        userInterestRepository.saveAll(addTargets);
+    }
+}

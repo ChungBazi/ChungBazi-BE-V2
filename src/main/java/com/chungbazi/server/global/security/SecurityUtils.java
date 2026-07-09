@@ -19,4 +19,8 @@ public class SecurityUtils {
         }
         return ((CustomUserDetails) authentication.getPrincipal()).getUser();
     }
+
+    public static Long getCurrentUserId() {
+        return getCurrentUser().getId();
+    }
 }
