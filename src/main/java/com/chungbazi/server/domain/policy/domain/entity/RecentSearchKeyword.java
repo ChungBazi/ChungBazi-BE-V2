@@ -10,23 +10,23 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(
-        name = "recent_search_policy",
+        name = "recent_search_keyword",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "uk_recent_search_policy_user_keyword",
+                        name = "uk_recent_search_keyword_user_keyword",
                         columnNames = {"user_id", "keyword"}
                 )
         },
         indexes = {
                 @Index(
-                        name = "idx_recent_search_policy_user_updated",
-                        columnList = "user_id, updated_at"
+                        name = "idx_recent_search_keyword_user_last_searched",
+                        columnList = "user_id, last_searched_at"
                 )
         }
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class RecentSearchPolicy extends BaseTimeEntity {
+public class RecentSearchKeyword extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,12 +42,12 @@ public class RecentSearchPolicy extends BaseTimeEntity {
     @Column(name = "last_searched_at", nullable = false)
     private LocalDateTime lastSearchedAt;
 
-    public static RecentSearchPolicy create(Long userId, String keyword) {
-        RecentSearchPolicy recentSearchPolicy = new RecentSearchPolicy();
-        recentSearchPolicy.userId = userId;
-        recentSearchPolicy.keyword = keyword;
-        recentSearchPolicy.lastSearchedAt = LocalDateTime.now();
-        return recentSearchPolicy;
+    public static RecentSearchKeyword create(Long userId, String keyword) {
+        RecentSearchKeyword recentSearchKeyword = new RecentSearchKeyword();
+        recentSearchKeyword.userId = userId;
+        recentSearchKeyword.keyword = keyword;
+        recentSearchKeyword.lastSearchedAt = LocalDateTime.now();
+        return recentSearchKeyword;
     }
 
     public void refresh() {

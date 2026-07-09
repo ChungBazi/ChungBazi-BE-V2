@@ -1,8 +1,8 @@
 package com.chungbazi.server.domain.policy.api;
 
-import com.chungbazi.server.domain.policy.api.dto.request.SearchPolicyAutoSaveRequest;
+import com.chungbazi.server.domain.policy.api.dto.request.SearchKeywordAutoSaveRequest;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
-import com.chungbazi.server.domain.policy.api.dto.response.RecentSearchPolicyListResponse;
+import com.chungbazi.server.domain.policy.api.dto.response.RecentSearchKeywordListResponse;
 import com.chungbazi.server.domain.policy.application.PolicySearchService;
 import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
 import com.chungbazi.server.domain.policy.domain.type.PolicySortType;
@@ -36,31 +36,31 @@ public class PolicySearchController {
     }
 
     @PatchMapping("/recent-search/auto-save")
-    public CommonResponse<String> updateSearchPolicyAutoSaveEnabled(
+    public CommonResponse<String> updateSearchKeywordAutoSaveEnabled(
             @CurrentUser User user,
-            @RequestBody SearchPolicyAutoSaveRequest request
+            @RequestBody SearchKeywordAutoSaveRequest request
     ) {
-        policySearchService.updateSearchPolicyAutoSaveEnabled(user, request.enabled());
+        policySearchService.updateSearchKeywordAutoSaveEnabled(user, request.enabled());
         return CommonResponse.onSuccess("자동 저장 설정이 완료되었습니다.");
     }
 
     @GetMapping("/recent-search")
-    public CommonResponse<RecentSearchPolicyListResponse> getRecentSearchPolicies(@CurrentUser User user) {
-        return CommonResponse.onSuccess(policySearchService.getRecentSearchPolicies(user));
+    public CommonResponse<RecentSearchKeywordListResponse> getRecentSearchKeywords(@CurrentUser User user) {
+        return CommonResponse.onSuccess(policySearchService.getRecentSearchKeywords(user));
     }
 
     @DeleteMapping("/recent-search/{keywordId}")
-    public CommonResponse<String> deleteRecentSearchPolicy(
+    public CommonResponse<String> deleteRecentSearchKeyword(
             @CurrentUser User user,
             @PathVariable Long keywordId
     ) {
-        policySearchService.deleteRecentSearchPolicy(user, keywordId);
+        policySearchService.deleteRecentSearchKeyword(user, keywordId);
         return CommonResponse.onSuccess("최근 검색어 삭제가 완료되었습니다.");
     }
 
     @DeleteMapping("/recent-search")
-    public CommonResponse<String> deleteAllRecentSearchPolicies(@CurrentUser User user) {
-        policySearchService.deleteAllRecentSearchPolicies(user);
+    public CommonResponse<String> deleteAllRecentSearchKeywords(@CurrentUser User user) {
+        policySearchService.deleteAllRecentSearchKeywords(user);
         return CommonResponse.onSuccess("최근 검색어 전체 삭제가 완료되었습니다.");
     }
 }

@@ -1,12 +1,12 @@
 package com.chungbazi.server.domain.policy.application;
 
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
-import com.chungbazi.server.domain.policy.api.dto.response.RecentSearchPolicyListResponse;
+import com.chungbazi.server.domain.policy.api.dto.response.RecentSearchKeywordListResponse;
 import com.chungbazi.server.domain.policy.application.cursor.PolicyCursor;
 import com.chungbazi.server.domain.policy.application.cursor.PolicyCursorParser;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
-import com.chungbazi.server.domain.policy.domain.entity.RecentSearchPolicy;
-import com.chungbazi.server.domain.policy.domain.repository.RecentSearchPolicyRepository;
+import com.chungbazi.server.domain.policy.domain.entity.RecentSearchKeyword;
+import com.chungbazi.server.domain.policy.domain.repository.RecentSearchKeywordRepository;
 import com.chungbazi.server.domain.policy.domain.repository.policyRepository.PolicyRepository;
 import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
 import com.chungbazi.server.domain.policy.domain.type.PolicySortType;
@@ -27,7 +27,7 @@ import java.util.List;
 public class PolicySearchService {
 
     private final PolicyRepository policyRepository;
-    private final RecentSearchPolicyRepository recentSearchPolicyRepository;
+    private final RecentSearchKeywordRepository recentSearchKeywordRepository;
     private final PolicyListResponseAssembler policyListResponseAssembler;
 
     @Transactional
@@ -42,8 +42,8 @@ public class PolicySearchService {
         String normalizedKeyword = normalizeKeyword(keyword);
         PolicyCursor decodedCursor = PolicyCursorParser.decode(cursor, sort);
         // 최근 검색어 저장
-        if (user.isSearchPolicyAutoSaveEnabled()) {
-            saveRecentSearchPolicy(user, normalizedKeyword);
+        if (user.isSearchKeywordAutoSaveEnabled()) {
+            saveRecentSearchKeyword(user, normalizedKeyword);
         }
 
         List<Policy> fetchedPolicies = policyRepository.searchPolicies(
@@ -69,41 +69,41 @@ public class PolicySearchService {
         return policyListResponseAssembler.assemble(user, sort, fetchedPolicies, totalCount, size);
     }
 
-    public RecentSearchPolicyListResponse getRecentSearchPolicies(User user) {
-        List<RecentSearchPolicy> recentSearchPolicies =
-                recentSearchPolicyRepository.findTop5ByUserIdOrderByLastSearchedAtDesc(user.getId());
+    public RecentSearchKeywordListResponse getRecentSearchKeywords(User user) {
+        List<RecentSearchKeyword> recentSearchKeywords =
+                recentSearchKeywordRepository.findTop10ByUserIdOrderByLastSearchedAtDesc(user.getId());
 
-        return RecentSearchPolicyListResponse.of(user, recentSearchPolicies);
+        return RecentSearchKeywordListResponse.of(user, recentSearchKeywords);
     }
 
     @Transactional
-    public void updateSearchPolicyAutoSaveEnabled(User user, boolean enabled) {
-        user.updateSearchPolicyAutoSaveEnabled(enabled);
+    public void updateSearchKeywordAutoSaveEnabled(User user, boolean enabled) {
+        user.updateSearchKeywordAutoSaveEnabled(enabled);
     }
 
     @Transactional
-    public void saveRecentSearchPolicy(User user, String keyword) {
-        recentSearchPolicyRepository.findByUserIdAndKeyword(user.getId(), keyword)
+    public void saveRecentSearchKeyword(User user, String keyword) {
+        recentSearchKeywordRepository.findByUserIdAndKeyword(user.getId(), keyword)
                 .ifPresentOrElse(
-                        RecentSearchPolicy::refresh,
-                        () -> recentSearchPolicyRepository.save(
-                                RecentSearchPolicy.create(user.getId(), keyword)
+                        RecentSearchKeyword::refresh,
+                        () -> recentSearchKeywordRepository.save(
+                                RecentSearchKeyword.create(user.getId(), keyword)
                         )
                 );
     }
 
     @Transactional
-    public void deleteRecentSearchPolicy(User user, Long keywordId) {
-        RecentSearchPolicy recentSearchPolicy = recentSearchPolicyRepository
+    public void deleteRecentSearchKeyword(User user, Long keywordId) {
+        RecentSearchKeyword recentSearchKeyword = recentSearchKeywordRepository
                 .findByUserIdAndId(user.getId(), keywordId)
                 .orElseThrow(() -> new PolicyException(PolicyErrorCode.RECENT_SEARCH_KEYWORD_NOT_FOUND));
 
-        recentSearchPolicyRepository.delete(recentSearchPolicy);
+        recentSearchKeywordRepository.delete(recentSearchKeyword);
     }
 
     @Transactional
-    public void deleteAllRecentSearchPolicies(User user) {
-        recentSearchPolicyRepository.deleteAllByUserId(user.getId());
+    public void deleteAllRecentSearchKeywords(User user) {
+        recentSearchKeywordRepository.deleteAllByUserId(user.getId());
     }
 
     private String normalizeKeyword(String keyword) {

@@ -70,8 +70,8 @@ public class User extends BaseTimeEntity {
     @Column(name = "onboarding_completed", nullable = false)
     private boolean onboardingCompleted;
 
-    @Column(name = "search_policy_auto_save_enabled", nullable = false)
-    private boolean searchPolicyAutoSaveEnabled;
+    @Column(name = "search_keyword_auto_save_enabled", nullable = false)
+    private boolean searchKeywordAutoSaveEnabled;
 
     @Column(name = "is_deleted", nullable = false)
     private boolean deleted;
@@ -93,7 +93,7 @@ public class User extends BaseTimeEntity {
         user.name = name;
         user.fcmToken = fcmToken;
         user.onboardingCompleted = false;
-        user.searchPolicyAutoSaveEnabled = true;
+        user.searchKeywordAutoSaveEnabled = true;
         user.deleted = false;
         return user;
     }
@@ -141,7 +141,7 @@ public class User extends BaseTimeEntity {
         this.incomeLevel = incomeLevel;
     }
 
-    public void updateSearchPolicyAutoSaveEnabled(boolean enabled) {
-        this.searchPolicyAutoSaveEnabled = enabled;
+    public void updateSearchKeywordAutoSaveEnabled(boolean enabled) {
+        this.searchKeywordAutoSaveEnabled = enabled;
     }
 }
