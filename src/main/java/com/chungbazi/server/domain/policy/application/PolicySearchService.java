@@ -8,6 +8,7 @@ import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.entity.RecentSearchPolicy;
 import com.chungbazi.server.domain.policy.domain.repository.RecentSearchPolicyRepository;
 import com.chungbazi.server.domain.policy.domain.repository.policyRepository.PolicyRepository;
+import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
 import com.chungbazi.server.domain.policy.domain.type.PolicySortType;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
 import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
@@ -29,8 +30,15 @@ public class PolicySearchService {
     private final RecentSearchPolicyRepository recentSearchPolicyRepository;
     private final PolicyListResponseAssembler policyListResponseAssembler;
 
-    public PolicyListResponse searchPolicies(User user, String keyword, String cursor, int size) {
-        PolicySortType sort = PolicySortType.LATEST;
+    @Transactional
+    public PolicyListResponse searchPolicies(
+            User user,
+            String keyword,
+            PolicyCategoryType category,
+            PolicySortType sort,
+            String cursor,
+            int size
+    ) {
         String normalizedKeyword = normalizeKeyword(keyword);
         PolicyCursor decodedCursor = PolicyCursorParser.decode(cursor, sort);
         // 최근 검색어 저장
@@ -40,16 +48,20 @@ public class PolicySearchService {
 
         List<Policy> fetchedPolicies = policyRepository.searchPolicies(
                 normalizedKeyword,
+                category,
+                sort,
                 RecruitmentStatus.CLOSED,
                 user.getSidoCode(),
                 user.getSigunguCode(),
                 decodedCursor == null ? null : decodedCursor.registeredAt(),
+                decodedCursor == null ? null : decodedCursor.applyEndDate(),
                 decodedCursor == null ? null : decodedCursor.policyId(),
                 PageRequest.of(0, size + 1)
         );
 
         long totalCount = policyRepository.countSearchPolicies(
                 normalizedKeyword,
+                category,
                 RecruitmentStatus.CLOSED,
                 user.getSidoCode(),
                 user.getSigunguCode()

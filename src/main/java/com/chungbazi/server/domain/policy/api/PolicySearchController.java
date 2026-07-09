@@ -4,6 +4,8 @@ import com.chungbazi.server.domain.policy.api.dto.request.SearchPolicyAutoSaveRe
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.RecentSearchPolicyListResponse;
 import com.chungbazi.server.domain.policy.application.PolicySearchService;
+import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
+import com.chungbazi.server.domain.policy.domain.type.PolicySortType;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.global.common.CommonResponse;
 import com.chungbazi.server.global.resolver.CurrentUser;
@@ -25,10 +27,12 @@ public class PolicySearchController {
     public CommonResponse<PolicyListResponse> searchPolicies(
             @CurrentUser User user,
             @RequestParam String keyword,
+            @RequestParam(required = false) PolicyCategoryType category,
+            @RequestParam(defaultValue = "LATEST") PolicySortType sort,
             @RequestParam(required = false) String cursor,
             @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
     ) {
-        return CommonResponse.onSuccess(policySearchService.searchPolicies(user, keyword, cursor, size));
+        return CommonResponse.onSuccess(policySearchService.searchPolicies(user, keyword, category, sort, cursor, size));
     }
 
     @PatchMapping("/recent-search/auto-save")
