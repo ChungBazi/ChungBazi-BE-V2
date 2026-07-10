@@ -5,6 +5,8 @@ import com.chungbazi.server.domain.policy.api.dto.response.RecentSearchKeywordLi
 import com.chungbazi.server.domain.policy.api.dto.response.SearchSuggestionResponse;
 import com.chungbazi.server.domain.policy.application.cursor.PolicyCursor;
 import com.chungbazi.server.domain.policy.application.cursor.PolicyCursorParser;
+import com.chungbazi.server.domain.policy.application.cursor.RecentSearchKeywordCursor;
+import com.chungbazi.server.domain.policy.application.cursor.RecentSearchKeywordCursorParser;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.entity.RecentSearchKeyword;
 import com.chungbazi.server.domain.policy.domain.repository.RecentSearchKeywordRepository;
@@ -86,11 +88,18 @@ public class PolicySearchService {
         return SearchSuggestionResponse.of(suggestions);
     }
 
-    public RecentSearchKeywordListResponse getRecentSearchKeywords(User user) {
-        List<RecentSearchKeyword> recentSearchKeywords =
-                recentSearchKeywordRepository.findTop10ByUserIdOrderByLastSearchedAtDesc(user.getId());
+    public RecentSearchKeywordListResponse getRecentSearchKeywords(User user, String cursor, int size) {
+        RecentSearchKeywordCursor decodedCursor = RecentSearchKeywordCursorParser.decode(cursor);
 
-        return RecentSearchKeywordListResponse.of(user, recentSearchKeywords);
+        List<RecentSearchKeyword> recentSearchKeywords =
+                recentSearchKeywordRepository.findRecentSearchKeywords(
+                        user.getId(),
+                        decodedCursor == null ? null : decodedCursor.lastSearchedAt(),
+                        decodedCursor == null ? null : decodedCursor.keywordId(),
+                        PageRequest.of(0, size + 1)
+                );
+
+        return RecentSearchKeywordListResponse.of(user, recentSearchKeywords, size);
     }
 
     @Transactional

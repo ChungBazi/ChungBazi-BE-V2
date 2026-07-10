@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "[Policy Search]", description = "정책 검색 관련 API")
 public interface PolicySearchDocs {
-
     @Operation(
             summary = "정책 검색 결과 조회 API",
             description = """
@@ -107,7 +106,9 @@ public interface PolicySearchDocs {
                     ### ResponseBody
                     ---
                     - `autoSaveEnabled`: 최근 검색어 자동 저장 여부
-                    - `keywords`: 최근 검색어 목록. 최근 검색 시각 기준 최대 10개를 반환
+                    - `keywords`: 최근 검색어 목록. 최근 검색 시각 기준 내림차순으로 반환
+                    - `nextCursor`: 다음 페이지 조회 커서. 다음 페이지가 없으면 null
+                    - `hasNext`: 다음 페이지 존재 여부
                     """
     )
     @ApiResponses(value = {
@@ -115,7 +116,11 @@ public interface PolicySearchDocs {
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
     })
     CommonResponse<RecentSearchKeywordListResponse> getRecentSearchKeywords(
-            @CurrentUser User user
+            @CurrentUser User user,
+            @Parameter(description = "이전 응답에서 받은 다음 페이지 커서")
+            @RequestParam(required = false) String cursor,
+            @Parameter(description = "조회 개수", example = "20")
+            @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
     );
 
     @Operation(

@@ -14,10 +14,8 @@ import com.chungbazi.server.global.resolver.CurrentUser;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-@Validated
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/policies")
@@ -25,6 +23,7 @@ public class PolicySearchController implements PolicySearchDocs {
 
     private final PolicySearchService policySearchService;
 
+    @Override
     @GetMapping("/search")
     public CommonResponse<PolicyListResponse> searchPolicies(
             @CurrentUser User user,
@@ -37,6 +36,7 @@ public class PolicySearchController implements PolicySearchDocs {
         return CommonResponse.onSuccess(policySearchService.searchPolicies(user, keyword, category, sort, cursor, size));
     }
 
+    @Override
     @GetMapping("/search/suggestions")
     public CommonResponse<SearchSuggestionResponse> getSearchSuggestions(
             @CurrentUser User user,
@@ -45,6 +45,7 @@ public class PolicySearchController implements PolicySearchDocs {
         return CommonResponse.onSuccess(policySearchService.getSearchSuggestions(user, keyword));
     }
 
+    @Override
     @PatchMapping("/recent-search/auto-save")
     public CommonResponse<String> updateSearchKeywordAutoSaveEnabled(
             @CurrentUser User user,
@@ -54,11 +55,17 @@ public class PolicySearchController implements PolicySearchDocs {
         return CommonResponse.onSuccess("자동 저장 설정이 완료되었습니다.");
     }
 
+    @Override
     @GetMapping("/recent-search")
-    public CommonResponse<RecentSearchKeywordListResponse> getRecentSearchKeywords(@CurrentUser User user) {
-        return CommonResponse.onSuccess(policySearchService.getRecentSearchKeywords(user));
+    public CommonResponse<RecentSearchKeywordListResponse> getRecentSearchKeywords(
+            @CurrentUser User user,
+            @RequestParam(required = false) String cursor,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
+    ) {
+        return CommonResponse.onSuccess(policySearchService.getRecentSearchKeywords(user, cursor, size));
     }
 
+    @Override
     @DeleteMapping("/recent-search/{keywordId}")
     public CommonResponse<String> deleteRecentSearchKeyword(
             @CurrentUser User user,
@@ -68,6 +75,7 @@ public class PolicySearchController implements PolicySearchDocs {
         return CommonResponse.onSuccess("최근 검색어 삭제가 완료되었습니다.");
     }
 
+    @Override
     @DeleteMapping("/recent-search")
     public CommonResponse<String> deleteAllRecentSearchKeywords(@CurrentUser User user) {
         policySearchService.deleteAllRecentSearchKeywords(user);
