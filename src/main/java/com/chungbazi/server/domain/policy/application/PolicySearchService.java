@@ -18,6 +18,7 @@ import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
 import com.chungbazi.server.domain.policy.exception.PolicyException;
 import com.chungbazi.server.domain.user.domain.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -112,9 +113,7 @@ public class PolicySearchService {
         recentSearchKeywordRepository.findByUserIdAndKeyword(user.getId(), keyword)
                 .ifPresentOrElse(
                         RecentSearchKeyword::refresh,
-                        () -> recentSearchKeywordRepository.save(
-                                RecentSearchKeyword.create(user.getId(), keyword)
-                        )
+                        () -> saveNewRecentSearchKeyword(user.getId(), keyword)
                 );
     }
 
@@ -136,5 +135,19 @@ public class PolicySearchService {
             throw new PolicyException(PolicyErrorCode.INVALID_SEARCH_KEYWORD);
         }
         return keyword.trim();
+    }
+
+    private void saveNewRecentSearchKeyword(Long userId, String keyword) {
+        try {
+            recentSearchKeywordRepository.save(
+                    RecentSearchKeyword.create(userId, keyword)
+            );
+        } catch (DataIntegrityViolationException exception) {
+            RecentSearchKeyword recentSearchKeyword =
+                    recentSearchKeywordRepository.findByUserIdAndKeyword(userId, keyword)
+                            .orElseThrow(() -> exception);
+
+            recentSearchKeyword.refresh();
+        }
     }
 }
