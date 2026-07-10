@@ -2,6 +2,7 @@ package com.chungbazi.server.domain.policy.application;
 
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.RecentSearchKeywordListResponse;
+import com.chungbazi.server.domain.policy.api.dto.response.SearchSuggestionResponse;
 import com.chungbazi.server.domain.policy.application.cursor.PolicyCursor;
 import com.chungbazi.server.domain.policy.application.cursor.PolicyCursorParser;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
@@ -25,6 +26,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PolicySearchService {
+
+    private static final int SEARCH_SUGGESTION_LIMIT = 5;
 
     private final PolicyRepository policyRepository;
     private final RecentSearchKeywordRepository recentSearchKeywordRepository;
@@ -69,6 +72,20 @@ public class PolicySearchService {
         return policyListResponseAssembler.assemble(user, sort, fetchedPolicies, totalCount, size);
     }
 
+    public SearchSuggestionResponse getSearchSuggestions(User user, String keyword) {
+        String normalizedKeyword = normalizeKeyword(keyword);
+
+        List<String> suggestions = policyRepository.findSearchSuggestions(
+                normalizedKeyword,
+                RecruitmentStatus.CLOSED,
+                user.getSidoCode(),
+                user.getSigunguCode(),
+                SEARCH_SUGGESTION_LIMIT
+        );
+
+        return SearchSuggestionResponse.of(suggestions);
+    }
+
     public RecentSearchKeywordListResponse getRecentSearchKeywords(User user) {
         List<RecentSearchKeyword> recentSearchKeywords =
                 recentSearchKeywordRepository.findTop10ByUserIdOrderByLastSearchedAtDesc(user.getId());
@@ -94,8 +111,7 @@ public class PolicySearchService {
 
     @Transactional
     public void deleteRecentSearchKeyword(User user, Long keywordId) {
-        RecentSearchKeyword recentSearchKeyword = recentSearchKeywordRepository
-                .findByUserIdAndId(user.getId(), keywordId)
+        RecentSearchKeyword recentSearchKeyword = recentSearchKeywordRepository.findByUserIdAndId(user.getId(), keywordId)
                 .orElseThrow(() -> new PolicyException(PolicyErrorCode.RECENT_SEARCH_KEYWORD_NOT_FOUND));
 
         recentSearchKeywordRepository.delete(recentSearchKeyword);

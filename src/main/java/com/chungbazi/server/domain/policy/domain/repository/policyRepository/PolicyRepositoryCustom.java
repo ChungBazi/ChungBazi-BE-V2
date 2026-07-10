@@ -159,4 +159,12 @@ public interface PolicyRepositoryCustom {
             Long policyId,
             Pageable pageable
     );
+
+    List<String> findSearchSuggestions(
+            String keyword,
+            RecruitmentStatus closedStatus,
+            SidoCode sidoCode,
+            String sigunguCode,
+            int limit
+    );
 }

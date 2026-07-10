@@ -233,6 +233,30 @@ public class PolicyRepositoryCustomImpl implements PolicyRepositoryCustom {
         );
     }
 
+    @Override
+    public List<String> findSearchSuggestions(
+            String keyword,
+            RecruitmentStatus closedStatus,
+            SidoCode sidoCode,
+            String sigunguCode,
+            int limit
+    ) {
+        return queryFactory
+                .select(policy.title)
+                .from(policy)
+                .where(
+                        basePredicate(null, closedStatus, sidoCode, sigunguCode)
+                                .and(policy.title.containsIgnoreCase(keyword))
+                )
+                .orderBy(policy.registeredAt.desc(), policy.id.desc())
+                .limit(limit * 3L)
+                .fetch()
+                .stream()
+                .distinct()
+                .limit(limit)
+                .toList();
+    }
+
     private BooleanExpression keywordPredicate(String keyword) {
         return policy.title.containsIgnoreCase(keyword)
                 .or(policy.summary.containsIgnoreCase(keyword))

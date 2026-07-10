@@ -3,6 +3,7 @@ package com.chungbazi.server.domain.policy.api;
 import com.chungbazi.server.domain.policy.api.dto.request.SearchKeywordAutoSaveRequest;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.RecentSearchKeywordListResponse;
+import com.chungbazi.server.domain.policy.api.dto.response.SearchSuggestionResponse;
 import com.chungbazi.server.domain.policy.application.PolicySearchService;
 import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
 import com.chungbazi.server.domain.policy.domain.type.PolicySortType;
@@ -33,6 +34,14 @@ public class PolicySearchController {
             @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
     ) {
         return CommonResponse.onSuccess(policySearchService.searchPolicies(user, keyword, category, sort, cursor, size));
+    }
+
+    @GetMapping("/search/suggestions")
+    public CommonResponse<SearchSuggestionResponse> getSearchSuggestions(
+            @CurrentUser User user,
+            @RequestParam String keyword
+    ) {
+        return CommonResponse.onSuccess(policySearchService.getSearchSuggestions(user, keyword));
     }
 
     @PatchMapping("/recent-search/auto-save")
