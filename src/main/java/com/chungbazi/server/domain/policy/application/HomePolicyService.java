@@ -1,8 +1,9 @@
 package com.chungbazi.server.domain.policy.application;
 
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
+import com.chungbazi.server.domain.policy.application.cursor.PolicyCursor;
+import com.chungbazi.server.domain.policy.application.cursor.PolicyCursorParser;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
-import com.chungbazi.server.domain.policy.domain.repository.PolicyLikeRepository;
 import com.chungbazi.server.domain.policy.domain.repository.policyRepository.PolicyRepository;
 import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
 import com.chungbazi.server.domain.policy.domain.type.PolicySortType;
@@ -10,15 +11,9 @@ import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
 import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
 import com.chungbazi.server.domain.policy.exception.PolicyException;
 import com.chungbazi.server.domain.user.domain.User;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -30,12 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class HomePolicyService {
 
     private static final ZoneId SERVICE_ZONE_ID = ZoneId.of("Asia/Seoul");
-    private static final String CURSOR_SEPARATOR = "\\|";
-    private static final String CURSOR_JOINER = "|";
-    private static final String NULL_DATE = "NULL";
 
     private final PolicyRepository policyRepository;
-    private final PolicyLikeRepository policyLikeRepository;
+    private final PolicyListResponseAssembler policyListResponseAssembler;
 
     public PolicyListResponse getPolicies(
             User user,
@@ -44,7 +36,8 @@ public class HomePolicyService {
             String cursor,
             int size
     ) {
-        Cursor decodedCursor = decodeCursor(cursor, sort);
+        PolicyCursor decodedCursor = PolicyCursorParser.decode(cursor, sort);
+
         List<Policy> fetchedPolicies = fetchPoliciesByCategory(
                 user,
                 category,
@@ -65,7 +58,7 @@ public class HomePolicyService {
                         user.getSigunguCode()
                 );
 
-        return createResponse(user, sort, fetchedPolicies, totalCount, size);
+        return policyListResponseAssembler.assemble(user, sort, fetchedPolicies, totalCount, size);
     }
 
     public PolicyListResponse getLatestPolicies(
@@ -89,7 +82,8 @@ public class HomePolicyService {
             String cursor,
             int size
     ) {
-        Cursor decodedCursor = decodeCursor(cursor, PolicySortType.DEADLINE);
+        PolicyCursor decodedCursor = PolicyCursorParser.decode(cursor, PolicySortType.DEADLINE);
+
         if (decodedCursor != null && decodedCursor.applyEndDate() == null) {
             throw new PolicyException(PolicyErrorCode.INVALID_POLICY_CURSOR);
         }
@@ -117,7 +111,7 @@ public class HomePolicyService {
                         user.getSigunguCode()
                 );
 
-        return createResponse(
+        return policyListResponseAssembler.assemble(
                 user,
                 PolicySortType.DEADLINE,
                 fetchedPolicies,
@@ -126,35 +120,11 @@ public class HomePolicyService {
         );
     }
 
-    private PolicyListResponse createResponse(
-            User user,
-            PolicySortType sort,
-            List<Policy> fetchedPolicies,
-            long totalCount,
-            int size
-    ) {
-        boolean hasNext = fetchedPolicies.size() > size;
-        List<Policy> policies = hasNext
-                ? new ArrayList<>(fetchedPolicies.subList(0, size))
-                : fetchedPolicies;
-
-        Set<Long> likedPolicyIds = findLikedPolicyIds(user.getId(), policies);
-        String nextCursor = hasNext ? encodeCursor(sort, policies.getLast()) : null;
-
-        return PolicyListResponse.of(
-                totalCount,
-                policies,
-                likedPolicyIds,
-                nextCursor,
-                hasNext
-        );
-    }
-
     private List<Policy> fetchPoliciesByCategory(
             User user,
             PolicyCategoryType category,
             PolicySortType sort,
-            Cursor cursor,
+            PolicyCursor cursor,
             int fetchSize
     ) {
         PageRequest pageRequest = PageRequest.of(0, fetchSize);
@@ -167,7 +137,7 @@ public class HomePolicyService {
     private List<Policy> fetchLatestPolicies(
             User user,
             PolicyCategoryType category,
-            Cursor cursor,
+            PolicyCursor cursor,
             PageRequest pageRequest
     ) {
         if (category == null) {
@@ -211,7 +181,7 @@ public class HomePolicyService {
     private List<Policy> fetchDeadlinePolicies(
             User user,
             PolicyCategoryType category,
-            Cursor cursor,
+            PolicyCursor cursor,
             PageRequest pageRequest
     ) {
         if (cursor == null) {
@@ -247,7 +217,7 @@ public class HomePolicyService {
     private List<Policy> fetchUpcomingDeadlinePolicies(
             User user,
             PolicyCategoryType category,
-            Cursor cursor,
+            PolicyCursor cursor,
             LocalDate today,
             PageRequest pageRequest
     ) {
@@ -294,66 +264,4 @@ public class HomePolicyService {
         );
     }
 
-    private Set<Long> findLikedPolicyIds(Long userId, List<Policy> policies) {
-        if (policies.isEmpty()) {
-            return Set.of();
-        }
-        List<Long> policyIds = policies.stream()
-                .map(Policy::getId)
-                .toList();
-        return new HashSet<>(policyLikeRepository.findLikedPolicyIds(userId, policyIds));
-    }
-
-    private String encodeCursor(PolicySortType sort, Policy policy) {
-        String sortValue = sort.name();
-        String dateValue = sort == PolicySortType.LATEST
-                ? policy.getRegisteredAt().toString()
-                : policy.getApplyEndDate() == null
-                        ? NULL_DATE
-                        : policy.getApplyEndDate().toString();
-        String rawCursor = String.join(
-                CURSOR_JOINER,
-                sortValue,
-                dateValue,
-                policy.getId().toString()
-        );
-        return Base64.getUrlEncoder()
-                .withoutPadding()
-                .encodeToString(rawCursor.getBytes(StandardCharsets.UTF_8));
-    }
-
-    private Cursor decodeCursor(String encodedCursor, PolicySortType requestedSort) {
-        if (encodedCursor == null || encodedCursor.isBlank()) {
-            return null;
-        }
-
-        try {
-            String rawCursor = new String(
-                    Base64.getUrlDecoder().decode(encodedCursor),
-                    StandardCharsets.UTF_8
-            );
-            String[] values = rawCursor.split(CURSOR_SEPARATOR, -1);
-            if (values.length != 3 || !requestedSort.name().equals(values[0])) {
-                throw new IllegalArgumentException();
-            }
-
-            Long policyId = Long.valueOf(values[2]);
-            if (requestedSort == PolicySortType.LATEST) {
-                return new Cursor(LocalDateTime.parse(values[1]), null, policyId);
-            }
-            LocalDate applyEndDate = NULL_DATE.equals(values[1])
-                    ? null
-                    : LocalDate.parse(values[1]);
-            return new Cursor(null, applyEndDate, policyId);
-        } catch (RuntimeException exception) {
-            throw new PolicyException(PolicyErrorCode.INVALID_POLICY_CURSOR);
-        }
-    }
-
-    private record Cursor(
-            LocalDateTime registeredAt,
-            LocalDate applyEndDate,
-            Long policyId
-    ) {
-    }
 }
