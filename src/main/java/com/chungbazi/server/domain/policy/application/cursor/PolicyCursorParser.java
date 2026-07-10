@@ -16,6 +16,9 @@ public final class PolicyCursorParser {
     private static final String CURSOR_JOINER = "|";
     private static final String NULL_DATE = "NULL";
 
+    private PolicyCursorParser() {
+    }
+
     public static String encode(PolicySortType sort, Policy policy) {
         String sortValue = sort.name();
         String dateValue = sort == PolicySortType.LATEST
