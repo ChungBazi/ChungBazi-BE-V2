@@ -4,6 +4,7 @@ import com.chungbazi.server.domain.policy.api.dto.request.SearchKeywordAutoSaveR
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.RecentSearchKeywordListResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.SearchSuggestionResponse;
+import com.chungbazi.server.domain.policy.api.docs.PolicySearchDocs;
 import com.chungbazi.server.domain.policy.application.PolicySearchService;
 import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
 import com.chungbazi.server.domain.policy.domain.type.PolicySortType;
@@ -20,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/policies")
-public class PolicySearchController {
+public class PolicySearchController implements PolicySearchDocs {
 
     private final PolicySearchService policySearchService;
 
