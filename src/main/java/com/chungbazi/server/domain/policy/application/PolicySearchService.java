@@ -78,7 +78,15 @@ public class PolicySearchService {
     public SearchSuggestionResponse getSearchSuggestions(User user, String keyword) {
         String normalizedKeyword = normalizeKeyword(keyword);
 
-        List<String> suggestions = policyRepository.findSearchSuggestions(
+        List<String> recentKeywordSuggestions = user.isSearchKeywordAutoSaveEnabled()
+                ? recentSearchKeywordRepository.findRecentSearchKeywordSuggestions(
+                        user.getId(),
+                        normalizedKeyword,
+                        SEARCH_SUGGESTION_LIMIT
+                )
+                : List.of();
+
+        List<String> policyKeywordSuggestions = policyRepository.findSearchSuggestions(
                 normalizedKeyword,
                 RecruitmentStatus.CLOSED,
                 user.getSidoCode(),
@@ -86,7 +94,7 @@ public class PolicySearchService {
                 SEARCH_SUGGESTION_LIMIT
         );
 
-        return SearchSuggestionResponse.of(suggestions);
+        return SearchSuggestionResponse.of(recentKeywordSuggestions, policyKeywordSuggestions);
     }
 
     public RecentSearchKeywordListResponse getRecentSearchKeywords(User user, String cursor, int size) {

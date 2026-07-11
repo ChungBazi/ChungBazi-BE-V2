@@ -40,6 +40,23 @@ public class RecentSearchKeywordRepositoryCustomImpl implements RecentSearchKeyw
                 .fetch();
     }
 
+    @Override
+    public List<String> findRecentSearchKeywordSuggestions(Long userId, String keyword, int limit) {
+        return queryFactory
+                .select(recentSearchKeyword.keyword)
+                .from(recentSearchKeyword)
+                .where(
+                        recentSearchKeyword.userId.eq(userId),
+                        recentSearchKeyword.keyword.containsIgnoreCase(keyword)
+                )
+                .orderBy(
+                        recentSearchKeyword.lastSearchedAt.desc(),
+                        recentSearchKeyword.id.desc()
+                )
+                .limit(limit)
+                .fetch();
+    }
+
     private BooleanExpression cursorPredicate(
             LocalDateTime lastSearchedAt,
             Long keywordId

@@ -14,4 +14,10 @@ public interface RecentSearchKeywordRepositoryCustom {
             Long keywordId,
             Pageable pageable
     );
+
+    List<String> findRecentSearchKeywordSuggestions(
+            Long userId,
+            String keyword,
+            int limit
+    );
 }

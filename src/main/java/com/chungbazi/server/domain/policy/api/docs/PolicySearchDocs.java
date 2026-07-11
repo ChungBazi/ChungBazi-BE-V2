@@ -65,7 +65,9 @@ public interface PolicySearchDocs {
 
                     ### ResponseBody
                     ---
-                    - `keywords`: 검색어를 포함하는 정책 제목 자동완성 목록. 최신 정책 기준 최대 5개 반환
+                    - `suggestions`: 자동완성 목록. 최근 검색어(`RECENT_KEYWORD`)를 먼저 반환하고, 정책 검색어 후보(`POLICY_KEYWORD`)를 이후 반환
+                    - `suggestions[].type`: 자동완성 타입
+                    - `suggestions[].keyword`: 자동완성 키워드
                     """
     )
     @ApiResponses(value = {
