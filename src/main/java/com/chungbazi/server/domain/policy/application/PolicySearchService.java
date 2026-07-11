@@ -152,7 +152,7 @@ public class PolicySearchService {
 
     private void saveNewRecentSearchKeyword(Long userId, String keyword) {
         try {
-            recentSearchKeywordRepository.save(
+            recentSearchKeywordRepository.saveAndFlush(
                     RecentSearchKeyword.create(userId, keyword)
             );
         } catch (DataIntegrityViolationException exception) {

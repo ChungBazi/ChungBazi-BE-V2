@@ -16,7 +16,7 @@ const KEYWORDS = (__ENV.KEYWORDS || '청년,청년 일,월세,취업,교육')
 
 export default function () {
     const keyword = KEYWORDS[Math.floor(Math.random() * KEYWORDS.length)];
-    const url = `${BASE_URL}/v1/policies/search/suggestions?keyword=${encodeURIComponent(keyword)}`;
+    const url = `${BASE_URL}/v1/policies/search-suggestions?keyword=${encodeURIComponent(keyword)}`;
 
     const params = ACCESS_TOKEN
         ? {

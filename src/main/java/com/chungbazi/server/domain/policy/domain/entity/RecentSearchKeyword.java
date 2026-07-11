@@ -36,7 +36,7 @@ public class RecentSearchKeyword extends BaseTimeEntity {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(name = "keyword", nullable = false, length = 50)
+    @Column(name = "keyword", nullable = false)
     private String keyword;
 
     @Column(name = "last_searched_at", nullable = false)
