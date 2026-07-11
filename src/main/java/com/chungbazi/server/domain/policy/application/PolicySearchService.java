@@ -98,6 +98,11 @@ public class PolicySearchService {
     }
 
     public RecentSearchKeywordListResponse getRecentSearchKeywords(User user, String cursor, int size) {
+        // 자동저장 꺼져있으면 빈 list 반환
+        if (!user.isSearchKeywordAutoSaveEnabled()) {
+            return RecentSearchKeywordListResponse.empty(user);
+        }
+
         RecentSearchKeywordCursor decodedCursor = RecentSearchKeywordCursorParser.decode(cursor);
 
         List<RecentSearchKeyword> recentSearchKeywords =

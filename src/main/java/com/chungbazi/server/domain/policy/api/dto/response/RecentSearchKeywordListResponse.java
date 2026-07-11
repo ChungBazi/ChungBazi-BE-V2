@@ -51,6 +51,15 @@ public record RecentSearchKeywordListResponse(
                 .build();
     }
 
+    public static RecentSearchKeywordListResponse empty(User user) {
+        return RecentSearchKeywordListResponse.builder()
+                .autoSaveEnabled(user.isSearchKeywordAutoSaveEnabled())
+                .keywords(List.of())
+                .nextCursor(null)
+                .hasNext(false)
+                .build();
+    }
+
     @Builder
     @Schema(description = "최근 검색어 항목")
     public record RecentSearchKeywordResponse(
