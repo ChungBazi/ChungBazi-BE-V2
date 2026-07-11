@@ -30,7 +30,7 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class PolicySearchService {
 
-    private static final int SEARCH_SUGGESTION_LIMIT = 5;
+    private static final int SEARCH_SUGGESTION_LIMIT = 10;
 
     private final PolicyRepository policyRepository;
     private final RecentSearchKeywordRepository recentSearchKeywordRepository;
