@@ -14,6 +14,9 @@ import com.chungbazi.server.domain.user.domain.User;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
+
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -118,6 +121,34 @@ public class HomePolicyService {
                 totalCount,
                 size
         );
+    }
+
+    public PolicyListResponse getPopularPolicies(User user, PolicyCategoryType category, String cursor, int size) {
+
+        //커서 파싱
+        PolicyCursor decodedCursor = PolicyCursorParser.decode(cursor, PolicySortType.POPULAR);
+
+        if (decodedCursor != null && decodedCursor.registeredAt() == null) {
+            throw new PolicyException(PolicyErrorCode.INVALID_POLICY_CURSOR);
+        }
+
+        LocalDate today = LocalDate.now(SERVICE_ZONE_ID);
+        List<Policy> fetchedPolicies = fetchPopularPolicies(
+                user,
+                category,
+                decodedCursor,
+                today,
+                PageRequest.of(0, size+1)
+        );
+
+
+        return null;
+    }
+
+    private List<Policy> fetchPopularPolicies(User user, PolicyCategoryType category, PolicyCursor decodedCursor, LocalDate today, PageRequest pageRequest) {
+        //TODO: 카테고리 필터링
+        //TODO: 지역 필터링
+        //TODO: 인기순 정렬
     }
 
     private List<Policy> fetchPoliciesByCategory(
@@ -263,5 +294,6 @@ public class HomePolicyService {
                 pageRequest
         );
     }
+
 
 }
