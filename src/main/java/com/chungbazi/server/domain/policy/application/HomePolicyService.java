@@ -132,23 +132,63 @@ public class HomePolicyService {
             throw new PolicyException(PolicyErrorCode.INVALID_POLICY_CURSOR);
         }
 
-        LocalDate today = LocalDate.now(SERVICE_ZONE_ID);
         List<Policy> fetchedPolicies = fetchPopularPolicies(
                 user,
                 category,
                 decodedCursor,
-                today,
                 PageRequest.of(0, size+1)
         );
 
-
-        return null;
+        //dto 변환
+        return policyListResponseAssembler.assemble(
+                user,
+                PolicySortType.POPULAR,
+                fetchedPolicies,
+                null,
+                size
+        );
     }
 
-    private List<Policy> fetchPopularPolicies(User user, PolicyCategoryType category, PolicyCursor decodedCursor, LocalDate today, PageRequest pageRequest) {
-        //TODO: 카테고리 필터링
-        //TODO: 지역 필터링
-        //TODO: 인기순 정렬
+    private List<Policy> fetchPopularPolicies(User user, PolicyCategoryType category, PolicyCursor cursor, PageRequest pageRequest) {
+        if (category == null) {
+            if (cursor == null) {
+                return policyRepository.findAllPopularPolicies(
+                        RecruitmentStatus.CLOSED,
+                        user.getSidoCode(),
+                        user.getSigunguCode(),
+                        pageRequest
+                );
+            }
+            return policyRepository.findAllPopularPoliciesAfter(
+                    RecruitmentStatus.CLOSED,
+                    user.getSidoCode(),
+                    user.getSigunguCode(),
+                    cursor.registeredAt(),
+                    cursor.popularityScore(),
+                    cursor.policyId(),
+                    pageRequest
+            );
+        }
+
+        if (cursor == null) {
+            return policyRepository.findPopularPolicies(
+                    category,
+                    RecruitmentStatus.CLOSED,
+                    user.getSidoCode(),
+                    user.getSigunguCode(),
+                    pageRequest
+            );
+        }
+        return policyRepository.findPopularPoliciesAfter(
+                category,
+                RecruitmentStatus.CLOSED,
+                user.getSidoCode(),
+                user.getSigunguCode(),
+                cursor.registeredAt(),
+                cursor.popularityScore(),
+                cursor.policyId(),
+                pageRequest
+        );
     }
 
     private List<Policy> fetchPoliciesByCategory(

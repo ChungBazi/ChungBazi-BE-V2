@@ -8,6 +8,8 @@ import com.chungbazi.server.domain.policy.domain.type.SidoCode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 public interface PolicyRepositoryCustom {
@@ -138,6 +140,43 @@ public interface PolicyRepositoryCustom {
             Long policyId,
             Pageable pageable
     );
+
+    List<Policy> findAllPopularPolicies(
+            RecruitmentStatus closedStatus,
+            SidoCode sidoCode,
+            String sigunguCode,
+            Pageable pageable
+    );
+
+    List<Policy> findAllPopularPoliciesAfter(
+            RecruitmentStatus closedStatus,
+            SidoCode sidoCode,
+            String sigunguCode,
+            LocalDateTime registeredAt,
+            Long popularityScore,
+            Long policyId,
+            Pageable pageable
+    );
+
+    List<Policy> findPopularPolicies(
+            PolicyCategoryType category,
+            RecruitmentStatus closedStatus,
+            SidoCode sidoCode,
+            String sigunguCode,
+            Pageable pageable
+    );
+
+    List<Policy> findPopularPoliciesAfter(
+            PolicyCategoryType category,
+            RecruitmentStatus closedStatus,
+            SidoCode sidoCode,
+            String sigunguCode,
+            LocalDateTime registeredAt,
+            Long popularityScore,
+            Long policyId,
+            Pageable pageable
+    );
+
 
     long countSearchPolicies(
             String keyword,
