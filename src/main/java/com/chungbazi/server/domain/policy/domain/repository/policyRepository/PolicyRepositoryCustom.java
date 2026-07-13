@@ -2,6 +2,7 @@ package com.chungbazi.server.domain.policy.domain.repository.policyRepository;
 
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
+import com.chungbazi.server.domain.policy.domain.type.PolicySortType;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
 import com.chungbazi.server.domain.policy.domain.type.SidoCode;
 import java.time.LocalDate;
@@ -136,5 +137,34 @@ public interface PolicyRepositoryCustom {
             String sigunguCode,
             Long policyId,
             Pageable pageable
+    );
+
+    long countSearchPolicies(
+            String keyword,
+            PolicyCategoryType category,
+            RecruitmentStatus closedStatus,
+            SidoCode sidoCode,
+            String sigunguCode
+    );
+
+    List<Policy> searchPolicies(
+            String keyword,
+            PolicyCategoryType category,
+            PolicySortType sort,
+            RecruitmentStatus closedStatus,
+            SidoCode sidoCode,
+            String sigunguCode,
+            LocalDateTime registeredAt,
+            LocalDate applyEndDate,
+            Long policyId,
+            Pageable pageable
+    );
+
+    List<String> findSearchSuggestions(
+            String keyword,
+            RecruitmentStatus closedStatus,
+            SidoCode sidoCode,
+            String sigunguCode,
+            int limit
     );
 }

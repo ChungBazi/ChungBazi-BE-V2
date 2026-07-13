@@ -2,6 +2,7 @@ package com.chungbazi.server.domain.policy.domain.repository.policyRepository;
 
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
+import com.chungbazi.server.domain.policy.domain.type.PolicySortType;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
 import com.chungbazi.server.domain.policy.domain.type.SidoCode;
 import com.querydsl.core.types.OrderSpecifier;
@@ -189,6 +190,96 @@ public class PolicyRepositoryCustomImpl implements PolicyRepositoryCustom {
                         .and(policy.applyEndDate.isNull())
                         .and(policy.id.lt(policyId)),
                 pageable, nullableDeadlineOrder());
+    }
+
+    @Override
+    public long countSearchPolicies(
+            String keyword,
+            PolicyCategoryType category,
+            RecruitmentStatus closedStatus,
+            SidoCode sidoCode,
+            String sigunguCode
+    ) {
+        return count(
+                basePredicate(category, closedStatus, sidoCode, sigunguCode)
+                        .and(keywordPredicate(keyword))
+        );
+    }
+
+    @Override
+    public List<Policy> searchPolicies(
+            String keyword,
+            PolicyCategoryType category,
+            PolicySortType sort,
+            RecruitmentStatus closedStatus,
+            SidoCode sidoCode,
+            String sigunguCode,
+            LocalDateTime registeredAt,
+            LocalDate applyEndDate,
+            Long policyId,
+            Pageable pageable
+    ) {
+        BooleanExpression predicate = basePredicate(category, closedStatus, sidoCode, sigunguCode)
+                .and(keywordPredicate(keyword));
+
+        if (policyId != null) {
+            predicate = predicate.and(cursorPredicate(sort, registeredAt, applyEndDate, policyId));
+        }
+
+        return fetch(
+                predicate,
+                pageable,
+                sort == PolicySortType.DEADLINE ? nullableDeadlineOrder() : latestOrder()
+        );
+    }
+
+    @Override
+    public List<String> findSearchSuggestions(
+            String keyword,
+            RecruitmentStatus closedStatus,
+            SidoCode sidoCode,
+            String sigunguCode,
+            int limit
+    ) {
+        return queryFactory
+                .select(policy.title)
+                .from(policy)
+                .where(
+                        basePredicate(null, closedStatus, sidoCode, sigunguCode)
+                                .and(policy.title.containsIgnoreCase(keyword))
+                )
+                .orderBy(policy.registeredAt.desc(), policy.id.desc())
+                .limit(limit * 3L)
+                .fetch()
+                .stream()
+                .distinct()
+                .limit(limit)
+                .toList();
+    }
+
+    private BooleanExpression keywordPredicate(String keyword) {
+        return policy.title.containsIgnoreCase(keyword)
+                .or(policy.summary.containsIgnoreCase(keyword))
+                .or(policy.supportContent.containsIgnoreCase(keyword))
+                .or(policy.organizationName.containsIgnoreCase(keyword));
+    }
+
+    private BooleanExpression cursorPredicate(
+            PolicySortType sort,
+            LocalDateTime registeredAt,
+            LocalDate applyEndDate,
+            Long policyId
+    ) {
+        if (sort == PolicySortType.LATEST) {
+            return latestCursor(registeredAt, policyId);
+        }
+
+        if (applyEndDate == null) {
+            return policy.applyEndDate.isNull()
+                    .and(policy.id.lt(policyId));
+        }
+
+        return deadlineCursor(applyEndDate, policyId, true);
     }
 
     private BooleanExpression basePredicate(PolicyCategoryType category,
