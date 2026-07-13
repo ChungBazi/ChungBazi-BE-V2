@@ -66,6 +66,7 @@ public class HomeController implements HomeDocs {
     }
 
     @Override
+    @GetMapping("/policies/popular")
     public CommonResponse<PolicyListResponse> getPopularPolicies(
             @CurrentUser User user,
             @RequestParam(required = false) PolicyCategoryType category,
