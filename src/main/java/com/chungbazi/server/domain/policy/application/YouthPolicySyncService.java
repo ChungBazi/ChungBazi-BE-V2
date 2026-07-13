@@ -7,9 +7,13 @@ import java.util.List;
 
 import com.chungbazi.server.domain.policy.application.dto.PageSyncResult;
 import com.chungbazi.server.domain.policy.application.dto.SyncResult;
+import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
+import com.chungbazi.server.domain.policy.exception.PolicyException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class YouthPolicySyncService {
@@ -62,12 +66,29 @@ public class YouthPolicySyncService {
 
         //추후 배치처리?
         for (YouthPolicyItem item : items) {
-            boolean saved = youthPolicyPersistenceService.saveIfNew(item);
+            boolean saved = saveIfValidRegion(item);
             savedCount += saved ? 1 : 0;
             skippedCount += saved ? 0 : 1;
         }
 
         return new PageSyncResult(items.size(), savedCount, skippedCount);
+    }
+
+    private boolean saveIfValidRegion(YouthPolicyItem item) {
+        try {
+            return youthPolicyPersistenceService.saveIfNew(item);
+        } catch (PolicyException exception) {
+            if (exception.getCode() != PolicyErrorCode.INVALID_POLICY_REGION) {
+                throw exception;
+            }
+
+            log.warn(
+                    "유효하지않은 지역코드가 있습니다. plcyNo={}, zipCd={}",
+                    item.plcyNo(),
+                    item.zipCd()
+            );
+            return false;
+        }
     }
 
     //새로운 정책이 없는 경우

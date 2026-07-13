@@ -138,13 +138,25 @@ public class HomePolicyService {
                 decodedCursor,
                 PageRequest.of(0, size+1)
         );
+        Long totalCount = category == null
+                ? policyRepository.countVisiblePolicies(
+                        RecruitmentStatus.CLOSED,
+                        user.getSidoCode(),
+                        user.getSigunguCode()
+                )
+                : policyRepository.countVisiblePoliciesByCategory(
+                        category,
+                        RecruitmentStatus.CLOSED,
+                        user.getSidoCode(),
+                        user.getSigunguCode()
+                );
 
         //dto 변환
         return policyListResponseAssembler.assemble(
                 user,
                 PolicySortType.POPULAR,
                 fetchedPolicies,
-                null,
+                totalCount,
                 size
         );
     }
