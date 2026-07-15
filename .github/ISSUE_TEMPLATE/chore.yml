@@ -1,6 +1,6 @@
 name: ⚙️ 작업
 description: 세팅, 배포, 환경설정 등 기능 외 작업을 기록하는 템플릿입니다.
-title: "chore: "
+title: "[Chore] "
 labels: ["⚙️setting"]
 assignees: []
 

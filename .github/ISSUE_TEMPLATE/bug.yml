@@ -1,6 +1,6 @@
 name: 🐛 버그 리포트
 description: 버그가 발생했을 때 사용하는 템플릿입니다.
-title: "fix: "
+title: "[Fix] "
 labels: ["🐛bug"]
 assignees: []
 
