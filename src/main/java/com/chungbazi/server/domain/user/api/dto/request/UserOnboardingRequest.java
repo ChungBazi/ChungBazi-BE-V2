@@ -13,9 +13,6 @@ import java.util.Set;
 @Builder
 @Schema(description = "온보딩 API")
 public record UserOnboardingRequest(
-        @Schema(description = "사용자 이름", example = "주정빈")
-        String name,
-
         @Schema(description = "생년월일", example = "2002-03-15", pattern = "^\\d{4}-\\d{2}-\\d{2}$")
         String birth,
 

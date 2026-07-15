@@ -24,7 +24,6 @@ public class UserValidator {
     private static final int MAX_SIGUNGU_CODE_LENGTH = 10;
 
     public void validateOnboarding(UserOnboardingRequest request) {
-        validateName(request.name());
         validatePolicyProfile(
                 request.birth(),
                 request.sidoCode(),

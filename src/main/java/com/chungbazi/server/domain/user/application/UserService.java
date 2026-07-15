@@ -31,7 +31,6 @@ public class UserService {
         userValidator.validateOnboarding(request);
 
         user.saveUserOnboarding(
-                request.name(),
                 request.birth(),
                 request.sidoCode(),
                 request.sigunguCode(),
