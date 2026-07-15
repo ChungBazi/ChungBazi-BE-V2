@@ -34,14 +34,21 @@ public record AuthTokenResponse(
                 description = "온보딩 완료 여부",
                 example = "false"
         )
-        boolean onboardingCompleted
+        boolean onboardingCompleted,
+
+        @Schema(
+                description = "닉네임 수정 여부",
+                example = "false"
+        )
+        boolean nicknameChanged
 ) {
     public static AuthTokenResponse of(
             String accessToken,
             String refreshToken,
             String email,
             SocialType socialType,
-            boolean onboardingCompleted
+            boolean onboardingCompleted,
+            boolean nicknameChanged
     ) {
         return AuthTokenResponse.builder()
                 .accessToken(accessToken)
@@ -49,6 +56,7 @@ public record AuthTokenResponse(
                 .email(email)
                 .socialType(socialType)
                 .onboardingCompleted(onboardingCompleted)
+                .nicknameChanged(nicknameChanged)
                 .build();
     }
 }
