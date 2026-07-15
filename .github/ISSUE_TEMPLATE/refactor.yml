@@ -1,6 +1,6 @@
 name: ♻️ 리팩토링
 description: 리팩토링 작업을 기록하는 템플릿입니다.
-title: "refactor: "
+title: "[Refactor] "
 labels: ["♻️refactor"]
 assignees: []
 
