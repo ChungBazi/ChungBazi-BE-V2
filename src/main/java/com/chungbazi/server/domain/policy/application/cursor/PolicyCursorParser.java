@@ -1,6 +1,7 @@
 package com.chungbazi.server.domain.policy.application.cursor;
 
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
+import com.chungbazi.server.domain.policy.application.PolicyPopularityCalculator;
 import com.chungbazi.server.domain.policy.domain.type.PolicySortType;
 import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
 import com.chungbazi.server.domain.policy.exception.PolicyException;
@@ -15,7 +16,6 @@ public final class PolicyCursorParser {
     private static final String CURSOR_SEPARATOR = "\\|";
     private static final String CURSOR_JOINER = "|";
     private static final String NULL_DATE = "NULL";
-    private static final long SAVE_COUNT_WEIGHT = 5L;
 
     private PolicyCursorParser() {
     }
@@ -28,7 +28,7 @@ public final class PolicyCursorParser {
             rawCursor = String.join(
                     CURSOR_JOINER,
                     sort.name(),
-                    String.valueOf(calculatePopularityScore(policy)),
+                    String.valueOf(PolicyPopularityCalculator.calculate(policy)),
                     policy.getRegisteredAt().toString(),
                     policy.getId().toString()
             );
@@ -97,7 +97,4 @@ public final class PolicyCursorParser {
         }
     }
 
-    private static long calculatePopularityScore(Policy policy) {
-        return policy.getViewCount() + policy.getSaveCount() * SAVE_COUNT_WEIGHT;
-    }
 }

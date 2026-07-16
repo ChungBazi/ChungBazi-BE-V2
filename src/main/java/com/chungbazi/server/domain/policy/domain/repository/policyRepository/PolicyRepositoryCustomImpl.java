@@ -1,18 +1,17 @@
 package com.chungbazi.server.domain.policy.domain.repository.policyRepository;
 
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
+import com.chungbazi.server.domain.policy.application.PolicyPopularityCalculator;
 import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
 import com.chungbazi.server.domain.policy.domain.type.PolicySortType;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
 import com.chungbazi.server.domain.policy.domain.type.SidoCode;
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
@@ -28,7 +27,6 @@ import static com.chungbazi.server.domain.policy.domain.entity.QPolicyRegion.pol
 public class PolicyRepositoryCustomImpl implements PolicyRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
-    private static final long SAVE_COUNT_WEIGHT = 5L;
 
     @Override
     public long countVisiblePoliciesByCategory(PolicyCategoryType category,
@@ -419,8 +417,7 @@ public class PolicyRepositoryCustomImpl implements PolicyRepositoryCustom {
     }
 
     private NumberExpression<Long> popularityScore() {
-        return policy.viewCount.longValue()
-                .add(policy.saveCount.longValue().multiply(SAVE_COUNT_WEIGHT));
+        return PolicyPopularityCalculator.expression(policy.viewCount, policy.saveCount);
     }
 
     private OrderSpecifier<?>[] latestOrder() {

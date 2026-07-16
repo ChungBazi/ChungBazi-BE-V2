@@ -30,6 +30,7 @@ public class YouthPolicySyncService {
         int savedCount = 0;
         int skippedCount = 0;
 
+        //TODO:스케줄링 로직 추후 구현
         //while (true) {
             YouthPolicyListResponse response = youthPolicyClient.fetchPolicies(pageNum, PAGE_SIZE);
             List<YouthPolicyItem> items = extractItems(response);
@@ -63,37 +64,39 @@ public class YouthPolicySyncService {
     private PageSyncResult syncPageItems(List<YouthPolicyItem> items) {
         int savedCount = 0;
         int skippedCount = 0;
+        int invalidRegionCount = 0;
 
         //추후 배치처리?
         for (YouthPolicyItem item : items) {
-            boolean saved = saveIfValidRegion(item);
-            savedCount += saved ? 1 : 0;
-            skippedCount += saved ? 0 : 1;
-        }
+            try {
+                boolean saved = youthPolicyPersistenceService.saveIfNew(item);
+                if (!saved) {
+                    skippedCount++;
+                    continue;
+                }
+                savedCount++;
+            } catch (PolicyException exception) {
+                if (exception.getCode() != PolicyErrorCode.INVALID_POLICY_REGION) {
+                    throw exception;
+                }
 
-        return new PageSyncResult(items.size(), savedCount, skippedCount);
-    }
-
-    private boolean saveIfValidRegion(YouthPolicyItem item) {
-        try {
-            return youthPolicyPersistenceService.saveIfNew(item);
-        } catch (PolicyException exception) {
-            if (exception.getCode() != PolicyErrorCode.INVALID_POLICY_REGION) {
-                throw exception;
+                log.warn(
+                        "유효하지않은 지역코드가 있습니다. plcyNo={}, zipCd={}",
+                        item.plcyNo(),
+                        item.zipCd()
+                );
+                skippedCount++;
+                invalidRegionCount++;
             }
-
-            log.warn(
-                    "유효하지않은 지역코드가 있습니다. plcyNo={}, zipCd={}",
-                    item.plcyNo(),
-                    item.zipCd()
-            );
-            return false;
         }
+
+        return new PageSyncResult(items.size(), savedCount, skippedCount, invalidRegionCount);
     }
 
     //새로운 정책이 없는 경우
     private boolean hasNoNewPolicies(PageSyncResult pageSyncResult) {
-        return pageSyncResult.savedCount() == 0;
+        return pageSyncResult.savedCount() == 0
+                && pageSyncResult.invalidRegionCount() == 0;
     }
 
     private List<YouthPolicyItem> extractItems(YouthPolicyListResponse response) {
