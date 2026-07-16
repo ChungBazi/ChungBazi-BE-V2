@@ -3,12 +3,13 @@ package com.chungbazi.server.domain.policy.application;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.NumberPath;
-import org.springframework.stereotype.Component;
 
-@Component
-public class PolicyPopularityCalculator {
+public final class PolicyPopularityCalculator {
 
     private static final long SAVE_COUNT_WEIGHT = 5L;
+
+    private PolicyPopularityCalculator() {
+    }
 
     public static long calculate(Policy policy) {
         return policy.getViewCount() + policy.getSaveCount() * SAVE_COUNT_WEIGHT;
