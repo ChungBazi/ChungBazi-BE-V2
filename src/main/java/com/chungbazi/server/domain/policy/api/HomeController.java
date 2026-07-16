@@ -64,4 +64,17 @@ public class HomeController implements HomeDocs {
                 homePolicyService.getUpcomingDeadlinePolicies(user, category, cursor, size)
         );
     }
+
+    @Override
+    @GetMapping("/policies/popular")
+    public CommonResponse<PolicyListResponse> getPopularPolicies(
+            @CurrentUser User user,
+            @RequestParam(required = false) PolicyCategoryType category,
+            @RequestParam(required = false) String cursor,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
+    ) {
+        return CommonResponse.onSuccess(
+                homePolicyService.getPopularPolicies(user, category, cursor, size)
+        );
+    }
 }

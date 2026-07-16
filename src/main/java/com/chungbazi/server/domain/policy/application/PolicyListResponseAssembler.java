@@ -24,7 +24,7 @@ public class PolicyListResponseAssembler {
             User user,
             PolicySortType sort,
             List<Policy> fetchedPolicies,
-            long totalCount,
+            Long totalCount,
             int size
     ) {
         boolean hasNext = fetchedPolicies.size() > size;

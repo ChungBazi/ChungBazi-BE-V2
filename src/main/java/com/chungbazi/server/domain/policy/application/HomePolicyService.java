@@ -14,6 +14,9 @@ import com.chungbazi.server.domain.user.domain.User;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
+
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -117,6 +120,86 @@ public class HomePolicyService {
                 fetchedPolicies,
                 totalCount,
                 size
+        );
+    }
+
+    public PolicyListResponse getPopularPolicies(User user, PolicyCategoryType category, String cursor, int size) {
+
+        //커서 파싱
+        PolicyCursor decodedCursor = PolicyCursorParser.decode(cursor, PolicySortType.POPULAR);
+
+        if (decodedCursor != null && decodedCursor.registeredAt() == null) {
+            throw new PolicyException(PolicyErrorCode.INVALID_POLICY_CURSOR);
+        }
+
+        List<Policy> fetchedPolicies = fetchPopularPolicies(
+                user,
+                category,
+                decodedCursor,
+                PageRequest.of(0, size+1)
+        );
+        Long totalCount = category == null
+                ? policyRepository.countVisiblePolicies(
+                        RecruitmentStatus.CLOSED,
+                        user.getSidoCode(),
+                        user.getSigunguCode()
+                )
+                : policyRepository.countVisiblePoliciesByCategory(
+                        category,
+                        RecruitmentStatus.CLOSED,
+                        user.getSidoCode(),
+                        user.getSigunguCode()
+                );
+
+        //dto 변환
+        return policyListResponseAssembler.assemble(
+                user,
+                PolicySortType.POPULAR,
+                fetchedPolicies,
+                totalCount,
+                size
+        );
+    }
+
+    private List<Policy> fetchPopularPolicies(User user, PolicyCategoryType category, PolicyCursor cursor, PageRequest pageRequest) {
+        if (category == null) {
+            if (cursor == null) {
+                return policyRepository.findAllPopularPolicies(
+                        RecruitmentStatus.CLOSED,
+                        user.getSidoCode(),
+                        user.getSigunguCode(),
+                        pageRequest
+                );
+            }
+            return policyRepository.findAllPopularPoliciesAfter(
+                    RecruitmentStatus.CLOSED,
+                    user.getSidoCode(),
+                    user.getSigunguCode(),
+                    cursor.registeredAt(),
+                    cursor.popularityScore(),
+                    cursor.policyId(),
+                    pageRequest
+            );
+        }
+
+        if (cursor == null) {
+            return policyRepository.findPopularPolicies(
+                    category,
+                    RecruitmentStatus.CLOSED,
+                    user.getSidoCode(),
+                    user.getSigunguCode(),
+                    pageRequest
+            );
+        }
+        return policyRepository.findPopularPoliciesAfter(
+                category,
+                RecruitmentStatus.CLOSED,
+                user.getSidoCode(),
+                user.getSigunguCode(),
+                cursor.registeredAt(),
+                cursor.popularityScore(),
+                cursor.policyId(),
+                pageRequest
         );
     }
 
@@ -263,5 +346,6 @@ public class HomePolicyService {
                 pageRequest
         );
     }
+
 
 }

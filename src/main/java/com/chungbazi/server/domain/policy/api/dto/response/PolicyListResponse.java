@@ -15,7 +15,7 @@ import lombok.Builder;
 @Schema(description = "분야별 정책 무한스크롤 응답")
 public record PolicyListResponse(
         @Schema(description = "해당 분야의 전체 정책 수", example = "128")
-        long totalCount,
+        Long totalCount,
 
         @Schema(description = "조회된 정책 목록")
         List<PolicySummary> policies,
@@ -28,7 +28,7 @@ public record PolicyListResponse(
 ) {
 
     public static PolicyListResponse of(
-            long totalCount,
+            Long totalCount,
             List<Policy> policies,
             Set<Long> likedPolicyIds,
             String nextCursor,
