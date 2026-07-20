@@ -1,6 +1,7 @@
 package com.chungbazi.server.domain.policy.api.docs;
 
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
+import com.chungbazi.server.domain.policy.api.dto.response.HomePolicyResponse;
 import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
 import com.chungbazi.server.domain.policy.domain.type.PolicySortType;
 import com.chungbazi.server.domain.user.domain.User;
@@ -17,6 +18,45 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "[Home]", description = "홈 정책 관련 API")
 public interface HomeDocs {
+
+    @Operation(
+            summary = "홈 화면 정책 섹션 조회 API",
+            description = """
+                    홈 화면에 필요한 정책 섹션을 한 번에 조회합니다.
+                    각 섹션은 최대 5개 정책을 반환합니다.
+
+                    - 최근 본 정책: 현재 사용자가 최근 조회한 순서
+                    - 인기 정책: 인기도 순
+                    - 마감 임박 정책: 마감일이 가까운 순
+                    - 최신 정책: 최신 등록 순
+                    """
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "홈 화면 정책 섹션 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+    })
+    CommonResponse<HomePolicyResponse> getHomePolicies(
+            @CurrentUser User user
+    );
+
+    @Operation(
+            summary = "최근 본 정책 목록 조회 API",
+            description = """
+                    현재 사용자가 최근 본 정책을 최근 조회한 순서대로 조회합니다.
+                    같은 정책을 여러 번 본 경우 가장 최근 조회 기록을 기준으로 한 번만 노출합니다.
+
+                    - `size`: 조회할 정책 수(기본 5, 최대 5)
+                    """
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "최근 본 정책 목록 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+    })
+    CommonResponse<PolicyListResponse> getRecentViewedPolicies(
+            @CurrentUser User user,
+            @Parameter(description = "조회 개수", example = "5")
+            @RequestParam(defaultValue = "5") @Min(1) @Max(5) int size
+    );
 
     @Operation(
             summary = "분야별 정책 목록 조회 API",

@@ -1,9 +1,11 @@
 package com.chungbazi.server.domain.policy.application;
 
+import com.chungbazi.server.domain.policy.api.dto.response.HomePolicyResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
 import com.chungbazi.server.domain.policy.application.cursor.PolicyCursor;
 import com.chungbazi.server.domain.policy.application.cursor.PolicyCursorParser;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
+import com.chungbazi.server.domain.policy.domain.repository.RecentViewedPolicyRepository;
 import com.chungbazi.server.domain.policy.domain.repository.policyRepository.PolicyRepository;
 import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
 import com.chungbazi.server.domain.policy.domain.type.PolicySortType;
@@ -14,9 +16,9 @@ import com.chungbazi.server.domain.user.domain.User;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -27,10 +29,85 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class HomePolicyService {
 
+    private static final int HOME_SECTION_SIZE = 5;
     private static final ZoneId SERVICE_ZONE_ID = ZoneId.of("Asia/Seoul");
 
     private final PolicyRepository policyRepository;
+    private final RecentViewedPolicyRepository recentViewedPolicyRepository;
     private final PolicyListResponseAssembler policyListResponseAssembler;
+
+    public HomePolicyResponse getHomePolicies(User user) {
+        LocalDate today = LocalDate.now(SERVICE_ZONE_ID);
+        PageRequest sectionPageRequest = PageRequest.of(0, HOME_SECTION_SIZE);
+
+        List<Policy> recentViewedPolicies = recentViewedPolicyRepository.findRecentViewedPolicies(
+                user.getId(),
+                RecruitmentStatus.CLOSED,
+                user.getSidoCode(),
+                user.getSigunguCode(),
+                sectionPageRequest
+        );
+        List<Policy> popularPolicies = fetchPopularPolicies(
+                user,
+                null,
+                null,
+                sectionPageRequest
+        );
+        List<Policy> upcomingDeadlinePolicies = fetchUpcomingDeadlinePolicies(
+                user,
+                null,
+                null,
+                today,
+                sectionPageRequest
+        );
+        List<Policy> latestPolicies = fetchLatestPolicies(
+                user,
+                null,
+                null,
+                sectionPageRequest
+        );
+
+        List<Policy> homePolicies = Stream.of(
+                        recentViewedPolicies,
+                        popularPolicies,
+                        upcomingDeadlinePolicies,
+                        latestPolicies
+                )
+                .flatMap(List::stream)
+                .toList();
+        Set<Long> likedPolicyIds = policyListResponseAssembler.findLikedPolicyIds(user.getId(), homePolicies);
+
+        return HomePolicyResponse.builder()
+                .recentViewedPolicies(policyListResponseAssembler.summarize(recentViewedPolicies, likedPolicyIds))
+                .popularPolicies(policyListResponseAssembler.summarize(popularPolicies, likedPolicyIds))
+                .upcomingDeadlinePolicies(policyListResponseAssembler.summarize(upcomingDeadlinePolicies, likedPolicyIds))
+                .latestPolicies(policyListResponseAssembler.summarize(latestPolicies, likedPolicyIds))
+                .build();
+    }
+
+    public PolicyListResponse getRecentViewedPolicies(User user, int size) {
+        List<Policy> fetchedPolicies = recentViewedPolicyRepository.findRecentViewedPolicies(
+                user.getId(),
+                RecruitmentStatus.CLOSED,
+                user.getSidoCode(),
+                user.getSigunguCode(),
+                PageRequest.of(0, size)
+        );
+        long totalCount = recentViewedPolicyRepository.countRecentViewedPolicies(
+                user.getId(),
+                RecruitmentStatus.CLOSED,
+                user.getSidoCode(),
+                user.getSigunguCode()
+        );
+
+        return policyListResponseAssembler.assemble(
+                user,
+                PolicySortType.LATEST,
+                fetchedPolicies,
+                totalCount,
+                size
+        );
+    }
 
     public PolicyListResponse getPolicies(
             User user,
