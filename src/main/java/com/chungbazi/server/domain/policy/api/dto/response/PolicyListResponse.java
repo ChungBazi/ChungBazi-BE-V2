@@ -34,13 +34,9 @@ public record PolicyListResponse(
             String nextCursor,
             boolean hasNext
     ) {
-        List<PolicySummary> summaries = policies.stream()
-                .map(policy -> PolicySummary.from(policy, likedPolicyIds))
-                .toList();
-
         return PolicyListResponse.builder()
                 .totalCount(totalCount)
-                .policies(summaries)
+                .policies(PolicySummary.from(policies, likedPolicyIds))
                 .nextCursor(nextCursor)
                 .hasNext(hasNext)
                 .build();
@@ -83,6 +79,12 @@ public record PolicyListResponse(
                     .viewCount(policy.getViewCount())
                     .liked(likedPolicyIds.contains(policy.getId()))
                     .build();
+        }
+
+        public static List<PolicySummary> from(List<Policy> policies, Set<Long> likedPolicyIds) {
+            return policies.stream()
+                    .map(policy -> PolicySummary.from(policy, likedPolicyIds))
+                    .toList();
         }
 
         private static String formatDDay(Policy policy) {

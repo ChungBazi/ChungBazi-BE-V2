@@ -1,6 +1,7 @@
 package com.chungbazi.server.domain.policy.application;
 
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
+import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse.PolicySummary;
 import com.chungbazi.server.domain.policy.application.cursor.PolicyCursorParser;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.repository.PolicyLikeRepository;
@@ -46,7 +47,11 @@ public class PolicyListResponseAssembler {
         );
     }
 
-    private Set<Long> findLikedPolicyIds(Long userId, List<Policy> policies) {
+    public List<PolicySummary> summarize(List<Policy> policies, Set<Long> likedPolicyIds) {
+        return PolicySummary.from(policies, likedPolicyIds);
+    }
+
+    public Set<Long> findLikedPolicyIds(Long userId, List<Policy> policies) {
         if (policies.isEmpty()) {
             return Set.of();
         }
