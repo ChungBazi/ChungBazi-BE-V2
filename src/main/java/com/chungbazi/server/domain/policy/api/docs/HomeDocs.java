@@ -45,6 +45,7 @@ public interface HomeDocs {
                     현재 사용자가 최근 본 정책을 최근 조회한 순서대로 조회합니다.
                     같은 정책을 여러 번 본 경우 가장 최근 조회 기록을 기준으로 한 번만 노출합니다.
 
+                    - `cursor`: 최초 요청에서는 생략하고, 다음 요청부터 응답의 `nextCursor`를 전달합니다.
                     - `size`: 조회할 정책 수(기본 5, 최대 5)
                     """
     )
@@ -54,6 +55,8 @@ public interface HomeDocs {
     })
     CommonResponse<PolicyListResponse> getRecentViewedPolicies(
             @CurrentUser User user,
+            @Parameter(description = "이전 응답에서 받은 다음 페이지 커서")
+            @RequestParam(required = false) String cursor,
             @Parameter(description = "조회 개수", example = "5")
             @RequestParam(defaultValue = "5") @Min(1) @Max(5) int size
     );

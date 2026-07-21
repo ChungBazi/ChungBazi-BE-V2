@@ -38,10 +38,11 @@ public class HomeController implements HomeDocs {
     @GetMapping("/policies/recent-viewed")
     public CommonResponse<PolicyListResponse> getRecentViewedPolicies(
             @CurrentUser User user,
+            @RequestParam(required = false) String cursor,
             @RequestParam(defaultValue = "5") @Min(1) @Max(5) int size
     ) {
         return CommonResponse.onSuccess(
-                homePolicyService.getRecentViewedPolicies(user, size)
+                homePolicyService.getRecentViewedPolicies(user, cursor, size)
         );
     }
 

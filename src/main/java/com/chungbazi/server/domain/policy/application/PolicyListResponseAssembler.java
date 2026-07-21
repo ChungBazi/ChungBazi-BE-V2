@@ -48,9 +48,7 @@ public class PolicyListResponseAssembler {
     }
 
     public List<PolicySummary> summarize(List<Policy> policies, Set<Long> likedPolicyIds) {
-        return policies.stream()
-                .map(policy -> PolicySummary.from(policy, likedPolicyIds))
-                .toList();
+        return PolicySummary.from(policies, likedPolicyIds);
     }
 
     public Set<Long> findLikedPolicyIds(Long userId, List<Policy> policies) {
