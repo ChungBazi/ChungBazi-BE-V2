@@ -7,7 +7,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum PolicySortType {
     LATEST("최신순"),
-    DEADLINE("마감순");
+    DEADLINE("마감순"),
+    POPULAR("인기순")
+    ;
 
     private final String description;
 }

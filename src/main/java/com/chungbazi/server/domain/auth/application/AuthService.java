@@ -134,7 +134,8 @@ public class AuthService {
                 refreshToken,
                 user.getEmail(),
                 user.getSocialType(),
-                user.isOnboardingCompleted()
+                user.isOnboardingCompleted(),
+                user.isNicknameChanged()
         );
     }
 

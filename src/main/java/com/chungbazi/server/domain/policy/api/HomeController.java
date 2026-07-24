@@ -1,6 +1,7 @@
 package com.chungbazi.server.domain.policy.api;
 
 import com.chungbazi.server.domain.policy.api.docs.HomeDocs;
+import com.chungbazi.server.domain.policy.api.dto.response.HomePolicyResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
 import com.chungbazi.server.domain.policy.application.HomePolicyService;
 import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
@@ -24,6 +25,26 @@ import org.springframework.web.bind.annotation.RestController;
 public class HomeController implements HomeDocs {
 
     private final HomePolicyService homePolicyService;
+
+    @Override
+    @GetMapping
+    public CommonResponse<HomePolicyResponse> getHomePolicies(@CurrentUser User user) {
+        return CommonResponse.onSuccess(
+                homePolicyService.getHomePolicies(user)
+        );
+    }
+
+    @Override
+    @GetMapping("/policies/recent-viewed")
+    public CommonResponse<PolicyListResponse> getRecentViewedPolicies(
+            @CurrentUser User user,
+            @RequestParam(required = false) String cursor,
+            @RequestParam(defaultValue = "5") @Min(1) @Max(5) int size
+    ) {
+        return CommonResponse.onSuccess(
+                homePolicyService.getRecentViewedPolicies(user, cursor, size)
+        );
+    }
 
     @Override
     @GetMapping("/policies")
@@ -62,6 +83,19 @@ public class HomeController implements HomeDocs {
     ) {
         return CommonResponse.onSuccess(
                 homePolicyService.getUpcomingDeadlinePolicies(user, category, cursor, size)
+        );
+    }
+
+    @Override
+    @GetMapping("/policies/popular")
+    public CommonResponse<PolicyListResponse> getPopularPolicies(
+            @CurrentUser User user,
+            @RequestParam(required = false) PolicyCategoryType category,
+            @RequestParam(required = false) String cursor,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
+    ) {
+        return CommonResponse.onSuccess(
+                homePolicyService.getPopularPolicies(user, category, cursor, size)
         );
     }
 }

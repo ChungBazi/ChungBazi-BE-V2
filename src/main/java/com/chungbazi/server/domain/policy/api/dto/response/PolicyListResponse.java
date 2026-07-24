@@ -15,7 +15,7 @@ import lombok.Builder;
 @Schema(description = "분야별 정책 무한스크롤 응답")
 public record PolicyListResponse(
         @Schema(description = "해당 분야의 전체 정책 수", example = "128")
-        long totalCount,
+        Long totalCount,
 
         @Schema(description = "조회된 정책 목록")
         List<PolicySummary> policies,
@@ -28,19 +28,15 @@ public record PolicyListResponse(
 ) {
 
     public static PolicyListResponse of(
-            long totalCount,
+            Long totalCount,
             List<Policy> policies,
             Set<Long> likedPolicyIds,
             String nextCursor,
             boolean hasNext
     ) {
-        List<PolicySummary> summaries = policies.stream()
-                .map(policy -> PolicySummary.from(policy, likedPolicyIds))
-                .toList();
-
         return PolicyListResponse.builder()
                 .totalCount(totalCount)
-                .policies(summaries)
+                .policies(PolicySummary.from(policies, likedPolicyIds))
                 .nextCursor(nextCursor)
                 .hasNext(hasNext)
                 .build();
@@ -83,6 +79,12 @@ public record PolicyListResponse(
                     .viewCount(policy.getViewCount())
                     .liked(likedPolicyIds.contains(policy.getId()))
                     .build();
+        }
+
+        public static List<PolicySummary> from(List<Policy> policies, Set<Long> likedPolicyIds) {
+            return policies.stream()
+                    .map(policy -> PolicySummary.from(policy, likedPolicyIds))
+                    .toList();
         }
 
         private static String formatDDay(Policy policy) {

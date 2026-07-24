@@ -1,6 +1,6 @@
 name: ✨ 기능 추가
 description: 새로운 기능을 추가할 때 사용하는 템플릿입니다.
-title: "feat: "
+title: "[Feat] "
 labels: ["✨feature"]
 assignees: []
 

@@ -73,6 +73,9 @@ public class User extends BaseTimeEntity {
     @Column(name = "onboarding_completed", nullable = false)
     private boolean onboardingCompleted;
 
+    @Column(name = "nickname_changed", nullable = false)
+    private boolean nicknameChanged;
+
     @Column(name = "search_keyword_auto_save_enabled", nullable = false)
     private boolean searchKeywordAutoSaveEnabled;
 
@@ -96,6 +99,7 @@ public class User extends BaseTimeEntity {
         user.name = name;
         user.fcmToken = fcmToken;
         user.onboardingCompleted = false;
+        user.nicknameChanged = false;
         user.searchKeywordAutoSaveEnabled = true;
         user.deleted = false;
         return user;
@@ -107,10 +111,10 @@ public class User extends BaseTimeEntity {
 
     public void updateName(String name) {
         this.name = name;
+        this.nicknameChanged = true;
     }
 
     public void saveUserOnboarding(
-            String name,
             String birth,
             SidoCode sidoCode,
             String sigunguCode,
@@ -118,7 +122,6 @@ public class User extends BaseTimeEntity {
             EmploymentCode employmentCode,
             IncomeLevel incomeLevel
     ) {
-        this.name = name;
         this.birth = birth;
         this.sidoCode = sidoCode;
         this.sigunguCode = sigunguCode;

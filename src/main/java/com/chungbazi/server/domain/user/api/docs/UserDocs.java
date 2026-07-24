@@ -22,7 +22,6 @@ public interface UserDocs {
             description = """
                     ### RequestBody
                     ---
-                    - `name`: 사용자 이름
                     - `birth`: 생년월일
                     - `sidoCode`: 거주 지역 시/도 코드
                     - `sigunguCode`: 거주 지역 시/군/구 코드
