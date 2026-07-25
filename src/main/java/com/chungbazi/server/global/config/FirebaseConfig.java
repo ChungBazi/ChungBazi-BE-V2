@@ -26,7 +26,7 @@ public class FirebaseConfig {
     @ConditionalOnProperty(prefix = "firebase", name = "enabled", havingValue = "true")
     public FirebaseApp firebaseApp() throws IOException {
         if (!StringUtils.hasText(firebaseProperties.serviceAccountPath())) {
-            throw new IllegalStateException("firebase 환경은 enalbed 플래그가 true일 때만 세팅됩니다.");
+            throw new IllegalStateException("firebase.service-account-path 설정이 필요합니다.");
         }
 
         if (!FirebaseApp.getApps().isEmpty()) {
