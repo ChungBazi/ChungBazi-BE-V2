@@ -20,6 +20,7 @@ import java.util.Set;
 public class PolicyListResponseAssembler {
 
     private final PolicyLikeRepository policyLikeRepository;
+    private final PolicyDisplayMapper policyDisplayMapper;
 
     public PolicyListResponse assemble(
             User user,
@@ -38,17 +39,25 @@ public class PolicyListResponseAssembler {
                 ? PolicyCursorParser.encode(sort, policies.getLast())
                 : null;
 
-        return PolicyListResponse.of(
+        return assemble(
                 totalCount,
-                policies,
-                likedPolicyIds,
+                policyDisplayMapper.toSummaries(policies, likedPolicyIds),
                 nextCursor,
                 hasNext
         );
     }
 
     public List<PolicySummary> summarize(List<Policy> policies, Set<Long> likedPolicyIds) {
-        return PolicySummary.from(policies, likedPolicyIds);
+        return policyDisplayMapper.toSummaries(policies, likedPolicyIds);
+    }
+
+    public PolicyListResponse assemble(
+            Long totalCount,
+            List<PolicySummary> policies,
+            String nextCursor,
+            boolean hasNext
+    ) {
+        return new PolicyListResponse(totalCount, policies, nextCursor, hasNext);
     }
 
     public Set<Long> findLikedPolicyIds(Long userId, List<Policy> policies) {
