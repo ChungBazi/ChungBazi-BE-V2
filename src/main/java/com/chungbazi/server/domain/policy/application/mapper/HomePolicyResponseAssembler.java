@@ -1,4 +1,4 @@
-package com.chungbazi.server.domain.policy.application;
+package com.chungbazi.server.domain.policy.application.mapper;
 
 import com.chungbazi.server.domain.policy.api.dto.response.HomePolicyResponse;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
