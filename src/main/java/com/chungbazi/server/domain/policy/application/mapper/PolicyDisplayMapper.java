@@ -4,7 +4,9 @@ import com.chungbazi.server.domain.policy.api.dto.response.PolicyCardResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyDetailResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse.PolicySummary;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
+import com.chungbazi.server.domain.policy.domain.entity.PolicyDetail;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentType;
+import java.util.ArrayList;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -54,6 +56,7 @@ public class PolicyDisplayMapper {
 
     public PolicyDetailResponse toDetailResponse(
             Policy policy,
+            PolicyDetail policyDetail,
             Set<Long> likedPolicyIds,
             List<Policy> popularPolicies
     ) {
@@ -65,9 +68,31 @@ public class PolicyDisplayMapper {
                 policy.getTitle(),
                 policy.getViewCount(),
                 likedPolicyIds.contains(policy.getId()),
+                policyDetail == null ? null : policyDetail.getEligibilityDescription(),
+                formatApplyPeriod(policy),
+                policy.getSupportContent(),
+                policyDetail == null ? null : policyDetail.getApplicationMethod(),
+                policyDetail == null ? null : policyDetail.getSubmittedDocument(),
+                policyDetail == null ? null : policyDetail.getScreeningMethod(),
+                toReferenceUrls(policyDetail),
                 null,
                 toDetailSummaries(popularPolicies, likedPolicyIds)
         );
+    }
+
+    private List<String> toReferenceUrls(PolicyDetail policyDetail) {
+        if (policyDetail == null) {
+            return List.of();
+        }
+
+        List<String> referenceUrls = new ArrayList<>();
+        if (policyDetail.getReferenceUrl1() != null && !policyDetail.getReferenceUrl1().isBlank()) {
+            referenceUrls.add(policyDetail.getReferenceUrl1());
+        }
+        if (policyDetail.getReferenceUrl2() != null && !policyDetail.getReferenceUrl2().isBlank()) {
+            referenceUrls.add(policyDetail.getReferenceUrl2());
+        }
+        return referenceUrls;
     }
 
     private List<PolicyDetailResponse.PolicySummary> toDetailSummaries(

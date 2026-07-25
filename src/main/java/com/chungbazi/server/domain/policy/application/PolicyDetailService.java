@@ -4,7 +4,9 @@ import com.chungbazi.server.domain.policy.api.dto.response.PolicyCardResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyDetailResponse;
 import com.chungbazi.server.domain.policy.application.mapper.PolicyDisplayMapper;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
+import com.chungbazi.server.domain.policy.domain.entity.PolicyDetail;
 import com.chungbazi.server.domain.policy.domain.entity.RecentViewedPolicy;
+import com.chungbazi.server.domain.policy.domain.repository.PolicyDetailRepository;
 import com.chungbazi.server.domain.policy.domain.repository.PolicyLikeRepository;
 import com.chungbazi.server.domain.policy.domain.repository.RecentViewedPolicyRepository;
 import com.chungbazi.server.domain.policy.domain.repository.policyRepository.PolicyRepository;
@@ -28,6 +30,7 @@ public class PolicyDetailService {
     private static final int RELATED_POLICY_SIZE = 5;
 
     private final PolicyRepository policyRepository;
+    private final PolicyDetailRepository policyDetailRepository;
     private final PolicyLikeRepository policyLikeRepository;
     private final RecentViewedPolicyRepository recentViewedPolicyRepository;
     private final PolicyDisplayMapper policyDisplayMapper;
@@ -51,10 +54,12 @@ public class PolicyDetailService {
         policy.increaseViewCount();
         recentViewedPolicyRepository.save(RecentViewedPolicy.createRecentViewedPolicy(user.getId(), policy));
 
+        PolicyDetail policyDetail = policyDetailRepository.findByPolicyId(policy.getId())
+                .orElse(null);
         List<Policy> popularPolicies = findPopularPoliciesInSameCategory(user, policy);
         Set<Long> likedPolicyIds = findLikedPolicyIds(user, policy, popularPolicies);
 
-        return policyDisplayMapper.toDetailResponse(policy, likedPolicyIds, popularPolicies);
+        return policyDisplayMapper.toDetailResponse(policy, policyDetail, likedPolicyIds, popularPolicies);
     }
 
     private Policy findPolicy(Long policyId) {
