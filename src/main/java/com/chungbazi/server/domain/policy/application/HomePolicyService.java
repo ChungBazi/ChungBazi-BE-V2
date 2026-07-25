@@ -20,7 +20,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -38,6 +37,7 @@ public class HomePolicyService {
     private final PolicyRepository policyRepository;
     private final RecentViewedPolicyRepository recentViewedPolicyRepository;
     private final PolicyListResponseAssembler policyListResponseAssembler;
+    private final HomePolicyResponseAssembler homePolicyResponseAssembler;
 
     public HomePolicyResponse getHomePolicies(User user) {
         LocalDate today = LocalDate.now(SERVICE_ZONE_ID);
@@ -67,22 +67,13 @@ public class HomePolicyService {
                 sectionPageRequest
         );
 
-        List<Policy> homePolicies = Stream.of(
-                        recentViewedPolicies,
-                        popularPolicies,
-                        upcomingDeadlinePolicies,
-                        latestPolicies
-                )
-                .flatMap(List::stream)
-                .toList();
-        Set<Long> likedPolicyIds = policyListResponseAssembler.findLikedPolicyIds(user.getId(), homePolicies);
-
-        return HomePolicyResponse.builder()
-                .recentViewedPolicies(policyListResponseAssembler.summarize(recentViewedPolicies, likedPolicyIds))
-                .popularPolicies(policyListResponseAssembler.summarize(popularPolicies, likedPolicyIds))
-                .upcomingDeadlinePolicies(policyListResponseAssembler.summarize(upcomingDeadlinePolicies, likedPolicyIds))
-                .latestPolicies(policyListResponseAssembler.summarize(latestPolicies, likedPolicyIds))
-                .build();
+        return homePolicyResponseAssembler.assemble(
+                user,
+                recentViewedPolicies,
+                popularPolicies,
+                upcomingDeadlinePolicies,
+                latestPolicies
+        );
     }
 
     public PolicyListResponse getRecentViewedPolicies(User user, String cursor, int size) {
@@ -111,7 +102,12 @@ public class HomePolicyService {
                 ? RecentViewedPolicyCursorParser.encode(recentViewedPolicies.getLast())
                 : null;
 
-        return PolicyListResponse.of(totalCount, policies, likedPolicyIds, nextCursor, hasNext);
+        return policyListResponseAssembler.assemble(
+                totalCount,
+                policyListResponseAssembler.summarize(policies, likedPolicyIds),
+                nextCursor,
+                hasNext
+        );
     }
 
     private List<RecentViewedPolicy> fetchRecentViewedPolicies(

@@ -1,17 +1,9 @@
 package com.chungbazi.server.domain.policy.api.dto.response;
 
-import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
-import com.chungbazi.server.domain.policy.domain.type.RecruitmentType;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Set;
-import lombok.Builder;
 
-@Builder
 @Schema(description = "분야별 정책 무한스크롤 응답")
 public record PolicyListResponse(
         @Schema(description = "해당 분야의 전체 정책 수", example = "128")
@@ -27,22 +19,6 @@ public record PolicyListResponse(
         boolean hasNext
 ) {
 
-    public static PolicyListResponse of(
-            Long totalCount,
-            List<Policy> policies,
-            Set<Long> likedPolicyIds,
-            String nextCursor,
-            boolean hasNext
-    ) {
-        return PolicyListResponse.builder()
-                .totalCount(totalCount)
-                .policies(PolicySummary.from(policies, likedPolicyIds))
-                .nextCursor(nextCursor)
-                .hasNext(hasNext)
-                .build();
-    }
-
-    @Builder
     @Schema(description = "정책 목록 항목")
     public record PolicySummary(
             @Schema(description = "정책 ID", example = "42")
@@ -66,46 +42,5 @@ public record PolicyListResponse(
             @Schema(description = "현재 사용자의 찜 여부", example = "true")
             boolean liked
     ) {
-
-        private static final ZoneId SERVICE_ZONE_ID = ZoneId.of("Asia/Seoul");
-
-        public static PolicySummary from(Policy policy, Set<Long> likedPolicyIds) {
-            return PolicySummary.builder()
-                    .policyId(policy.getId())
-                    .category(policy.getCategory())
-                    .categoryName(policy.getCategory().getDescription())
-                    .dDay(formatDDay(policy))
-                    .title(policy.getTitle())
-                    .viewCount(policy.getViewCount())
-                    .liked(likedPolicyIds.contains(policy.getId()))
-                    .build();
-        }
-
-        public static List<PolicySummary> from(List<Policy> policies, Set<Long> likedPolicyIds) {
-            return policies.stream()
-                    .map(policy -> PolicySummary.from(policy, likedPolicyIds))
-                    .toList();
-        }
-
-        private static String formatDDay(Policy policy) {
-            if (policy.getRecruitmentType() == RecruitmentType.ALWAYS) {
-                return "상시";
-            }
-            if (policy.getApplyEndDate() == null) {
-                return "미정";
-            }
-
-            long remainingDays = ChronoUnit.DAYS.between(
-                    LocalDate.now(SERVICE_ZONE_ID),
-                    policy.getApplyEndDate()
-            );
-            if (remainingDays < 0) {
-                return "마감";
-            }
-            if (remainingDays == 0) {
-                return "D-Day";
-            }
-            return "D-" + remainingDays;
-        }
     }
 }

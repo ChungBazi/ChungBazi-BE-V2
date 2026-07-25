@@ -3,9 +3,7 @@ package com.chungbazi.server.domain.policy.api.dto.response;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse.PolicySummary;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
-import lombok.Builder;
 
-@Builder
 @Schema(description = "홈 화면 정책 섹션 응답")
 public record HomePolicyResponse(
         @Schema(description = "최근 본 정책 목록")
