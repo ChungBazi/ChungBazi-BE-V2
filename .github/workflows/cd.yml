@@ -62,17 +62,35 @@ jobs:
         uses: appleboy/ssh-action@master
         env:
           DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: DOCKER_REPO
+          envs: DOCKER_REPO,FIREBASE_SERVICE_ACCOUNT_JSON
           script: |
             set -e
             mkdir -p /home/ubuntu/app
             cd /home/ubuntu/app
 
-            docker compose pull chungbazi-app
-            docker compose up -d --no-deps chungbazi-app
+            : "${FIREBASE_SERVICE_ACCOUNT_JSON:?FIREBASE_SERVICE_ACCOUNT_JSON secret is required}"
+
+            mkdir -p ./secrets
+            umask 077
+            printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > ./secrets/firebase-service-account.json
+            chmod 0444 ./secrets/firebase-service-account.json
+
+            cat > ./docker-compose.firebase.yml <<'EOF'
+            services:
+              chungbazi-app:
+                environment:
+                  FIREBASE_ENABLED: "true"
+                  FIREBASE_SERVICE_ACCOUNT_PATH: /app/secrets/firebase-service-account.json
+                volumes:
+                  - ./secrets/firebase-service-account.json:/app/secrets/firebase-service-account.json:ro
+            EOF
+
+            docker compose -f docker-compose.yml -f docker-compose.firebase.yml pull chungbazi-app
+            docker compose -f docker-compose.yml -f docker-compose.firebase.yml up -d --no-deps chungbazi-app
 
             docker image prune -f
