@@ -2,6 +2,7 @@ package com.chungbazi.server.domain.policy.api;
 
 import com.chungbazi.server.domain.policy.api.docs.PolicyDetailDocs;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyCardResponse;
+import com.chungbazi.server.domain.policy.api.dto.response.PolicyDetailResponse;
 import com.chungbazi.server.domain.policy.application.PolicyDetailService;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.global.common.CommonResponse;
@@ -26,5 +27,14 @@ public class PolicyDetailController implements PolicyDetailDocs {
             @RequestParam Long policyId
     ) {
         return CommonResponse.onSuccess(policyDetailService.getPolicyCard(user, policyId));
+    }
+
+    @Override
+    @GetMapping("/detail")
+    public CommonResponse<PolicyDetailResponse> getPolicyDetail(
+            @CurrentUser User user,
+            @RequestParam Long policyId
+    ) {
+        return CommonResponse.onSuccess(policyDetailService.getPolicyDetail(user, policyId));
     }
 }
