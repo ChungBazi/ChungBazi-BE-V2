@@ -1,6 +1,7 @@
 package com.chungbazi.server.domain.policy.application.mapper;
 
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyCardResponse;
+import com.chungbazi.server.domain.policy.api.dto.response.PolicyDetailResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse.PolicySummary;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentType;
@@ -49,6 +50,41 @@ public class PolicyDisplayMapper {
                 policy.getApplyUrl(),
                 likedPolicyIds.contains(policy.getId())
         );
+    }
+
+    public PolicyDetailResponse toDetailResponse(
+            Policy policy,
+            Set<Long> likedPolicyIds,
+            List<Policy> popularPolicies
+    ) {
+        return new PolicyDetailResponse(
+                policy.getId(),
+                policy.getCategory(),
+                policy.getCategory().getDescription(),
+                formatDDay(policy),
+                policy.getTitle(),
+                policy.getViewCount(),
+                likedPolicyIds.contains(policy.getId()),
+                null,
+                toDetailSummaries(popularPolicies, likedPolicyIds)
+        );
+    }
+
+    private List<PolicyDetailResponse.PolicySummary> toDetailSummaries(
+            List<Policy> policies,
+            Set<Long> likedPolicyIds
+    ) {
+        return policies.stream()
+                .map(policy -> new PolicyDetailResponse.PolicySummary(
+                        policy.getId(),
+                        policy.getCategory(),
+                        policy.getCategory().getDescription(),
+                        formatDDay(policy),
+                        policy.getTitle(),
+                        policy.getViewCount(),
+                        likedPolicyIds.contains(policy.getId())
+                ))
+                .toList();
     }
 
     private String formatDDay(Policy policy) {
