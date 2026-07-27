@@ -49,11 +49,6 @@ public class YouthPolicySyncService {
             unchangedCount += pageSyncResult.unchangedCount();
             skippedCount += pageSyncResult.skippedCount();
 
-            //한 페이지 전체가 변경 없는 기존 정책이면 이후 페이지 조회 stop
-            if (isUnchangedPage(pageSyncResult)) {
-                break;
-            }
-
             //모든 페이지를 순회한 경우
             if (!hasNextPage(response, pageNum, items.size())) {
                 break;
@@ -70,7 +65,6 @@ public class YouthPolicySyncService {
         int updatedCount = 0;
         int unchangedCount = 0;
         int skippedCount = 0;
-        int closedSkippedCount = 0;
         int invalidRegionCount = 0;
 
         //추후 배치처리?
@@ -81,11 +75,7 @@ public class YouthPolicySyncService {
                     case INSERTED -> insertedCount++;
                     case UPDATED -> updatedCount++;
                     case UNCHANGED -> unchangedCount++;
-                    case SKIPPED -> skippedCount++;
-                    case SKIPPED_CLOSED -> {
-                        skippedCount++;
-                        closedSkippedCount++;
-                    }
+                    case SKIPPED, SKIPPED_CLOSED -> skippedCount++;
                 }
             } catch (PolicyException exception) {
                 if (exception.getCode() != PolicyErrorCode.INVALID_POLICY_REGION) {
@@ -108,18 +98,8 @@ public class YouthPolicySyncService {
                 updatedCount,
                 unchangedCount,
                 skippedCount,
-                closedSkippedCount,
                 invalidRegionCount
         );
-    }
-
-    //한 페이지에 신규/업데이트 대상이 없는 경우
-    private boolean isUnchangedPage(PageSyncResult pageSyncResult) {
-        return pageSyncResult.fetchedCount() > 0
-                && pageSyncResult.insertedCount() == 0
-                && pageSyncResult.updatedCount() == 0
-                && pageSyncResult.invalidRegionCount() == 0
-                && pageSyncResult.unchangedCount() + pageSyncResult.closedSkippedCount() == pageSyncResult.fetchedCount();
     }
 
     private List<YouthPolicyItem> extractItems(YouthPolicyListResponse response) {
