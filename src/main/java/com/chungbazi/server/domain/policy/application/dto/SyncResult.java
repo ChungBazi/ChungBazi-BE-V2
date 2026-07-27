@@ -5,6 +5,7 @@ public record SyncResult(
         int insertedCount,
         int updatedCount,
         int unchangedCount,
-        int skippedCount
+        int skippedCount,
+        long totalElapsedMillis
 ) {
 }

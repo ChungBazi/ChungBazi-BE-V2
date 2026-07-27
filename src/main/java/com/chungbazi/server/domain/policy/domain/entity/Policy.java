@@ -84,7 +84,7 @@ public class Policy extends BaseTimeEntity {
     @Column(name = "apply_end_date")
     private LocalDate applyEndDate;
 
-    @Column(name = "apply_period_text", length = 100)
+    @Column(name = "apply_period_text", columnDefinition = "text")
     private String applyPeriodText;
 
     @Enumerated(EnumType.STRING)

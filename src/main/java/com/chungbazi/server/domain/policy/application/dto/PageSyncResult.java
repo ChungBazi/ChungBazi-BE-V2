@@ -6,5 +6,6 @@ public record PageSyncResult (
             int updatedCount,
             int unchangedCount,
             int skippedCount,
-            int invalidRegionCount
+            int invalidRegionCount,
+            int invalidCategoryCount
 ){}

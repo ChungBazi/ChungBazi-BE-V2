@@ -36,6 +36,23 @@ class YouthPolicySyncServiceTest {
     }
 
     @Test
+    void skipsInvalidCategoryPolicyAndContinuesSync() {
+        YouthPolicySyncService service = new YouthPolicySyncService(
+                new FakeYouthPolicyClient(List.of(List.of(
+                        item("saved-policy"),
+                        item("invalid-category-policy")
+                ))),
+                new FakeYouthPolicyPersistenceService()
+        );
+
+        SyncResult result = service.syncPolicies();
+
+        assertThat(result.fetchedCount()).isEqualTo(2);
+        assertThat(result.insertedCount()).isEqualTo(1);
+        assertThat(result.skippedCount()).isEqualTo(1);
+    }
+
+    @Test
     void syncsAllPagesUntilLastPage() {
         List<YouthPolicyItem> firstPageItems = new ArrayList<>();
         firstPageItems.add(item("saved-policy"));
@@ -164,6 +181,7 @@ class YouthPolicySyncServiceTest {
                 case "updated-policy" -> PolicySyncStatus.UPDATED;
                 case "closed-policy" -> PolicySyncStatus.SKIPPED_CLOSED;
                 case "invalid-region-policy" -> throw new PolicyException(PolicyErrorCode.INVALID_POLICY_REGION);
+                case "invalid-category-policy" -> throw new PolicyException(PolicyErrorCode.INVALID_POLICY_CATEGORY);
                 default -> throw new IllegalArgumentException("Unexpected policy number: " + item.plcyNo());
             };
         }

@@ -26,7 +26,9 @@ public class YouthPolicySyncService {
     private final YouthPolicyPersistenceService youthPolicyPersistenceService;
 
     public SyncResult syncPolicies() {
+        long totalStartTime = System.currentTimeMillis();
         int pageNum = FIRST_PAGE;
+        int syncedPageCount = 0;
         int totalFetchedCount = 0;
         int insertedCount = 0;
         int updatedCount = 0;
@@ -34,20 +36,45 @@ public class YouthPolicySyncService {
         int skippedCount = 0;
 
         while (true) {
+            long fetchStartTime = System.currentTimeMillis();
             YouthPolicyListResponse response = youthPolicyClient.fetchPolicies(pageNum, PAGE_SIZE);
+            long fetchElapsedMillis = System.currentTimeMillis() - fetchStartTime;
             List<YouthPolicyItem> items = extractItems(response);
 
             if (items.isEmpty()) {
+                log.info(
+                        "해당 페이지의 불러올 정책이 없습니다. page={}, fetchElapsedMillis={}",
+                        pageNum,
+                        fetchElapsedMillis
+                );
                 break;
             }
 
             //정책 파싱 후 저장하기
+            long persistStartTime = System.currentTimeMillis();
             PageSyncResult pageSyncResult = syncPageItems(items);
+            long persistElapsedMillis = System.currentTimeMillis() - persistStartTime;
+            syncedPageCount++;
+
             totalFetchedCount += pageSyncResult.fetchedCount();
             insertedCount += pageSyncResult.insertedCount();
             updatedCount += pageSyncResult.updatedCount();
             unchangedCount += pageSyncResult.unchangedCount();
             skippedCount += pageSyncResult.skippedCount();
+
+            log.info(
+                    "해당 페이지의 정책 동기화가 완료되었습니다. page={}, fetched={}, inserted={}, updated={}, unchanged={}, skipped={}, invalidRegion={}, invalidCategory={}, fetchElapsedMillis={}, persistElapsedMillis={}",
+                    pageNum,
+                    pageSyncResult.fetchedCount(),
+                    pageSyncResult.insertedCount(),
+                    pageSyncResult.updatedCount(),
+                    pageSyncResult.unchangedCount(),
+                    pageSyncResult.skippedCount(),
+                    pageSyncResult.invalidRegionCount(),
+                    pageSyncResult.invalidCategoryCount(),
+                    fetchElapsedMillis,
+                    persistElapsedMillis
+            );
 
             //모든 페이지를 순회한 경우
             if (!hasNextPage(response, pageNum, items.size())) {
@@ -56,7 +83,7 @@ public class YouthPolicySyncService {
             pageNum++;
         }
 
-        return new SyncResult(totalFetchedCount, insertedCount, updatedCount, unchangedCount, skippedCount);
+        return new SyncResult(totalFetchedCount, insertedCount, updatedCount, unchangedCount, skippedCount, System.currentTimeMillis() - totalStartTime);
     }
 
     //정책 저장
@@ -66,6 +93,7 @@ public class YouthPolicySyncService {
         int unchangedCount = 0;
         int skippedCount = 0;
         int invalidRegionCount = 0;
+        int invalidCategoryCount = 0;
 
         //추후 배치처리?
         for (YouthPolicyItem item : items) {
@@ -78,17 +106,30 @@ public class YouthPolicySyncService {
                     case SKIPPED, SKIPPED_CLOSED -> skippedCount++;
                 }
             } catch (PolicyException exception) {
-                if (exception.getCode() != PolicyErrorCode.INVALID_POLICY_REGION) {
-                    throw exception;
+                if (exception.getCode() == PolicyErrorCode.INVALID_POLICY_REGION) {
+                    log.warn(
+                            "유효하지 않은 지역 코드가 있습니다. plcyNo={}, zipCd={}",
+                            item.plcyNo(),
+                            item.zipCd()
+                    );
+                    skippedCount++;
+                    invalidRegionCount++;
+                    continue;
                 }
 
-                log.warn(
-                        "유효하지않은 지역코드가 있습니다. plcyNo={}, zipCd={}",
-                        item.plcyNo(),
-                        item.zipCd()
-                );
-                skippedCount++;
-                invalidRegionCount++;
+                if (exception.getCode() == PolicyErrorCode.INVALID_POLICY_CATEGORY) {
+                    log.warn(
+                            "유효하지 않은 정책 카테고리가 있습니다. plcyNo={}, lclsfNm={}, mclsfNm={}",
+                            item.plcyNo(),
+                            item.lclsfNm(),
+                            item.mclsfNm()
+                    );
+                    skippedCount++;
+                    invalidCategoryCount++;
+                    continue;
+                }
+
+                throw exception;
             }
         }
 
@@ -98,7 +139,8 @@ public class YouthPolicySyncService {
                 updatedCount,
                 unchangedCount,
                 skippedCount,
-                invalidRegionCount
+                invalidRegionCount,
+                invalidCategoryCount
         );
     }
 

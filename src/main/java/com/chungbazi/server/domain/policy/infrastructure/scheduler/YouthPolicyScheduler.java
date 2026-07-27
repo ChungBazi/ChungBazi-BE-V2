@@ -14,16 +14,18 @@ public class YouthPolicyScheduler {
 
     private final YouthPolicySyncService youthPolicySyncService;
 
-    @Scheduled(cron = "0 0 4 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 34 18 * * *", zone = "Asia/Seoul")
     public void syncPoliciesEveryDay() {
+        log.info("정책 동기화 시작");
         SyncResult result = youthPolicySyncService.syncPolicies();
         log.info(
-                "Youth policy sync finished. fetched={}, inserted={}, updated={}, unchanged={}, skipped={}",
+                "✅정책 동기화 완료. 읽은 정책 수={}, 새로 저장된 정책 수={}, 수정된 정책 수={}, 변경사항 없는 정책 수={}, 스킵된 정책 수={}, 전체 경과 시간={}",
                 result.fetchedCount(),
                 result.insertedCount(),
                 result.updatedCount(),
                 result.unchangedCount(),
-                result.skippedCount()
+                result.skippedCount(),
+                result.totalElapsedMillis()
         );
     }
 }
