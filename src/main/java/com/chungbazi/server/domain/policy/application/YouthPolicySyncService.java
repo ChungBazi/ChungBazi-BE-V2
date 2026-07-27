@@ -6,6 +6,7 @@ import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.cl
 import java.util.List;
 
 import com.chungbazi.server.domain.policy.application.dto.PageSyncResult;
+import com.chungbazi.server.domain.policy.application.dto.PolicySyncStatus;
 import com.chungbazi.server.domain.policy.application.dto.SyncResult;
 import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
 import com.chungbazi.server.domain.policy.exception.PolicyException;
@@ -27,54 +28,60 @@ public class YouthPolicySyncService {
     public SyncResult syncPolicies() {
         int pageNum = FIRST_PAGE;
         int totalFetchedCount = 0;
-        int savedCount = 0;
+        int insertedCount = 0;
+        int updatedCount = 0;
+        int unchangedCount = 0;
         int skippedCount = 0;
 
-        //TODO:스케줄링 로직 추후 구현
-        //while (true) {
+        while (true) {
             YouthPolicyListResponse response = youthPolicyClient.fetchPolicies(pageNum, PAGE_SIZE);
             List<YouthPolicyItem> items = extractItems(response);
 
             if (items.isEmpty()) {
-                //break;
+                break;
             }
 
             //정책 파싱 후 저장하기
             PageSyncResult pageSyncResult = syncPageItems(items);
             totalFetchedCount += pageSyncResult.fetchedCount();
-            savedCount += pageSyncResult.savedCount();
+            insertedCount += pageSyncResult.insertedCount();
+            updatedCount += pageSyncResult.updatedCount();
+            unchangedCount += pageSyncResult.unchangedCount();
             skippedCount += pageSyncResult.skippedCount();
 
-            //새로운 정책이 없다면 정책 불러오기 stop
-            if (hasNoNewPolicies(pageSyncResult)) {
-                //break;
+            //한 페이지 전체가 변경 없는 기존 정책이면 이후 페이지 조회 stop
+            if (isUnchangedPage(pageSyncResult)) {
+                break;
             }
 
             //모든 페이지를 순회한 경우
             if (!hasNextPage(response, pageNum, items.size())) {
-                //break;
+                break;
             }
             pageNum++;
-        //}
+        }
 
-        return new SyncResult(totalFetchedCount, savedCount, skippedCount);
+        return new SyncResult(totalFetchedCount, insertedCount, updatedCount, unchangedCount, skippedCount);
     }
 
     //정책 저장
     private PageSyncResult syncPageItems(List<YouthPolicyItem> items) {
-        int savedCount = 0;
+        int insertedCount = 0;
+        int updatedCount = 0;
+        int unchangedCount = 0;
         int skippedCount = 0;
         int invalidRegionCount = 0;
 
         //추후 배치처리?
         for (YouthPolicyItem item : items) {
             try {
-                boolean saved = youthPolicyPersistenceService.saveIfNew(item);
-                if (!saved) {
-                    skippedCount++;
-                    continue;
+                PolicySyncStatus syncStatus = youthPolicyPersistenceService.syncPolicy(item);
+                switch (syncStatus) {
+                    case INSERTED -> insertedCount++;
+                    case UPDATED -> updatedCount++;
+                    case UNCHANGED -> unchangedCount++;
+                    case SKIPPED -> skippedCount++;
                 }
-                savedCount++;
             } catch (PolicyException exception) {
                 if (exception.getCode() != PolicyErrorCode.INVALID_POLICY_REGION) {
                     throw exception;
@@ -90,13 +97,20 @@ public class YouthPolicySyncService {
             }
         }
 
-        return new PageSyncResult(items.size(), savedCount, skippedCount, invalidRegionCount);
+        return new PageSyncResult(
+                items.size(),
+                insertedCount,
+                updatedCount,
+                unchangedCount,
+                skippedCount,
+                invalidRegionCount
+        );
     }
 
-    //새로운 정책이 없는 경우
-    private boolean hasNoNewPolicies(PageSyncResult pageSyncResult) {
-        return pageSyncResult.savedCount() == 0
-                && pageSyncResult.invalidRegionCount() == 0;
+    //한 페이지 전체가 변경 없는 기존 정책인 경우
+    private boolean isUnchangedPage(PageSyncResult pageSyncResult) {
+        return pageSyncResult.fetchedCount() > 0
+                && pageSyncResult.unchangedCount() == pageSyncResult.fetchedCount();
     }
 
     private List<YouthPolicyItem> extractItems(YouthPolicyListResponse response) {

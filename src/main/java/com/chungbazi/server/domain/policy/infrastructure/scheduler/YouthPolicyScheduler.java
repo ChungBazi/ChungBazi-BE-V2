@@ -14,13 +14,15 @@ public class YouthPolicyScheduler {
 
     private final YouthPolicySyncService youthPolicySyncService;
 
-    @Scheduled(cron = "0 0 3 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 4 * * *", zone = "Asia/Seoul")
     public void syncPoliciesEveryDay() {
         SyncResult result = youthPolicySyncService.syncPolicies();
         log.info(
-                "Youth policy sync finished. fetched={}, saved={}, skipped={}",
+                "Youth policy sync finished. fetched={}, inserted={}, updated={}, unchanged={}, skipped={}",
                 result.fetchedCount(),
-                result.savedCount(),
+                result.insertedCount(),
+                result.updatedCount(),
+                result.unchangedCount(),
                 result.skippedCount()
         );
     }
