@@ -64,9 +64,6 @@ public class Policy extends BaseTimeEntity {
     @Column(name = "support_content", columnDefinition = "text")
     private String supportContent;
 
-    @Column(name = "apply_url", columnDefinition = "text")
-    private String applyUrl;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "category", nullable = false, length = 30)
     private PolicyCategoryType category;
