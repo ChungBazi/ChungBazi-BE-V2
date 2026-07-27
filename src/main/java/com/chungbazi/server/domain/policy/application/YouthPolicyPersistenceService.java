@@ -47,7 +47,7 @@ public class YouthPolicyPersistenceService {
 
     private PolicySyncStatus syncNewPolicy(YouthPolicyItem item, String plcyNo, String applyPeriodCode) {
         if (CLOSED_PERIOD_CODE.equals(applyPeriodCode)) {
-            return PolicySyncStatus.SKIPPED;
+            return PolicySyncStatus.SKIPPED_CLOSED;
         }
 
         PolicyRegionMapping regionMapping = policyRegionMapper.toRegionMapping(item.zipCd());
@@ -64,15 +64,22 @@ public class YouthPolicyPersistenceService {
     }
 
     private PolicySyncStatus syncExistingPolicy(Policy policy, YouthPolicyItem item, String applyPeriodCode) {
-        //업데이트가 필요한지 확인 (최종 수정일이 동기화한 날짜 이후인 경우)
-        if (!shouldUpdate(policy.getSourceModifiedAt(), policyEntityMapper.toSourceModifiedAt(item))) {
-            return PolicySyncStatus.UNCHANGED;
+        LocalDateTime sourceModifiedAt = policyEntityMapper.toSourceModifiedAt(item);
+
+        //마감된 정책이면 기존 정책 상태만 CLOSED로 반영
+        if (CLOSED_PERIOD_CODE.equals(applyPeriodCode)) {
+            if (policy.getRecruitmentStatus() == RecruitmentStatus.CLOSED
+                    && !shouldUpdate(policy.getSourceModifiedAt(), sourceModifiedAt)) {
+                return PolicySyncStatus.UNCHANGED;
+            }
+
+            policy.updateRecruitmentStatus(RecruitmentStatus.CLOSED, sourceModifiedAt);
+            return PolicySyncStatus.UPDATED;
         }
 
-        //마감된 정책인지 확인
-        if (CLOSED_PERIOD_CODE.equals(applyPeriodCode)) {
-            policy.updateRecruitmentStatus(RecruitmentStatus.CLOSED, policyEntityMapper.toSourceModifiedAt(item));
-            return PolicySyncStatus.UPDATED;
+        //업데이트가 필요한지 확인 (최종 수정일이 동기화한 날짜 이후인 경우)
+        if (!shouldUpdate(policy.getSourceModifiedAt(), sourceModifiedAt)) {
+            return PolicySyncStatus.UNCHANGED;
         }
 
         PolicyRegionMapping regionMapping = policyRegionMapper.toRegionMapping(item.zipCd());

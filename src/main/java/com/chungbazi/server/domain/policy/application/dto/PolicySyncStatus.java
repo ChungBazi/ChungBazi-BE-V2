@@ -4,5 +4,6 @@ public enum PolicySyncStatus {
     INSERTED,
     UPDATED,
     UNCHANGED,
-    SKIPPED
+    SKIPPED,
+    SKIPPED_CLOSED
 }
