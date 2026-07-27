@@ -191,7 +191,4 @@ public class Policy extends BaseTimeEntity {
         return policy;
     }
 
-    public void increaseViewCount() {
-        this.viewCount++;
-    }
 }

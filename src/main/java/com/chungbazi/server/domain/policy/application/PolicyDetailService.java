@@ -37,9 +37,8 @@ public class PolicyDetailService {
 
     @Transactional
     public PolicyCardResponse getPolicyCard(User user, Long policyId) {
-        Policy policy = findPolicy(policyId);
+        Policy policy = increaseViewCountAndFindPolicy(policyId);
 
-        policy.increaseViewCount();
         recentViewedPolicyRepository.save(RecentViewedPolicy.createRecentViewedPolicy(user.getId(), policy));
 
         Set<Long> likedPolicyIds = findLikedPolicyIds(user, policy, List.of());
@@ -49,9 +48,8 @@ public class PolicyDetailService {
 
     @Transactional
     public PolicyDetailResponse getPolicyDetail(User user, Long policyId) {
-        Policy policy = findPolicy(policyId);
+        Policy policy = increaseViewCountAndFindPolicy(policyId);
 
-        policy.increaseViewCount();
         recentViewedPolicyRepository.save(RecentViewedPolicy.createRecentViewedPolicy(user.getId(), policy));
 
         PolicyDetail policyDetail = policyDetailRepository.findByPolicyId(policy.getId())
@@ -60,6 +58,14 @@ public class PolicyDetailService {
         Set<Long> likedPolicyIds = findLikedPolicyIds(user, policy, popularPolicies);
 
         return policyDisplayMapper.toDetailResponse(policy, policyDetail, likedPolicyIds, popularPolicies);
+    }
+
+    private Policy increaseViewCountAndFindPolicy(Long policyId) {
+        int updatedCount = policyRepository.increaseViewCount(policyId);
+        if (updatedCount == 0) {
+            throw new PolicyException(PolicyErrorCode.POLICY_NOT_FOUND);
+        }
+        return findPolicy(policyId);
     }
 
     private Policy findPolicy(Long policyId) {

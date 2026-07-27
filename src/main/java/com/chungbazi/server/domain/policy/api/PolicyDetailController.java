@@ -8,10 +8,7 @@ import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.global.common.CommonResponse;
 import com.chungbazi.server.global.resolver.CurrentUser;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,7 +21,7 @@ public class PolicyDetailController implements PolicyDetailDocs {
     @GetMapping("/card")
     public CommonResponse<PolicyCardResponse> getPolicyCard(
             @CurrentUser User user,
-            @RequestParam Long policyId
+            @PathVariable Long policyId
     ) {
         return CommonResponse.onSuccess(policyDetailService.getPolicyCard(user, policyId));
     }
@@ -33,7 +30,7 @@ public class PolicyDetailController implements PolicyDetailDocs {
     @GetMapping("/detail")
     public CommonResponse<PolicyDetailResponse> getPolicyDetail(
             @CurrentUser User user,
-            @RequestParam Long policyId
+            @PathVariable Long policyId
     ) {
         return CommonResponse.onSuccess(policyDetailService.getPolicyDetail(user, policyId));
     }
