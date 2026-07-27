@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "[Policy Detail]", description = "정책 조회 관련 API")
 public interface PolicyDetailDocs {
@@ -40,9 +39,9 @@ public interface PolicyDetailDocs {
             summary = "정책 상세 조회 API",
             description = """
                     정책 정보를 상세 조회하는 API입니다.
-                    ### Query Parameter
+                    ### Path Variables
                     ---
-                    `policyId` : 청바지 서비스 내의 정책 id
+                    - `policyId`: 청바지 서비스 내의 정책 id
 
                     ### ResponseBody
                     ---

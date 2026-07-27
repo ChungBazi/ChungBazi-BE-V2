@@ -18,7 +18,7 @@ public class PolicyDetailController implements PolicyDetailDocs {
     private final PolicyDetailService policyDetailService;
 
     @Override
-    @GetMapping("/card")
+    @GetMapping("/card/{policyId}")
     public CommonResponse<PolicyCardResponse> getPolicyCard(
             @CurrentUser User user,
             @PathVariable Long policyId
@@ -27,7 +27,7 @@ public class PolicyDetailController implements PolicyDetailDocs {
     }
 
     @Override
-    @GetMapping("/detail")
+    @GetMapping("/detail/{policyId}")
     public CommonResponse<PolicyDetailResponse> getPolicyDetail(
             @CurrentUser User user,
             @PathVariable Long policyId
