@@ -8,7 +8,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @EnableConfigurationProperties(value = {
         JwtProperties.class,
-        AppleProperties.class
+        AppleProperties.class,
+        FirebaseProperties.class
 })
 public class ConfigurationPropertiesConfig {
 }
