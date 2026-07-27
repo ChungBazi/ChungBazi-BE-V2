@@ -31,6 +31,7 @@ public class YouthPolicyEntityMapper {
                 YouthPolicyTextUtils.trimToNull(item.plcyNm()),
                 YouthPolicyTextUtils.trimToNull(item.plcyExplnCn()),
                 YouthPolicyTextUtils.trimToNull(item.plcySprtCn()),
+                YouthPolicyTextUtils.trimToNull(item.aplyUrlAddr()),
                 subCategory,
                 national,
                 applyPeriod.startDate(),
@@ -59,7 +60,7 @@ public class YouthPolicyEntityMapper {
                 YouthPolicyTextUtils.trimToNull(item.sbmsnDcmntCn()),
                 YouthPolicyTextUtils.trimToNull(item.srngMthdCn()),
                 YouthPolicyTextUtils.trimToNull(item.etcMttrCn()),
-                YouthPolicyTextUtils.trimToNull(item.aplyUrlAddr()),
+                null,
                 YouthPolicyTextUtils.trimToNull(item.refUrlAddr1()),
                 YouthPolicyTextUtils.trimToNull(item.refUrlAddr2())
         );

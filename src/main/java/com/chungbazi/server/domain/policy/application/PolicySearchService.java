@@ -7,6 +7,7 @@ import com.chungbazi.server.domain.policy.application.cursor.PolicyCursor;
 import com.chungbazi.server.domain.policy.application.cursor.PolicyCursorParser;
 import com.chungbazi.server.domain.policy.application.cursor.RecentSearchKeywordCursor;
 import com.chungbazi.server.domain.policy.application.cursor.RecentSearchKeywordCursorParser;
+import com.chungbazi.server.domain.policy.application.mapper.PolicyListResponseAssembler;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.entity.RecentSearchKeyword;
 import com.chungbazi.server.domain.policy.domain.repository.RecentSearchKeywordRepository;

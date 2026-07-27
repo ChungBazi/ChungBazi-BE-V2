@@ -45,6 +45,7 @@ class PolicyPopularityCalculatorTest {
                 "테스트 정책",
                 null,
                 null,
+                null,
                 PolicySubCategoryType.EMPLOYMENT_PREPARATION,
                 true,
                 null,
