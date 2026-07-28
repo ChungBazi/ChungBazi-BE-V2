@@ -64,6 +64,9 @@ public class Policy extends BaseTimeEntity {
     @Column(name = "support_content", columnDefinition = "text")
     private String supportContent;
 
+    @Column(name = "apply_url", columnDefinition = "text")
+    private String applyUrl;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "category", nullable = false, length = 30)
     private PolicyCategoryType category;
@@ -136,6 +139,7 @@ public class Policy extends BaseTimeEntity {
             String title,
             String summary,
             String supportContent,
+            String applyUrl,
             PolicySubCategoryType subCategory,
             boolean national,
             LocalDate applyStartDate,
@@ -163,6 +167,7 @@ public class Policy extends BaseTimeEntity {
         policy.title = title;
         policy.summary = summary;
         policy.supportContent = supportContent;
+        policy.applyUrl = applyUrl;
         policy.category = subCategory.getCategory();
         policy.subCategory = subCategory;
         policy.national = national;
@@ -185,4 +190,5 @@ public class Policy extends BaseTimeEntity {
         policy.registeredAt = registeredAt == null ? LocalDateTime.now() : registeredAt;
         return policy;
     }
+
 }
