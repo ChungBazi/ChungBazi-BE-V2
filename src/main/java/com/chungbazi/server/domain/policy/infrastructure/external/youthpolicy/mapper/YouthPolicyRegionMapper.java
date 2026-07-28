@@ -11,6 +11,7 @@ import com.chungbazi.server.domain.policy.exception.PolicyException;
 import com.chungbazi.server.domain.policy.infrastructure.persistence.RegionCodeProvider;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Component;
 public class YouthPolicyRegionMapper {
 
     private static final int SIGUNGU_CODE_LENGTH = 5;
+    private static final Map<String, String> LEGACY_REGION_CODE_MAPPING = createLegacyRegionCodeMapping();
 
     private final RegionCodeProvider regionCodeProvider;
 
@@ -75,6 +77,7 @@ public class YouthPolicyRegionMapper {
 
         Set<String> codes = Arrays.stream(normalized.split(","))
                 .map(YouthPolicyTextUtils::trimToNull)
+                .map(this::normalizeLegacyRegionCode)
                 .collect(Collectors.toSet());
 
         if (codes.isEmpty() || codes.contains(null) || codes.stream().anyMatch(code -> !isSigunguCode(code))) {
@@ -87,6 +90,45 @@ public class YouthPolicyRegionMapper {
         return value != null
                 && value.length() == SIGUNGU_CODE_LENGTH
                 && value.chars().allMatch(Character::isDigit);
+    }
+
+    private String normalizeLegacyRegionCode(String sigunguCode) {
+        if (sigunguCode == null) {
+            return null;
+        }
+        return LEGACY_REGION_CODE_MAPPING.getOrDefault(sigunguCode, sigunguCode);
+    }
+
+    private static Map<String, String> createLegacyRegionCodeMapping() {
+        Map<String, String> mapping = new HashMap<>();
+        mapping.put("29110", "12210");
+        mapping.put("29140", "12240");
+        mapping.put("29155", "12270");
+        mapping.put("29170", "12300");
+        mapping.put("29200", "12330");
+        mapping.put("46110", "12110");
+        mapping.put("46130", "12130");
+        mapping.put("46150", "12150");
+        mapping.put("46170", "12170");
+        mapping.put("46230", "12190");
+        mapping.put("46710", "12710");
+        mapping.put("46720", "12720");
+        mapping.put("46730", "12730");
+        mapping.put("46770", "12740");
+        mapping.put("46780", "12750");
+        mapping.put("46790", "12760");
+        mapping.put("46800", "12770");
+        mapping.put("46810", "12780");
+        mapping.put("46820", "12790");
+        mapping.put("46830", "12800");
+        mapping.put("46840", "12810");
+        mapping.put("46860", "12820");
+        mapping.put("46870", "12830");
+        mapping.put("46880", "12840");
+        mapping.put("46890", "12850");
+        mapping.put("46900", "12860");
+        mapping.put("46910", "12870");
+        return Map.copyOf(mapping);
     }
 
     private boolean containsAllRegions(List<RegionCode> requestedRegions, List<RegionCode> regionMaster) {
