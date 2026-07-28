@@ -21,6 +21,7 @@ public class PersonalizedPolicyScorer {
     private static final int EDUCATION_SCORE = 8;
     private static final int EMPLOYMENT_SCORE = 10;
     private static final int RECENT_VIEWED_SUB_CATEGORY_SCORE = 10;
+    // 최근 본 정책 조회 섹션과 겹치지 않게 페널티 부여
     private static final int RECENT_VIEWED_POLICY_PENALTY = -15;
 
     private final List<RecommendationRule> rules = List.of(
@@ -48,6 +49,7 @@ public class PersonalizedPolicyScorer {
                     EMPLOYMENT_SCORE,
                     input -> matchesEmployment(input.user(), input.policy())
             ),
+            // TODO: 정책 소득 조건 정규화 기준이 확정되면 소득 매칭 점수 규칙 추가
             RecommendationRule.fixed(
                     "RECENT_VIEWED_SUB_CATEGORY",
                     RECENT_VIEWED_SUB_CATEGORY_SCORE,

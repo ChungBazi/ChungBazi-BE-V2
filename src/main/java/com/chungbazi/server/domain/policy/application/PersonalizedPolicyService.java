@@ -15,7 +15,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +37,7 @@ public class PersonalizedPolicyService {
     private final PersonalizedPolicyScorer scorer;
 
     public List<Policy> getPersonalizedPolicyEntities(User user, int size) {
+        // TODO: 추후 캐싱 고려
         List<Policy> candidates = policyRepository.findAllLatestPolicies(
                 RecruitmentStatus.CLOSED,
                 user.getSidoCode(),
@@ -63,6 +68,12 @@ public class PersonalizedPolicyService {
                         .thenComparing(Policy::getRegisteredAt, Comparator.reverseOrder()))
                 .toList();
 
+        // 관심 대분류를 하나만 선택한 경우, 카테고리 다양성 제한 없이 점수순 그대로
+        if (context.interestCategoryCounts().size() <= 1) {
+            return scoredPolicies.stream()
+                    .limit(size)
+                    .toList();
+        }
         return diversifyByCategory(scoredPolicies, size);
     }
 
@@ -70,6 +81,7 @@ public class PersonalizedPolicyService {
         List<Policy> selectedPolicies = new ArrayList<>();
         Map<PolicyCategoryType, Integer> selectedCategoryCounts = new EnumMap<>(PolicyCategoryType.class);
 
+        // 관심 대분류가 여러 개인 경우, 같은 대분류가 과도하게 몰리지 않도록 노출 개수 제한
         for (Policy policy : policies) {
             PolicyCategoryType category = policy.getCategory();
             int categoryCount = selectedCategoryCounts.getOrDefault(category, 0);
@@ -85,6 +97,7 @@ public class PersonalizedPolicyService {
             }
         }
 
+        // 제한 때문에 목표 개수를 채우지 못한 경우에는 점수순으로 남은 정책 추가
         for (Policy policy : policies) {
             if (selectedPolicies.contains(policy)) {
                 continue;

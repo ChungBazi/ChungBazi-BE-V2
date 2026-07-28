@@ -40,8 +40,8 @@ public record PolicyRecommendationContext(
         return interestSubCategories.contains(subCategory);
     }
 
-    public long interestCategoryCount(PolicyCategoryType category) {
-        return interestCategoryCounts.getOrDefault(category, 0L);
+    public int interestCategoryCount(PolicyCategoryType category) {
+        return interestCategoryCounts.getOrDefault(category, 0L).intValue();
     }
 
     public boolean hasLikedSubCategory(PolicySubCategoryType subCategory) {
