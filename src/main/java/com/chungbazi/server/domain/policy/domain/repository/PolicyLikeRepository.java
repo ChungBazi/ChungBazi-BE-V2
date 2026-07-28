@@ -3,6 +3,7 @@ package com.chungbazi.server.domain.policy.domain.repository;
 import com.chungbazi.server.domain.policy.domain.entity.PolicyLike;
 import java.util.Collection;
 import java.util.List;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,5 +21,15 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             @Param("policyIds") Collection<Long> policyIds
     );
 
-    List<PolicyLike> findTop50ByUserIdOrderByCreatedAtDesc(Long userId);
+    @Query("""
+            SELECT policyLike
+            FROM PolicyLike policyLike
+            JOIN FETCH policyLike.policy
+            WHERE policyLike.userId = :userId
+            ORDER BY policyLike.createdAt DESC
+            """)
+    List<PolicyLike> findRecentPolicyLikesWithPolicy(
+            @Param("userId") Long userId,
+            Pageable pageable
+    );
 }

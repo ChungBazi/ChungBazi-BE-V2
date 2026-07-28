@@ -11,14 +11,12 @@ import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.domain.user.infrastructure.UserInterestRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -44,7 +42,10 @@ public class PersonalizedPolicyService {
 
         PolicyRecommendationContext context = PolicyRecommendationContext.of(
                 userInterestRepository.findAllByUser(user),
-                policyLikeRepository.findTop50ByUserIdOrderByCreatedAtDesc(user.getId()),
+                policyLikeRepository.findRecentPolicyLikesWithPolicy(
+                        user.getId(),
+                        PageRequest.of(0, BEHAVIOR_HISTORY_SIZE)
+                ),
                 recentViewedPolicyRepository.findRecentViewedPolicies(
                         user.getId(),
                         RecruitmentStatus.CLOSED,
