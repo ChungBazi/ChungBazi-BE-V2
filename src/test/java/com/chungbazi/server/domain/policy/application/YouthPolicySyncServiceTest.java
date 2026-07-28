@@ -12,6 +12,7 @@ import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.cl
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.springframework.web.client.RestClientException;
 
 class YouthPolicySyncServiceTest {
 
@@ -56,7 +57,7 @@ class YouthPolicySyncServiceTest {
     void syncsAllPagesUntilLastPage() {
         List<YouthPolicyItem> firstPageItems = new ArrayList<>();
         firstPageItems.add(item("saved-policy"));
-        for (int i = 0; i < 49; i++) {
+        for (int i = 0; i < 99; i++) {
             firstPageItems.add(item("old-policy-" + i));
         }
 
@@ -76,11 +77,28 @@ class YouthPolicySyncServiceTest {
         SyncResult result = service.syncPolicies();
 
         assertThat(youthPolicyClient.getFetchedPageNumbers()).containsExactly(1, 2);
-        assertThat(result.fetchedCount()).isEqualTo(52);
+        assertThat(result.fetchedCount()).isEqualTo(102);
         assertThat(result.insertedCount()).isEqualTo(1);
         assertThat(result.updatedCount()).isEqualTo(1);
-        assertThat(result.unchangedCount()).isEqualTo(49);
+        assertThat(result.unchangedCount()).isEqualTo(99);
         assertThat(result.skippedCount()).isEqualTo(1);
+    }
+
+    @Test
+    void retriesYouthPolicyFetchAndContinuesSync() {
+        FakeYouthPolicyClient youthPolicyClient = new FakeYouthPolicyClient(List.of(List.of(item("saved-policy"))));
+        youthPolicyClient.failNextFetch();
+
+        YouthPolicySyncService service = new YouthPolicySyncService(
+                youthPolicyClient,
+                new FakeYouthPolicyPersistenceService()
+        );
+
+        SyncResult result = service.syncPolicies();
+
+        assertThat(youthPolicyClient.getFetchedPageNumbers()).containsExactly(1, 1);
+        assertThat(result.fetchedCount()).isEqualTo(1);
+        assertThat(result.insertedCount()).isEqualTo(1);
     }
 
     private static YouthPolicyItem item(String policyNumber) {
@@ -133,6 +151,7 @@ class YouthPolicySyncServiceTest {
 
         private final List<List<YouthPolicyItem>> pages;
         private final List<Integer> fetchedPageNumbers = new ArrayList<>();
+        private boolean failNextFetch;
 
         private FakeYouthPolicyClient(List<List<YouthPolicyItem>> pages) {
             super(null, "");
@@ -142,6 +161,11 @@ class YouthPolicySyncServiceTest {
         @Override
         public YouthPolicyListResponse fetchPolicies(int pageNum, int pageSize) {
             fetchedPageNumbers.add(pageNum);
+            if (failNextFetch) {
+                failNextFetch = false;
+                throw new RestClientException("temporary failure");
+            }
+
             List<YouthPolicyItem> items = pages.size() < pageNum ? List.of() : pages.get(pageNum - 1);
 
             return new YouthPolicyListResponse(
@@ -162,6 +186,10 @@ class YouthPolicySyncServiceTest {
 
         private List<Integer> getFetchedPageNumbers() {
             return fetchedPageNumbers;
+        }
+
+        private void failNextFetch() {
+            failNextFetch = true;
         }
     }
 

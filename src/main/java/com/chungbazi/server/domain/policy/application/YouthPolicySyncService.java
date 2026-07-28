@@ -13,14 +13,17 @@ import com.chungbazi.server.domain.policy.exception.PolicyException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class YouthPolicySyncService {
 
-    private static final int PAGE_SIZE = 50;
+    private static final int PAGE_SIZE = 100;
     private static final int FIRST_PAGE = 1;
+    private static final long REQUEST_INTERVAL_MILLIS = 1000;
+    private static final int MAX_RETRY_COUNT = 2;
 
     private final YouthPolicyClient youthPolicyClient;
     private final YouthPolicyPersistenceService youthPolicyPersistenceService;
@@ -37,7 +40,7 @@ public class YouthPolicySyncService {
 
         while (true) {
             long fetchStartTime = System.currentTimeMillis();
-            YouthPolicyListResponse response = youthPolicyClient.fetchPolicies(pageNum, PAGE_SIZE);
+            YouthPolicyListResponse response = fetchPoliciesWithRetry(pageNum);
             long fetchElapsedMillis = System.currentTimeMillis() - fetchStartTime;
             List<YouthPolicyItem> items = extractItems(response);
 
@@ -80,6 +83,7 @@ public class YouthPolicySyncService {
             if (!hasNextPage(response, pageNum, items.size())) {
                 break;
             }
+            sleepUntilNextRequest();
             pageNum++;
         }
 
@@ -107,7 +111,7 @@ public class YouthPolicySyncService {
                 }
             } catch (PolicyException exception) {
                 if (exception.getCode() == PolicyErrorCode.INVALID_POLICY_REGION) {
-                    log.warn(
+                    log.debug(
                             "유효하지 않은 지역 코드가 있습니다. plcyNo={}, zipCd={}",
                             item.plcyNo(),
                             item.zipCd()
@@ -118,7 +122,7 @@ public class YouthPolicySyncService {
                 }
 
                 if (exception.getCode() == PolicyErrorCode.INVALID_POLICY_CATEGORY) {
-                    log.warn(
+                    log.debug(
                             "유효하지 않은 정책 카테고리가 있습니다. plcyNo={}, lclsfNm={}, mclsfNm={}",
                             item.plcyNo(),
                             item.lclsfNm(),
@@ -157,6 +161,48 @@ public class YouthPolicySyncService {
             return itemCount == PAGE_SIZE;
         }
         return pageNum * PAGE_SIZE < paging.totCount();
+    }
+
+    private YouthPolicyListResponse fetchPoliciesWithRetry(int pageNum) {
+        int failedCount = 0;
+
+        while (true) {
+            try {
+                return youthPolicyClient.fetchPolicies(pageNum, PAGE_SIZE);
+            } catch (RestClientException exception) {
+                failedCount++;
+                if (failedCount > MAX_RETRY_COUNT) {
+                    log.error(
+                            "온통청년 정책 조회에 최종 실패했습니다. page={}, pageSize={}, totalAttempts={}, error={}",
+                            pageNum,
+                            PAGE_SIZE,
+                            failedCount,
+                            exception.getMessage(),
+                            exception
+                    );
+                    throw exception;
+                }
+
+                log.warn(
+                        "온통청년 정책 조회에 실패해 재시도합니다. page={}, pageSize={}, retryCount={}, maxRetryCount={}, error={}",
+                        pageNum,
+                        PAGE_SIZE,
+                        failedCount,
+                        MAX_RETRY_COUNT,
+                        exception.getMessage()
+                );
+                sleepUntilNextRequest();
+            }
+        }
+    }
+
+    private void sleepUntilNextRequest() {
+        try {
+            Thread.sleep(REQUEST_INTERVAL_MILLIS);
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("정책 동기화 대기 중 스레드 인터럽트가 발생했습니다.", exception);
+        }
     }
 
 }

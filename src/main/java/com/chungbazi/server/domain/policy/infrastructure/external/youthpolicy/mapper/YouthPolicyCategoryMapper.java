@@ -22,11 +22,26 @@ public class YouthPolicyCategoryMapper {
     private final YouthPolicyAmbiguousCategoryClassifier ambiguousCategoryClassifier;
 
     public PolicySubCategoryType toCategory(YouthPolicyItem item) {
-        String middleCategory = YouthPolicyTextUtils.trimToNull(item.mclsfNm());
-        if (AMBIGUOUS_MIDDLE_CATEGORIES.contains(middleCategory)) {
+        String middleCategory = extractFirstMiddleCategory(item.mclsfNm());
+        if (middleCategory != null && AMBIGUOUS_MIDDLE_CATEGORIES.contains(middleCategory)) {
             return ambiguousCategoryClassifier.classify(item);
         }
-        return mapFixedMiddleCategory(middleCategory);
+
+        if (middleCategory != null) {
+            PolicySubCategoryType fixedCategory = mapFixedMiddleCategory(middleCategory);
+            if (fixedCategory != null) {
+                return fixedCategory;
+            }
+        }
+        return ambiguousCategoryClassifier.classify(item);
+    }
+
+    private String extractFirstMiddleCategory(String value) {
+        String normalized = YouthPolicyTextUtils.trimToNull(value);
+        if (normalized == null) {
+            return null;
+        }
+        return YouthPolicyTextUtils.trimToNull(normalized.split(",")[0]);
     }
 
     private PolicySubCategoryType mapFixedMiddleCategory(String middleCategory) {
@@ -39,7 +54,7 @@ public class YouthPolicyCategoryMapper {
             case "건강" -> PolicySubCategoryType.HEALTH_WELFARE;
             case "권익보호" -> PolicySubCategoryType.RIGHTS_PROTECTION;
             case "청년참여", "청년국제교류" -> PolicySubCategoryType.PARTICIPATION_EXCHANGE;
-            case null, default -> null;
+            default -> null;
         };
     }
 }
