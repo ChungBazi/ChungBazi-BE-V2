@@ -19,4 +19,6 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             @Param("userId") Long userId,
             @Param("policyIds") Collection<Long> policyIds
     );
+
+    List<PolicyLike> findTop50ByUserIdOrderByCreatedAtDesc(Long userId);
 }

@@ -10,51 +10,52 @@ import java.time.ZoneId;
 import java.util.List;
 
 @Component
-public class PersonalizePolicyScorer {
+public class PersonalizedPolicyScorer {
 
     private static final ZoneId SERVICE_ZONE_ID = ZoneId.of("Asia/Seoul");
+
     private static final int AGE_MATCH_SCORE = 30;
     private static final int INTEREST_SUB_CATEGORY_SCORE = 35;
+    private static final int INTEREST_CATEGORY_COUNT_SCORE = 10;
     private static final int LIKED_SUB_CATEGORY_SCORE = 30;
     private static final int EDUCATION_SCORE = 8;
     private static final int EMPLOYMENT_SCORE = 10;
     private static final int RECENT_VIEWED_SUB_CATEGORY_SCORE = 10;
-    private static final int ALREADY_VIEWED_POLICY_PENALTY = -15;
+    private static final int RECENT_VIEWED_POLICY_PENALTY = -15;
 
     private final List<RecommendationRule> rules = List.of(
-            new RecommendationRule(
+            RecommendationRule.fixed(
                     "AGE_MATCH",
                     AGE_MATCH_SCORE,
                     input -> matchesAge(input.user(), input.policy())
             ),
-            new RecommendationRule(
-                    "INTEREST_SUB_CATEGORY",
-                    INTEREST_SUB_CATEGORY_SCORE,
-                    input -> input.context().hasInterestSubCategory(input.policy().getSubCategory())
+            RecommendationRule.of(
+                    "INTEREST",
+                    this::interestScore
             ),
-            new RecommendationRule(
+            RecommendationRule.fixed(
                     "LIKED_SUB_CATEGORY",
                     LIKED_SUB_CATEGORY_SCORE,
                     input -> input.context().hasLikedSubCategory(input.policy().getSubCategory())
             ),
-            new RecommendationRule(
+            RecommendationRule.fixed(
                     "EDUCATION_MATCH",
                     EDUCATION_SCORE,
                     input -> matchesEducation(input.user(), input.policy())
             ),
-            new RecommendationRule(
+            RecommendationRule.fixed(
                     "EMPLOYMENT_MATCH",
                     EMPLOYMENT_SCORE,
                     input -> matchesEmployment(input.user(), input.policy())
             ),
-            new RecommendationRule(
+            RecommendationRule.fixed(
                     "RECENT_VIEWED_SUB_CATEGORY",
                     RECENT_VIEWED_SUB_CATEGORY_SCORE,
                     input -> input.context().hasRecentlyViewedSubCategory(input.policy().getSubCategory())
             ),
-            new RecommendationRule(
+            RecommendationRule.fixed(
                     "ALREADY_VIEWED_POLICY",
-                    ALREADY_VIEWED_POLICY_PENALTY,
+                    RECENT_VIEWED_POLICY_PENALTY,
                     input -> input.context().hasRecentlyViewedPolicy(input.policy().getId())
             )
     );
@@ -69,6 +70,21 @@ public class PersonalizePolicyScorer {
         return rules.stream()
                 .mapToInt(rule -> rule.evaluate(input))
                 .sum();
+    }
+
+    private int interestScore(RecommendationInput input) {
+        Policy policy = input.policy();
+        PolicyRecommendationContext context = input.context();
+
+        int score = 0;
+
+        if (context.hasInterestSubCategory(policy.getSubCategory())) {
+            score += INTEREST_SUB_CATEGORY_SCORE;
+        }
+
+        score += context.interestCategoryCount(policy.getCategory()) * INTEREST_CATEGORY_COUNT_SCORE;
+
+        return score;
     }
 
     private boolean matchesAge(User user, Policy policy) {
