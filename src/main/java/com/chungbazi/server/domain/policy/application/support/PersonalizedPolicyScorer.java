@@ -14,7 +14,6 @@ public class PersonalizedPolicyScorer {
 
     private static final ZoneId SERVICE_ZONE_ID = ZoneId.of("Asia/Seoul");
 
-    private static final int AGE_MATCH_SCORE = 30;
     private static final int INTEREST_SUB_CATEGORY_SCORE = 35;
     private static final int INTEREST_CATEGORY_COUNT_SCORE = 10;
     private static final int LIKED_SUB_CATEGORY_SCORE = 30;
@@ -25,11 +24,6 @@ public class PersonalizedPolicyScorer {
     private static final int RECENT_VIEWED_POLICY_PENALTY = -15;
 
     private final List<RecommendationRule> rules = List.of(
-            RecommendationRule.fixed(
-                    "AGE_MATCH",
-                    AGE_MATCH_SCORE,
-                    input -> matchesAge(input.user(), input.policy())
-            ),
             RecommendationRule.of(
                     "INTEREST",
                     this::interestScore

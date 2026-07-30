@@ -26,9 +26,9 @@ import java.util.Map;
 @Transactional(readOnly = true)
 public class PersonalizedPolicyService {
 
-    private static final int CANDIDATE_SIZE = 100;
+    private static final int CANDIDATE_SIZE = 300;
     private static final int BEHAVIOR_HISTORY_SIZE = 50;
-    private static final int MAX_SAME_CATEGORY_COUNT = 2;
+    private static final int MAX_SAME_CATEGORY_COUNT = 3;
 
     private final PolicyRepository policyRepository;
     private final UserInterestRepository userInterestRepository;
@@ -38,6 +38,7 @@ public class PersonalizedPolicyService {
 
     public List<Policy> getPersonalizedPolicyEntities(User user, int size) {
         // TODO: 추후 캐싱 고려
+        // TODO: 실제 정책 데이터와 추천 결과를 확인한 뒤 후보군 조회 기준 재조정
         List<Policy> candidates = policyRepository.findAllLatestPolicies(
                 RecruitmentStatus.CLOSED,
                 user.getSidoCode(),

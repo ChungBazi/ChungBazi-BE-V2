@@ -158,7 +158,8 @@ public class User extends BaseTimeEntity {
 
         try {
             LocalDate birthDate = LocalDate.parse(birth);
-            return Period.between(birthDate, today).getYears();
+            int years = Period.between(birthDate, today).getYears();
+            return years < 0 ? null : years;
         } catch (DateTimeParseException exception) {
             return null;
         }
