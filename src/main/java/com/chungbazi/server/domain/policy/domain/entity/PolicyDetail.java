@@ -76,4 +76,24 @@ public class PolicyDetail extends BaseTimeEntity {
         policyDetail.referenceUrl2 = referenceUrl2;
         return policyDetail;
     }
+
+    public void updatePolicyDetail(
+            String eligibilityDescription,
+            String applicationMethod,
+            String submittedDocument,
+            String screeningMethod,
+            String notice,
+            String applyUrl,
+            String referenceUrl1,
+            String referenceUrl2
+    ) {
+        this.eligibilityDescription = eligibilityDescription;
+        this.applicationMethod = applicationMethod;
+        this.submittedDocument = submittedDocument;
+        this.screeningMethod = screeningMethod;
+        this.notice = notice;
+        this.applyUrl = applyUrl;
+        this.referenceUrl1 = referenceUrl1;
+        this.referenceUrl2 = referenceUrl2;
+    }
 }

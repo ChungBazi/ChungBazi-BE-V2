@@ -83,6 +83,27 @@ public class YouthPolicyDateParser {
         }
     }
 
+    public LocalDateTime parseDateTimeOrNull(String primaryValue, String fallbackValue) {
+        LocalDateTime parsed = parseSourceDateTime(primaryValue);
+        if (parsed != null) {
+            return parsed;
+        }
+        return parseSourceDateTime(fallbackValue);
+    }
+
+    private LocalDateTime parseSourceDateTime(String value) {
+        String normalized = YouthPolicyTextUtils.trimToNull(value);
+        if (normalized == null) {
+            return null;
+        }
+
+        try {
+            return LocalDateTime.parse(normalized, SOURCE_DATE_TIME_FORMATTER);
+        } catch (DateTimeParseException ignored) {
+            return null;
+        }
+    }
+
     private ParsedPeriod parseAnnualPeriod(
             String businessPeriodText,
             String businessStartDate,

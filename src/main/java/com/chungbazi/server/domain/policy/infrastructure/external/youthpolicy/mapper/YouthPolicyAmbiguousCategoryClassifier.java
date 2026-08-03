@@ -4,11 +4,7 @@ import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.cl
 import com.chungbazi.server.domain.policy.domain.type.PolicySubCategoryType;
 import org.springframework.stereotype.Component;
 
-/*
-정책 텍스트 조합
-분야별 키워드 판정
-판정 우선순위와 fallback
- */
+
 @Component
 public class YouthPolicyAmbiguousCategoryClassifier {
 
@@ -69,7 +65,7 @@ public class YouthPolicyAmbiguousCategoryClassifier {
             case "정책인프라구축" -> PolicySubCategoryType.PARTICIPATION_EXCHANGE;
             case "문화활동", "문화활동 및 생활지원", "예술인지원" -> PolicySubCategoryType.CULTURE_ART;
             case "취약계층 및 금융지원" -> PolicySubCategoryType.FINANCE_LIVING;
-            case null, default -> PolicySubCategoryType.FINANCE_LIVING;
+            case null, default -> null;
         };
     }
 

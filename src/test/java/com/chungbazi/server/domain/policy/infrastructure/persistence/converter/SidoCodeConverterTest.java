@@ -16,6 +16,8 @@ class SidoCodeConverterTest {
     void storesAndRestoresAdministrativeCode() {
         assertThat(converter.convertToDatabaseColumn(SidoCode.SEOUL)).isEqualTo("11");
         assertThat(converter.convertToEntityAttribute("11")).isEqualTo(SidoCode.SEOUL);
+        assertThat(converter.convertToDatabaseColumn(SidoCode.JEONNAM_GWANGJU)).isEqualTo("12");
+        assertThat(converter.convertToEntityAttribute("12")).isEqualTo(SidoCode.JEONNAM_GWANGJU);
     }
 
     @Test

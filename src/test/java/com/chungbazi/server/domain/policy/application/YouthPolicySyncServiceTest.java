@@ -2,67 +2,103 @@ package com.chungbazi.server.domain.policy.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.chungbazi.server.domain.policy.application.dto.PageSyncResult;
+import com.chungbazi.server.domain.policy.application.dto.PolicySyncStatus;
 import com.chungbazi.server.domain.policy.application.dto.SyncResult;
 import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
 import com.chungbazi.server.domain.policy.exception.PolicyException;
 import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.client.YouthPolicyClient;
 import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.client.dto.YouthPolicyItem;
 import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.client.dto.YouthPolicyListResponse;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.RestClientException;
 
 class YouthPolicySyncServiceTest {
 
     @Test
     void skipsInvalidRegionPolicyAndContinuesSync() {
         YouthPolicySyncService service = new YouthPolicySyncService(
-                new FakeYouthPolicyClient(List.of(
+                new FakeYouthPolicyClient(List.of(List.of(
                         item("saved-policy"),
                         item("old-policy"),
                         item("invalid-region-policy")
-                )),
+                ))),
                 new FakeYouthPolicyPersistenceService()
         );
 
         SyncResult result = service.syncPolicies();
 
         assertThat(result.fetchedCount()).isEqualTo(3);
-        assertThat(result.savedCount()).isEqualTo(1);
-        assertThat(result.skippedCount()).isEqualTo(2);
+        assertThat(result.insertedCount()).isEqualTo(1);
+        assertThat(result.updatedCount()).isZero();
+        assertThat(result.unchangedCount()).isEqualTo(1);
+        assertThat(result.skippedCount()).isEqualTo(1);
     }
 
     @Test
-    void doesNotTreatInvalidRegionPolicyAsNoNewPolicies() {
+    void skipsInvalidCategoryPolicyAndContinuesSync() {
         YouthPolicySyncService service = new YouthPolicySyncService(
-                new FakeYouthPolicyClient(List.of()),
+                new FakeYouthPolicyClient(List.of(List.of(
+                        item("saved-policy"),
+                        item("invalid-category-policy")
+                ))),
                 new FakeYouthPolicyPersistenceService()
         );
 
-        Boolean result = ReflectionTestUtils.invokeMethod(
-                service,
-                "hasNoNewPolicies",
-                new PageSyncResult(1, 0, 1, 1)
-        );
+        SyncResult result = service.syncPolicies();
 
-        assertThat(result).isFalse();
+        assertThat(result.fetchedCount()).isEqualTo(2);
+        assertThat(result.insertedCount()).isEqualTo(1);
+        assertThat(result.skippedCount()).isEqualTo(1);
     }
 
     @Test
-    void treatsOnlyExistingOrClosedPoliciesAsNoNewPolicies() {
+    void syncsAllPagesUntilLastPage() {
+        List<YouthPolicyItem> firstPageItems = new ArrayList<>();
+        firstPageItems.add(item("saved-policy"));
+        for (int i = 0; i < 99; i++) {
+            firstPageItems.add(item("old-policy-" + i));
+        }
+
+        FakeYouthPolicyClient youthPolicyClient = new FakeYouthPolicyClient(List.of(
+                firstPageItems,
+                List.of(
+                        item("updated-policy"),
+                        item("closed-policy")
+                )
+        ));
+
         YouthPolicySyncService service = new YouthPolicySyncService(
-                new FakeYouthPolicyClient(List.of()),
+                youthPolicyClient,
                 new FakeYouthPolicyPersistenceService()
         );
 
-        Boolean result = ReflectionTestUtils.invokeMethod(
-                service,
-                "hasNoNewPolicies",
-                new PageSyncResult(1, 0, 1, 0)
+        SyncResult result = service.syncPolicies();
+
+        assertThat(youthPolicyClient.getFetchedPageNumbers()).containsExactly(1, 2);
+        assertThat(result.fetchedCount()).isEqualTo(102);
+        assertThat(result.insertedCount()).isEqualTo(1);
+        assertThat(result.updatedCount()).isEqualTo(1);
+        assertThat(result.unchangedCount()).isEqualTo(99);
+        assertThat(result.skippedCount()).isEqualTo(1);
+    }
+
+    @Test
+    void retriesYouthPolicyFetchAndContinuesSync() {
+        FakeYouthPolicyClient youthPolicyClient = new FakeYouthPolicyClient(List.of(List.of(item("saved-policy"))));
+        youthPolicyClient.failNextFetch();
+
+        YouthPolicySyncService service = new YouthPolicySyncService(
+                youthPolicyClient,
+                new FakeYouthPolicyPersistenceService()
         );
 
-        assertThat(result).isTrue();
+        SyncResult result = service.syncPolicies();
+
+        assertThat(youthPolicyClient.getFetchedPageNumbers()).containsExactly(1, 1);
+        assertThat(result.fetchedCount()).isEqualTo(1);
+        assertThat(result.insertedCount()).isEqualTo(1);
     }
 
     private static YouthPolicyItem item(String policyNumber) {
@@ -113,23 +149,47 @@ class YouthPolicySyncServiceTest {
 
     private static class FakeYouthPolicyClient extends YouthPolicyClient {
 
-        private final List<YouthPolicyItem> items;
+        private final List<List<YouthPolicyItem>> pages;
+        private final List<Integer> fetchedPageNumbers = new ArrayList<>();
+        private boolean failNextFetch;
 
-        private FakeYouthPolicyClient(List<YouthPolicyItem> items) {
+        private FakeYouthPolicyClient(List<List<YouthPolicyItem>> pages) {
             super(null, "");
-            this.items = items;
+            this.pages = pages;
         }
 
         @Override
         public YouthPolicyListResponse fetchPolicies(int pageNum, int pageSize) {
+            fetchedPageNumbers.add(pageNum);
+            if (failNextFetch) {
+                failNextFetch = false;
+                throw new RestClientException("temporary failure");
+            }
+
+            List<YouthPolicyItem> items = pages.size() < pageNum ? List.of() : pages.get(pageNum - 1);
+
             return new YouthPolicyListResponse(
                     200,
                     "success",
                     new YouthPolicyListResponse.Result(
-                            new YouthPolicyListResponse.Paging(items.size(), pageNum, pageSize),
+                            new YouthPolicyListResponse.Paging(totalCount(), pageNum, pageSize),
                             items
                     )
             );
+        }
+
+        private int totalCount() {
+            return pages.stream()
+                    .mapToInt(List::size)
+                    .sum();
+        }
+
+        private List<Integer> getFetchedPageNumbers() {
+            return fetchedPageNumbers;
+        }
+
+        private void failNextFetch() {
+            failNextFetch = true;
         }
     }
 
@@ -140,11 +200,16 @@ class YouthPolicySyncServiceTest {
         }
 
         @Override
-        public boolean saveIfNew(YouthPolicyItem item) {
+        public PolicySyncStatus syncPolicy(YouthPolicyItem item) {
+            if (item.plcyNo().startsWith("old-policy")) {
+                return PolicySyncStatus.UNCHANGED;
+            }
             return switch (item.plcyNo()) {
-                case "saved-policy" -> true;
-                case "old-policy" -> false;
+                case "saved-policy" -> PolicySyncStatus.INSERTED;
+                case "updated-policy" -> PolicySyncStatus.UPDATED;
+                case "closed-policy" -> PolicySyncStatus.SKIPPED_CLOSED;
                 case "invalid-region-policy" -> throw new PolicyException(PolicyErrorCode.INVALID_POLICY_REGION);
+                case "invalid-category-policy" -> throw new PolicyException(PolicyErrorCode.INVALID_POLICY_CATEGORY);
                 default -> throw new IllegalArgumentException("Unexpected policy number: " + item.plcyNo());
             };
         }

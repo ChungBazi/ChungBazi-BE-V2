@@ -84,7 +84,7 @@ public class Policy extends BaseTimeEntity {
     @Column(name = "apply_end_date")
     private LocalDate applyEndDate;
 
-    @Column(name = "apply_period_text", length = 100)
+    @Column(name = "apply_period_text", columnDefinition = "text")
     private String applyPeriodText;
 
     @Enumerated(EnumType.STRING)
@@ -134,6 +134,9 @@ public class Policy extends BaseTimeEntity {
     @Column(name = "registered_at", nullable = false)
     private LocalDateTime registeredAt;
 
+    @Column(name = "source_modified_at")
+    private LocalDateTime sourceModifiedAt;
+
     public static Policy createPolicy(
             String plcyNo,
             String title,
@@ -156,7 +159,8 @@ public class Policy extends BaseTimeEntity {
             Integer maxIncome,
             String incomeDescription,
             String organizationName,
-            LocalDateTime registeredAt
+            LocalDateTime registeredAt,
+            LocalDateTime sourceModifiedAt
     ) {
         if (subCategory == null) {
             throw new PolicyException(PolicyErrorCode.INVALID_POLICY_CATEGORY);
@@ -188,7 +192,63 @@ public class Policy extends BaseTimeEntity {
         policy.viewCount = 0;
         policy.saveCount = 0;
         policy.registeredAt = registeredAt == null ? LocalDateTime.now() : registeredAt;
+        policy.sourceModifiedAt = sourceModifiedAt;
         return policy;
     }
 
+    public void updatePolicy(
+            String title,
+            String summary,
+            String supportContent,
+            String applyUrl,
+            PolicySubCategoryType subCategory,
+            boolean national,
+            LocalDate applyStartDate,
+            LocalDate applyEndDate,
+            String applyPeriodText,
+            RecruitmentType recruitmentType,
+            RecruitmentStatus recruitmentStatus,
+            Integer minAge,
+            Integer maxAge,
+            EducationCode educationCode,
+            EmploymentCode jobCode,
+            IncomeConditionType incomeConditionType,
+            Integer minIncome,
+            Integer maxIncome,
+            String incomeDescription,
+            String organizationName,
+            LocalDateTime sourceModifiedAt
+    ) {
+        if (subCategory == null) {
+            throw new PolicyException(PolicyErrorCode.INVALID_POLICY_CATEGORY);
+        }
+
+        this.title = title;
+        this.summary = summary;
+        this.supportContent = supportContent;
+        this.applyUrl = applyUrl;
+        this.category = subCategory.getCategory();
+        this.subCategory = subCategory;
+        this.national = national;
+        this.applyStartDate = applyStartDate;
+        this.applyEndDate = applyEndDate;
+        this.applyPeriodText = applyPeriodText;
+        this.recruitmentType = recruitmentType;
+        this.recruitmentStatus = recruitmentStatus == null ? RecruitmentStatus.UNKNOWN : recruitmentStatus;
+        this.minAge = minAge;
+        this.maxAge = maxAge;
+        this.educationCode = educationCode;
+        this.employmentCode = jobCode;
+        this.incomeConditionType = incomeConditionType;
+        this.minIncome = minIncome;
+        this.maxIncome = maxIncome;
+        this.incomeDescription = incomeDescription;
+        this.organizationName = organizationName;
+        this.sourceModifiedAt = sourceModifiedAt;
+    }
+
+    public void updateRecruitmentStatus(RecruitmentStatus recruitmentStatus, LocalDateTime sourceModifiedAt) {
+        this.recruitmentStatus = recruitmentStatus == null ? RecruitmentStatus.UNKNOWN : recruitmentStatus;
+        this.sourceModifiedAt = sourceModifiedAt;
+    }
 }

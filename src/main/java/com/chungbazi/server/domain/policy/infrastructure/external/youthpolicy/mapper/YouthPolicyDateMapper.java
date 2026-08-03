@@ -71,6 +71,10 @@ public class YouthPolicyDateMapper {
         return dateParser.parseRegisteredAtOrNow(value);
     }
 
+    public LocalDateTime toSourceModifiedAt(YouthPolicyItem item) {
+        return dateParser.parseDateTimeOrNull(item.lastMdfcnDt(), item.frstRegDt());
+    }
+
     private ApplyPeriod mapFixedPeriod(String value) {
         String periodText = YouthPolicyTextUtils.trimToNull(value);
         DateRange dateRange = dateParser.parseDateRange(periodText);
