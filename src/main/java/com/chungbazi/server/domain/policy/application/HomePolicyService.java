@@ -40,10 +40,14 @@ public class HomePolicyService {
     private final RecentViewedPolicyRepository recentViewedPolicyRepository;
     private final PolicyListResponseAssembler policyListResponseAssembler;
     private final HomePolicyResponseAssembler homePolicyResponseAssembler;
+    private final PersonalizedPolicyService personalizedPolicyService;
 
     public HomePolicyResponse getHomePolicies(User user) {
         LocalDate today = LocalDate.now(SERVICE_ZONE_ID);
         PageRequest sectionPageRequest = PageRequest.of(0, HOME_SECTION_SIZE);
+
+        List<Policy> personalizedPolicies =
+                personalizedPolicyService.getPersonalizedPolicyEntities(user, HOME_SECTION_SIZE);
 
         List<Policy> recentViewedPolicies = fetchRecentViewedPolicies(user, null, sectionPageRequest)
                 .stream()
@@ -71,6 +75,7 @@ public class HomePolicyService {
 
         return homePolicyResponseAssembler.assemble(
                 user,
+                personalizedPolicies,
                 recentViewedPolicies,
                 popularPolicies,
                 upcomingDeadlinePolicies,

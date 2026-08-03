@@ -20,6 +20,7 @@ public class HomePolicyResponseAssembler {
 
     public HomePolicyResponse assemble(
             User user,
+            List<Policy> personalizedPolicies,
             List<Policy> recentViewedPolicies,
             List<Policy> popularPolicies,
             List<Policy> upcomingDeadlinePolicies,
@@ -27,6 +28,7 @@ public class HomePolicyResponseAssembler {
     ) {
         Set<Long> likedPolicyIds = findLikedPolicyIds(
                 user.getId(),
+                personalizedPolicies,
                 recentViewedPolicies,
                 popularPolicies,
                 upcomingDeadlinePolicies,
@@ -34,6 +36,7 @@ public class HomePolicyResponseAssembler {
         );
 
         return new HomePolicyResponse(
+                policyDisplayMapper.toSummaries(personalizedPolicies, likedPolicyIds),
                 policyDisplayMapper.toSummaries(recentViewedPolicies, likedPolicyIds),
                 policyDisplayMapper.toSummaries(popularPolicies, likedPolicyIds),
                 policyDisplayMapper.toSummaries(upcomingDeadlinePolicies, likedPolicyIds),

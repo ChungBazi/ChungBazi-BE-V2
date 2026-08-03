@@ -10,7 +10,10 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.format.DateTimeParseException;
 
 @Entity
 @Getter
@@ -146,5 +149,19 @@ public class User extends BaseTimeEntity {
 
     public void updateSearchKeywordAutoSaveEnabled(boolean enabled) {
         this.searchKeywordAutoSaveEnabled = enabled;
+    }
+
+    public Integer getAge(LocalDate today) {
+        if (birth == null || birth.isBlank()) {
+            return null;
+        }
+
+        try {
+            LocalDate birthDate = LocalDate.parse(birth);
+            int years = Period.between(birthDate, today).getYears();
+            return years < 0 ? null : years;
+        } catch (DateTimeParseException exception) {
+            return null;
+        }
     }
 }
