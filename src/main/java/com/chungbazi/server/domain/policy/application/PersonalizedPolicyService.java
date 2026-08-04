@@ -9,6 +9,7 @@ import com.chungbazi.server.domain.policy.domain.repository.policyRepository.Pol
 import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
 import com.chungbazi.server.domain.user.domain.User;
+import com.chungbazi.server.domain.user.domain.UserInterest;
 import com.chungbazi.server.domain.user.infrastructure.UserInterestRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -76,6 +77,49 @@ public class PersonalizedPolicyService {
                     .toList();
         }
         return diversifyByCategory(scoredPolicies, size);
+    }
+
+    public List<Policy> getPersonalizedPolicyEntities(User user, PolicyCategoryType category, int size) {
+        List<UserInterest> interests = userInterestRepository.findAllByUser(user);
+        boolean interestedCategory = interests.stream()
+                .anyMatch(interest -> interest.getCategory() == category);
+
+        // 선택하지 않은 카테고리면 빈 리스트 반환
+        if (!interestedCategory) {
+            return List.of();
+        }
+
+        List<Policy> candidates = policyRepository.findLatestPolicies(
+                category,
+                RecruitmentStatus.CLOSED,
+                user.getSidoCode(),
+                user.getSigunguCode(),
+                PageRequest.of(0, CANDIDATE_SIZE)
+        );
+
+        PolicyRecommendationContext context = PolicyRecommendationContext.of(
+                interests,
+                policyLikeRepository.findRecentPolicyLikesWithPolicy(
+                        user.getId(),
+                        PageRequest.of(0, BEHAVIOR_HISTORY_SIZE)
+                ),
+                recentViewedPolicyRepository.findRecentViewedPolicies(
+                        user.getId(),
+                        RecruitmentStatus.CLOSED,
+                        user.getSidoCode(),
+                        user.getSigunguCode(),
+                        PageRequest.of(0, BEHAVIOR_HISTORY_SIZE)
+                )
+        );
+
+        return candidates.stream()
+                .filter(policy -> scorer.isEligible(user, policy))
+                .sorted(Comparator
+                        .comparingInt((Policy policy) -> scorer.score(user, context, policy))
+                        .reversed()
+                        .thenComparing(Policy::getRegisteredAt, Comparator.reverseOrder()))
+                .limit(size)
+                .toList();
     }
 
     private List<Policy> diversifyByCategory(List<Policy> policies, int size) {

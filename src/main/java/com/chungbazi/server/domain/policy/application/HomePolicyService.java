@@ -1,6 +1,7 @@
 package com.chungbazi.server.domain.policy.application;
 
 import com.chungbazi.server.domain.policy.api.dto.response.HomePolicyResponse;
+import com.chungbazi.server.domain.policy.api.dto.response.PersonalizedPolicyResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
 import com.chungbazi.server.domain.policy.application.cursor.PolicyCursor;
 import com.chungbazi.server.domain.policy.application.cursor.PolicyCursorParser;
@@ -34,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class HomePolicyService {
 
     private static final int HOME_SECTION_SIZE = 5;
+    private static final int PERSONALIZED_CATEGORY_SIZE = 5;
     private static final ZoneId SERVICE_ZONE_ID = ZoneId.of("Asia/Seoul");
 
     private final PolicyRepository policyRepository;
@@ -81,6 +83,21 @@ public class HomePolicyService {
                 upcomingDeadlinePolicies,
                 latestPolicies
         );
+    }
+
+    public PersonalizedPolicyResponse getPersonalizedPolicies(User user, PolicyCategoryType category) {
+        List<Policy> policies = personalizedPolicyService.getPersonalizedPolicyEntities(
+                user,
+                category,
+                PERSONALIZED_CATEGORY_SIZE
+        );
+
+        Set<Long> likedPolicyIds = policyListResponseAssembler.findLikedPolicyIds(
+                user.getId(),
+                policies
+        );
+
+        return PersonalizedPolicyResponse.of(policyListResponseAssembler.summarize(policies, likedPolicyIds));
     }
 
     public PolicyListResponse getRecentViewedPolicies(User user, String cursor, int size) {

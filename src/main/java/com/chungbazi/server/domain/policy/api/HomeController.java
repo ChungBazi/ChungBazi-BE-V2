@@ -2,6 +2,7 @@ package com.chungbazi.server.domain.policy.api;
 
 import com.chungbazi.server.domain.policy.api.docs.HomeDocs;
 import com.chungbazi.server.domain.policy.api.dto.response.HomePolicyResponse;
+import com.chungbazi.server.domain.policy.api.dto.response.PersonalizedPolicyResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
 import com.chungbazi.server.domain.policy.application.HomePolicyService;
 import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
@@ -31,6 +32,17 @@ public class HomeController implements HomeDocs {
     public CommonResponse<HomePolicyResponse> getHomePolicies(@CurrentUser User user) {
         return CommonResponse.onSuccess(
                 homePolicyService.getHomePolicies(user)
+        );
+    }
+
+    @Override
+    @GetMapping("/policies/personalized")
+    public CommonResponse<PersonalizedPolicyResponse> getPersonalizedPoliciesByCategory(
+            @CurrentUser User user,
+            @RequestParam PolicyCategoryType category
+    ) {
+        return CommonResponse.onSuccess(
+                homePolicyService.getPersonalizedPolicies(user, category)
         );
     }
 

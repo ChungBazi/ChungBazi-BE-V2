@@ -2,6 +2,7 @@ package com.chungbazi.server.domain.policy.api.docs;
 
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.HomePolicyResponse;
+import com.chungbazi.server.domain.policy.api.dto.response.PersonalizedPolicyResponse;
 import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
 import com.chungbazi.server.domain.policy.domain.type.PolicySortType;
 import com.chungbazi.server.domain.user.domain.User;
@@ -38,6 +39,21 @@ public interface HomeDocs {
     })
     CommonResponse<HomePolicyResponse> getHomePolicies(
             @CurrentUser User user
+    );
+
+    @Operation(
+            summary = "카테고리별 맞춤 정책 조회 API",
+            description = "선택한 정책 카테고리에서 사용자 정보를 기반으로 추천한 정책을 최대 5개 조회합니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "카테고리별 맞춤 정책 조회 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 카테고리"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+    })
+    CommonResponse<PersonalizedPolicyResponse> getPersonalizedPoliciesByCategory(
+            @CurrentUser User user,
+            @Parameter(description = "정책 카테고리", example = "JOB_STARTUP", required = true)
+            @RequestParam PolicyCategoryType category
     );
 
     @Operation(
