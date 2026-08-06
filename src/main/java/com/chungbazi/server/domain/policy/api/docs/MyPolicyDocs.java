@@ -2,7 +2,7 @@ package com.chungbazi.server.domain.policy.api.docs;
 
 import com.chungbazi.server.domain.policy.api.dto.response.MyPolicyDeadlineResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
-import com.chungbazi.server.domain.policy.domain.type.PolicySortType;
+import com.chungbazi.server.domain.policy.domain.type.PolicyListSortType;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.global.common.CommonResponse;
 import com.chungbazi.server.global.resolver.CurrentUser;
@@ -53,7 +53,7 @@ public interface MyPolicyDocs {
             @Parameter(description = "사용자가 확인하고 싶은 날짜", example = "2026-08-06", required = true)
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate targetDate,
             @Parameter(description = "정렬 기준", example = "LATEST")
-            @RequestParam(defaultValue = "LATEST") PolicySortType sort,
+            @RequestParam(defaultValue = "LATEST") PolicyListSortType sort,
             @Parameter(description = "이전 응답에서 받은 다음 페이지 커서")
             @RequestParam(required = false) String cursor,
             @Parameter(description = "조회 개수", example = "20")

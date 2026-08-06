@@ -4,7 +4,7 @@ import com.chungbazi.server.domain.policy.api.docs.MyPolicyDocs;
 import com.chungbazi.server.domain.policy.api.dto.response.MyPolicyDeadlineResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
 import com.chungbazi.server.domain.policy.application.MyPolicyService;
-import com.chungbazi.server.domain.policy.domain.type.PolicySortType;
+import com.chungbazi.server.domain.policy.domain.type.PolicyListSortType;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.global.common.CommonResponse;
 import com.chungbazi.server.global.resolver.CurrentUser;
@@ -39,7 +39,7 @@ public class MyPolicyController implements MyPolicyDocs {
     public CommonResponse<PolicyListResponse> getDeadlinePoliciesByDate(
             @CurrentUser User user,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate targetDate,
-            @RequestParam(defaultValue = "LATEST") PolicySortType sort,
+            @RequestParam(defaultValue = "LATEST") PolicyListSortType sort,
             @RequestParam(required = false) String cursor,
             @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
     ) {

@@ -9,10 +9,9 @@ import com.chungbazi.server.domain.policy.application.mapper.PolicyListResponseA
 import com.chungbazi.server.domain.policy.application.mapper.PolicyDisplayMapper;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.repository.PolicyLikeRepository;
+import com.chungbazi.server.domain.policy.domain.type.PolicyListSortType;
 import com.chungbazi.server.domain.policy.domain.type.PolicySortType;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
-import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
-import com.chungbazi.server.domain.policy.exception.PolicyException;
 import com.chungbazi.server.domain.user.domain.User;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -57,16 +56,16 @@ public class MyPolicyService {
         return new MyPolicyDeadlineResponse(policySummaries);
     }
 
-    public PolicyListResponse getDeadlinePoliciesByDate(User user, LocalDate targetDate, PolicySortType sort, String cursor, int size) {
-        validateDeadlineDateSort(sort);
+    public PolicyListResponse getDeadlinePoliciesByDate(User user, LocalDate targetDate, PolicyListSortType sort, String cursor, int size) {
+        PolicySortType policySort = sort.getPolicySortType();
 
-        PolicyCursor decodedCursor = PolicyCursorParser.decode(cursor, sort);
+        PolicyCursor decodedCursor = PolicyCursorParser.decode(cursor, policySort);
         PageRequest pageRequest = PageRequest.of(0, size + 1);
 
         List<Policy> fetchedPolicies = fetchDeadlinePoliciesByDate(
                 user.getId(),
                 targetDate,
-                sort,
+                policySort,
                 decodedCursor,
                 pageRequest
         );
@@ -81,7 +80,7 @@ public class MyPolicyService {
                 .collect(Collectors.toSet());
 
         String nextCursor = hasNext
-                ? PolicyCursorParser.encode(sort, policies.getLast())
+                ? PolicyCursorParser.encode(policySort, policies.getLast())
                 : null;
 
         Long totalCount = policyLikeRepository.countDeadlineLikedPoliciesByDate(
@@ -137,9 +136,4 @@ public class MyPolicyService {
         );
     }
 
-    private void validateDeadlineDateSort(PolicySortType sort) {
-        if (sort == PolicySortType.POPULAR) {
-            throw new PolicyException(PolicyErrorCode.INVALID_POLICY_SORT);
-        }
-    }
 }
