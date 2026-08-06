@@ -1,6 +1,9 @@
 package com.chungbazi.server.domain.policy.domain.repository;
 
+import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.entity.PolicyLike;
+import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
@@ -43,6 +46,23 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             """)
     List<PolicyLike> findRecentPolicyLikesWithPolicy(
             @Param("userId") Long userId,
+            Pageable pageable
+    );
+
+    @Query("""
+            SELECT policy
+            FROM PolicyLike policyLike
+            JOIN policyLike.policy policy
+            WHERE policyLike.userId = :userId
+              AND policy.recruitmentStatus <> :closedStatus
+              AND policy.applyEndDate IS NOT NULL
+              AND policy.applyEndDate >= :today
+            ORDER BY policy.applyEndDate ASC, policy.id DESC
+            """)
+    List<Policy> findUpcomingDeadlineLikedPolicies(
+            @Param("userId") Long userId,
+            @Param("closedStatus") RecruitmentStatus closedStatus,
+            @Param("today") LocalDate today,
             Pageable pageable
     );
 }
