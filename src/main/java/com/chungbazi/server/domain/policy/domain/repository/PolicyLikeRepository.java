@@ -10,10 +10,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
 
-    boolean existsByUserIdAndPolicy_Id(Long userId, Long policyId);
-
-    long deleteByUserIdAndPolicy_Id(Long userId, Long policyId);
-
     @Query("""
             SELECT policyLike.policy.id
             FROM PolicyLike policyLike

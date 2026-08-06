@@ -19,21 +19,4 @@ public interface PolicyRepository extends JpaRepository<Policy, Long>, PolicyRep
             WHERE policy.id = :policyId
             """)
     int increaseViewCount(@Param("policyId") Long policyId);
-
-    @Modifying
-    @Query("""
-            UPDATE Policy policy
-            SET policy.saveCount = policy.saveCount + 1
-            WHERE policy.id = :policyId
-            """)
-    int increaseSaveCount(@Param("policyId") Long policyId);
-
-    @Modifying
-    @Query("""
-            UPDATE Policy policy
-            SET policy.saveCount = policy.saveCount - 1
-            WHERE policy.id = :policyId
-              AND policy.saveCount > 0
-            """)
-    int decreaseSaveCount(@Param("policyId") Long policyId);
 }
