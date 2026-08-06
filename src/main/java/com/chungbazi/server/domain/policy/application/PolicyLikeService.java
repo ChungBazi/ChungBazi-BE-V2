@@ -1,14 +1,11 @@
 package com.chungbazi.server.domain.policy.application;
 
-import com.chungbazi.server.domain.policy.domain.entity.Policy;
-import com.chungbazi.server.domain.policy.domain.entity.PolicyLike;
 import com.chungbazi.server.domain.policy.domain.repository.PolicyLikeRepository;
 import com.chungbazi.server.domain.policy.domain.repository.policyRepository.PolicyRepository;
 import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
 import com.chungbazi.server.domain.policy.exception.PolicyException;
 import com.chungbazi.server.domain.user.domain.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,18 +18,13 @@ public class PolicyLikeService {
 
     @Transactional
     public void likePolicy(User user, Long policyId) {
-        if (policyLikeRepository.existsByUserIdAndPolicy_Id(user.getId(), policyId)) {
-            return;
+        if (!policyRepository.existsById(policyId)) {
+            throw new PolicyException(PolicyErrorCode.POLICY_NOT_FOUND);
         }
 
-        Policy policy = policyRepository.findById(policyId)
-                .orElseThrow(() -> new PolicyException(PolicyErrorCode.POLICY_NOT_FOUND));
-
-        try {
-            policyLikeRepository.saveAndFlush(PolicyLike.createPolicyLike(user.getId(), policy, null));
+        int insertedCount = policyLikeRepository.insertIgnore(user.getId(), policyId);
+        if (insertedCount > 0) {
             policyRepository.increaseSaveCount(policyId);
-        } catch (DataIntegrityViolationException ignored) {
-            //동시에 다른 사용자들에게 같은 요청이 들어올 경우 방어
         }
     }
 

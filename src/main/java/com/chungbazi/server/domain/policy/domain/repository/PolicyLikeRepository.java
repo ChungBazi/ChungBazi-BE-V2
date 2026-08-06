@@ -5,14 +5,23 @@ import java.util.Collection;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
 
-    boolean existsByUserIdAndPolicy_Id(Long userId, Long policyId);
-
     long deleteByUserIdAndPolicy_Id(Long userId, Long policyId);
+
+    @Modifying
+    @Query(value = """
+            INSERT IGNORE INTO policy_like (user_id, policy_id, created_at, updated_at)
+            VALUES (:userId, :policyId, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            """, nativeQuery = true)
+    int insertIgnore(
+            @Param("userId") Long userId,
+            @Param("policyId") Long policyId
+    );
 
     @Query("""
             SELECT policyLike.policy.id
