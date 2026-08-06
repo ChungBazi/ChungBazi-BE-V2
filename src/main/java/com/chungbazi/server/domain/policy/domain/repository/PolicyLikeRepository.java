@@ -2,6 +2,7 @@ package com.chungbazi.server.domain.policy.domain.repository;
 
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.entity.PolicyLike;
+import com.chungbazi.server.domain.policy.domain.type.RecruitmentType;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -150,6 +151,54 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             @Param("closedStatus") RecruitmentStatus closedStatus,
             @Param("targetDate") LocalDate targetDate,
             @Param("policyId") Long policyId,
+            Pageable pageable
+    );
+
+    @Query("""
+            SELECT COUNT(policyLike)
+            FROM PolicyLike policyLike
+            JOIN policyLike.policy policy
+            WHERE policyLike.userId = :userId
+              AND policy.recruitmentStatus <> :closedStatus
+              AND policy.recruitmentType = :recruitmentType
+            """)
+    Long countOpenEndedLikedPolicies(
+            @Param("userId") Long userId,
+            @Param("closedStatus") RecruitmentStatus closedStatus,
+            @Param("recruitmentType") RecruitmentType recruitmentType
+    );
+
+    @Query("""
+            SELECT policyLike
+            FROM PolicyLike policyLike
+            JOIN FETCH policyLike.policy policy
+            WHERE policyLike.userId = :userId
+              AND policy.recruitmentStatus <> :closedStatus
+              AND policy.recruitmentType = :recruitmentType
+            ORDER BY policyLike.id DESC
+            """)
+    List<PolicyLike> findOpenEndedLikedPoliciesFirst(
+            @Param("userId") Long userId,
+            @Param("closedStatus") RecruitmentStatus closedStatus,
+            @Param("recruitmentType") RecruitmentType recruitmentType,
+            Pageable pageable
+    );
+
+    @Query("""
+            SELECT policyLike
+            FROM PolicyLike policyLike
+            JOIN FETCH policyLike.policy policy
+            WHERE policyLike.userId = :userId
+              AND policy.recruitmentStatus <> :closedStatus
+              AND policy.recruitmentType = :recruitmentType
+              AND policyLike.id < :cursorId
+            ORDER BY policyLike.id DESC
+            """)
+    List<PolicyLike> findOpenEndedLikedPoliciesAfter(
+            @Param("userId") Long userId,
+            @Param("closedStatus") RecruitmentStatus closedStatus,
+            @Param("recruitmentType") RecruitmentType recruitmentType,
+            @Param("policyLikeId") Long policyLikeId,
             Pageable pageable
     );
 }

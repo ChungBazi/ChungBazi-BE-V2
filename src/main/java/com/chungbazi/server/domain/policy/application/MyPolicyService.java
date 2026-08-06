@@ -8,10 +8,14 @@ import com.chungbazi.server.domain.policy.application.cursor.PolicyCursorParser;
 import com.chungbazi.server.domain.policy.application.mapper.PolicyListResponseAssembler;
 import com.chungbazi.server.domain.policy.application.mapper.PolicyDisplayMapper;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
+import com.chungbazi.server.domain.policy.domain.entity.PolicyLike;
 import com.chungbazi.server.domain.policy.domain.repository.PolicyLikeRepository;
 import com.chungbazi.server.domain.policy.domain.type.PolicyListSortType;
 import com.chungbazi.server.domain.policy.domain.type.PolicySortType;
+import com.chungbazi.server.domain.policy.domain.type.RecruitmentType;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
+import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
+import com.chungbazi.server.domain.policy.exception.PolicyException;
 import com.chungbazi.server.domain.user.domain.User;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -136,4 +140,79 @@ public class MyPolicyService {
         );
     }
 
+    public PolicyListResponse getOpenEndedLikedPolicies(User user, String cursor, int size) {
+        Long decodedCursor = decodePolicyLikeIdCursor(cursor);
+        PageRequest pageRequest = PageRequest.of(0, size + 1);
+
+        List<PolicyLike> fetchedPolicyLikes = fetchOpenEndedLikedPolicies(
+                user.getId(),
+                decodedCursor,
+                pageRequest
+        );
+
+        boolean hasNext = fetchedPolicyLikes.size() > size;
+        List<PolicyLike> policyLikes = hasNext
+                ? new ArrayList<>(fetchedPolicyLikes.subList(0, size))
+                : fetchedPolicyLikes;
+
+        List<Policy> policies = policyLikes.stream()
+                .map(PolicyLike::getPolicy)
+                .toList();
+
+        Set<Long> likedPolicyIds = policies.stream()
+                .map(Policy::getId)
+                .collect(Collectors.toSet());
+
+        String nextCursor = hasNext
+                ? policyLikes.getLast().getId().toString()
+                : null;
+
+        Long totalCount = policyLikeRepository.countOpenEndedLikedPolicies(
+                user.getId(),
+                RecruitmentStatus.CLOSED,
+                RecruitmentType.ALWAYS
+        );
+
+        return policyListResponseAssembler.assemble(
+                totalCount,
+                policyListResponseAssembler.summarize(policies, likedPolicyIds),
+                nextCursor,
+                hasNext
+        );
+    }
+
+    private List<PolicyLike> fetchOpenEndedLikedPolicies(
+            Long userId,
+            Long cursor,
+            PageRequest pageRequest
+    ) {
+        if (cursor == null) {
+            return policyLikeRepository.findOpenEndedLikedPoliciesFirst(
+                    userId,
+                    RecruitmentStatus.CLOSED,
+                    RecruitmentType.ALWAYS,
+                    pageRequest
+            );
+        }
+
+        return policyLikeRepository.findOpenEndedLikedPoliciesAfter(
+                userId,
+                RecruitmentStatus.CLOSED,
+                RecruitmentType.ALWAYS,
+                cursor,
+                pageRequest
+        );
+    }
+
+    private Long decodePolicyLikeIdCursor(String cursor) {
+        if (cursor == null || cursor.isBlank()) {
+            return null;
+        }
+
+        try {
+            return Long.valueOf(cursor);
+        } catch (NumberFormatException exception) {
+            throw new PolicyException(PolicyErrorCode.INVALID_POLICY_CURSOR);
+        }
+    }
 }

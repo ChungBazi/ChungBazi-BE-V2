@@ -46,4 +46,15 @@ public class MyPolicyController implements MyPolicyDocs {
 
         return CommonResponse.onSuccess(myPolicyService.getDeadlinePoliciesByDate(user, targetDate, sort, cursor, size));
     }
+
+    @Override
+    @GetMapping("/policies/open-ended")
+    public CommonResponse<PolicyListResponse> getOpenEndedLikedPolicies(
+            @CurrentUser User user,
+            @RequestParam(required = false) String cursor,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
+    ) {
+
+        return CommonResponse.onSuccess(myPolicyService.getOpenEndedLikedPolicies(user, cursor, size));
+    }
 }
