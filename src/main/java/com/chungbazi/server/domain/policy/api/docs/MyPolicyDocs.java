@@ -59,4 +59,28 @@ public interface MyPolicyDocs {
             @Parameter(description = "조회 개수", example = "20")
             @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
     );
+
+    @Operation(
+            summary = "찜한 상시 정책 리스트 조회 API",
+            description = """
+                    찜한 상시 정책 리스트를 조회하는 API입니다. \n
+                    사용자가 최근 찜한 순입니다.
+
+                    ### Query Parameter
+                    - `cursor`: 최초 요청에서는 생략하고, 다음 요청부터 응답의 `nextCursor`를 전달합니다.
+                    - `size`: 한 번에 조회할 정책 수(기본 20, 최대 50)
+                    """
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "찜한 상시 정책 리스트 조회 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 커서"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+    })
+    CommonResponse<PolicyListResponse> getOpenEndedLikedPolicies(
+            @CurrentUser User user,
+            @Parameter(description = "이전 응답에서 받은 다음 페이지 커서")
+            @RequestParam(required = false) String cursor,
+            @Parameter(description = "조회 개수", example = "20")
+            @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
+    );
 }
