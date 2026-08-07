@@ -50,6 +50,7 @@ public class MyPolicyService {
         List<Policy> policies = policyLikeRepository.findUpcomingDeadlineLikedPolicies(
                         user.getId(),
                         RecruitmentStatus.CLOSED,
+                        RecruitmentType.ALWAYS,
                         today,
                         pageRequest
                 );
