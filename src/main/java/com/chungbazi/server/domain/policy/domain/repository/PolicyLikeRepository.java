@@ -2,6 +2,7 @@ package com.chungbazi.server.domain.policy.domain.repository;
 
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.entity.PolicyLike;
+import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentType;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
 import java.time.LocalDate;
@@ -191,7 +192,7 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             WHERE policyLike.userId = :userId
               AND policy.recruitmentStatus <> :closedStatus
               AND policy.recruitmentType = :recruitmentType
-              AND policyLike.id < :cursorId
+              AND policyLike.id < :policyLikeId
             ORDER BY policyLike.id DESC
             """)
     List<PolicyLike> findOpenEndedLikedPoliciesAfter(
@@ -199,6 +200,126 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             @Param("closedStatus") RecruitmentStatus closedStatus,
             @Param("recruitmentType") RecruitmentType recruitmentType,
             @Param("policyLikeId") Long policyLikeId,
+            Pageable pageable
+    );
+
+    @Query("""
+            SELECT COUNT(policy)
+            FROM PolicyLike policyLike
+            JOIN policyLike.policy policy
+            WHERE policyLike.userId = :userId
+              AND policy.recruitmentStatus <> :closedStatus
+              AND (:category IS NULL OR policy.category = :category)
+            """)
+    Long countMyLikedPolicies(
+            @Param("userId") Long userId,
+            @Param("closedStatus") RecruitmentStatus closedStatus,
+            @Param("category") PolicyCategoryType category
+    );
+
+    @Query("""
+            SELECT policy
+            FROM PolicyLike policyLike
+            JOIN policyLike.policy policy
+            WHERE policyLike.userId = :userId
+              AND policy.recruitmentStatus <> :closedStatus
+              AND (:category IS NULL OR policy.category = :category)
+            ORDER BY policy.registeredAt DESC, policy.id DESC
+            """)
+    List<Policy> findMyLikedPoliciesOrderByLatestFirst(
+            @Param("userId") Long userId,
+            @Param("closedStatus") RecruitmentStatus closedStatus,
+            @Param("category") PolicyCategoryType category,
+            Pageable pageable
+    );
+
+    @Query("""
+            SELECT policy
+            FROM PolicyLike policyLike
+            JOIN policyLike.policy policy
+            WHERE policyLike.userId = :userId
+              AND policy.recruitmentStatus <> :closedStatus
+              AND (:category IS NULL OR policy.category = :category)
+              AND (
+                  policy.registeredAt < :registeredAt
+                  OR (policy.registeredAt = :registeredAt AND policy.id < :policyId)
+              )
+            ORDER BY policy.registeredAt DESC, policy.id DESC
+            """)
+    List<Policy> findMyLikedPoliciesOrderByLatestAfter(
+            @Param("userId") Long userId,
+            @Param("closedStatus") RecruitmentStatus closedStatus,
+            @Param("category") PolicyCategoryType category,
+            @Param("registeredAt") LocalDateTime registeredAt,
+            @Param("policyId") Long policyId,
+            Pageable pageable
+    );
+
+    @Query("""
+            SELECT policy
+            FROM PolicyLike policyLike
+            JOIN policyLike.policy policy
+            WHERE policyLike.userId = :userId
+              AND policy.recruitmentStatus <> :closedStatus
+              AND (:category IS NULL OR policy.category = :category)
+            ORDER BY
+              CASE WHEN policy.recruitmentType = :openEndedType OR policy.applyEndDate IS NULL THEN 1 ELSE 0 END ASC,
+              policy.applyEndDate ASC,
+              policy.id DESC
+            """)
+    List<Policy> findMyLikedPoliciesOrderByDeadlineFirst(
+            @Param("userId") Long userId,
+            @Param("closedStatus") RecruitmentStatus closedStatus,
+            @Param("category") PolicyCategoryType category,
+            @Param("openEndedType") RecruitmentType openEndedType,
+            Pageable pageable
+    );
+
+    @Query("""
+            SELECT policy
+            FROM PolicyLike policyLike
+            JOIN policyLike.policy policy
+            WHERE policyLike.userId = :userId
+              AND policy.recruitmentStatus <> :closedStatus
+              AND (:category IS NULL OR policy.category = :category)
+              AND (
+                  policy.applyEndDate > :applyEndDate
+                  OR (policy.applyEndDate = :applyEndDate AND policy.id < :policyId)
+                  OR policy.applyEndDate IS NULL
+                  OR policy.recruitmentType = :openEndedType
+              )
+            ORDER BY
+              CASE WHEN policy.recruitmentType = :openEndedType OR policy.applyEndDate IS NULL THEN 1 ELSE 0 END ASC,
+              policy.applyEndDate ASC,
+              policy.id DESC
+            """)
+    List<Policy> findMyLikedPoliciesOrderByDeadlineAfterDatedCursor(
+            @Param("userId") Long userId,
+            @Param("closedStatus") RecruitmentStatus closedStatus,
+            @Param("category") PolicyCategoryType category,
+            @Param("openEndedType") RecruitmentType openEndedType,
+            @Param("applyEndDate") LocalDate applyEndDate,
+            @Param("policyId") Long policyId,
+            Pageable pageable
+    );
+
+    @Query("""
+            SELECT policy
+            FROM PolicyLike policyLike
+            JOIN policyLike.policy policy
+            WHERE policyLike.userId = :userId
+              AND policy.recruitmentStatus <> :closedStatus
+              AND (:category IS NULL OR policy.category = :category)
+              AND (policy.recruitmentType = :openEndedType OR policy.applyEndDate IS NULL)
+              AND policy.id < :policyId
+            ORDER BY policy.id DESC
+            """)
+    List<Policy> findMyLikedPoliciesOrderByDeadlineAfterOpenEndedCursor(
+            @Param("userId") Long userId,
+            @Param("closedStatus") RecruitmentStatus closedStatus,
+            @Param("category") PolicyCategoryType category,
+            @Param("openEndedType") RecruitmentType openEndedType,
+            @Param("policyId") Long policyId,
             Pageable pageable
     );
 }

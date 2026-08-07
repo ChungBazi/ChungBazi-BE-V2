@@ -52,6 +52,19 @@ public final class PolicyCursorParser {
                 .encodeToString(rawCursor.getBytes(StandardCharsets.UTF_8));
     }
 
+    public static String encodeOpenEndedDeadline(Long policyId) {
+        String rawCursor = String.join(
+                CURSOR_JOINER,
+                PolicySortType.DEADLINE.name(),
+                NULL_DATE,
+                policyId.toString()
+        );
+
+        return Base64.getUrlEncoder()
+                .withoutPadding()
+                .encodeToString(rawCursor.getBytes(StandardCharsets.UTF_8));
+    }
+
     public static PolicyCursor decode(String encodedCursor, PolicySortType requestedSort) {
         if (encodedCursor == null || encodedCursor.isBlank()) {
             return null;

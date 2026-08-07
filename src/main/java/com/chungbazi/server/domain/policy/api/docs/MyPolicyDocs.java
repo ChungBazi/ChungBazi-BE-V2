@@ -2,6 +2,7 @@ package com.chungbazi.server.domain.policy.api.docs;
 
 import com.chungbazi.server.domain.policy.api.dto.response.MyPolicyDeadlineResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
+import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
 import com.chungbazi.server.domain.policy.domain.type.PolicyListSortType;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.global.common.CommonResponse;
@@ -78,6 +79,29 @@ public interface MyPolicyDocs {
     })
     CommonResponse<PolicyListResponse> getOpenEndedLikedPolicies(
             @CurrentUser User user,
+            @Parameter(description = "이전 응답에서 받은 다음 페이지 커서")
+            @RequestParam(required = false) String cursor,
+            @Parameter(description = "조회 개수", example = "20")
+            @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
+    );
+
+    @Operation(
+            summary = "내 정책 전체보기 API",
+            description = """
+                    사용자가 찜한 정책을 카테고리별로 조회할 수 있는 API입니다. \n
+
+                    ### Query Parameter
+                    - `category`: 정책 분야
+                    - `sort`: `LATEST`(최신순), `DEADLINE`(마감순)
+                    - `cursor`: 최초 요청에서는 생략하고, 다음 요청부터 응답의 `nextCursor`를 전달합니다.
+                    - `size`: 한 번에 조회할 정책 수(기본 20, 최대 50)
+                    """)
+    CommonResponse<PolicyListResponse> getMyPoliciesByCategory(
+            @CurrentUser User user,
+            @Parameter(description = "정책 분야", example = "JOB_STARTUP")
+            @RequestParam(required = false) PolicyCategoryType category,
+            @Parameter(description = "정렬 기준", example = "LATEST")
+            @RequestParam(defaultValue = "LATEST") PolicyListSortType sort,
             @Parameter(description = "이전 응답에서 받은 다음 페이지 커서")
             @RequestParam(required = false) String cursor,
             @Parameter(description = "조회 개수", example = "20")

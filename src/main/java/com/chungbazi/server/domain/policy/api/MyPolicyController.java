@@ -4,6 +4,7 @@ import com.chungbazi.server.domain.policy.api.docs.MyPolicyDocs;
 import com.chungbazi.server.domain.policy.api.dto.response.MyPolicyDeadlineResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
 import com.chungbazi.server.domain.policy.application.MyPolicyService;
+import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
 import com.chungbazi.server.domain.policy.domain.type.PolicyListSortType;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.global.common.CommonResponse;
@@ -56,5 +57,18 @@ public class MyPolicyController implements MyPolicyDocs {
     ) {
 
         return CommonResponse.onSuccess(myPolicyService.getOpenEndedLikedPolicies(user, cursor, size));
+    }
+
+    @Override
+    @GetMapping("/policies")
+    public CommonResponse<PolicyListResponse> getMyPoliciesByCategory(
+            @CurrentUser User user,
+            @RequestParam(required = false) PolicyCategoryType category,
+            @RequestParam(defaultValue = "LATEST") PolicyListSortType sort,
+            @RequestParam(required = false) String cursor,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
+    ) {
+
+        return CommonResponse.onSuccess(myPolicyService.getMyPoliciesByCategory(user, category, sort, cursor, size));
     }
 }
