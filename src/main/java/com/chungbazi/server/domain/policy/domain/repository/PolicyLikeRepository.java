@@ -58,6 +58,7 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             JOIN policyLike.policy policy
             WHERE policyLike.userId = :userId
               AND policy.recruitmentStatus <> :closedStatus
+              AND policy.recruitmentType <> :openEndedType
               AND policy.applyEndDate IS NOT NULL
               AND policy.applyEndDate >= :today
             ORDER BY policy.applyEndDate ASC, policy.id DESC
@@ -65,6 +66,7 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
     List<Policy> findUpcomingDeadlineLikedPolicies(
             @Param("userId") Long userId,
             @Param("closedStatus") RecruitmentStatus closedStatus,
+            @Param("openEndedType") RecruitmentType openEndedType,
             @Param("today") LocalDate today,
             Pageable pageable
     );
