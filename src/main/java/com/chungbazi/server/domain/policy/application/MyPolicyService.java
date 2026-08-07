@@ -10,6 +10,7 @@ import com.chungbazi.server.domain.policy.application.mapper.PolicyDisplayMapper
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.entity.PolicyLike;
 import com.chungbazi.server.domain.policy.domain.repository.PolicyLikeRepository;
+import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
 import com.chungbazi.server.domain.policy.domain.type.PolicyListSortType;
 import com.chungbazi.server.domain.policy.domain.type.PolicySortType;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentType;
@@ -22,6 +23,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -74,30 +76,17 @@ public class MyPolicyService {
                 pageRequest
         );
 
-        boolean hasNext = fetchedPolicies.size() > size;
-        List<Policy> policies = hasNext
-                ? new ArrayList<>(fetchedPolicies.subList(0, size))
-                : fetchedPolicies;
-
-        Set<Long> likedPolicyIds = policies.stream()
-                .map(Policy::getId)
-                .collect(Collectors.toSet());
-
-        String nextCursor = hasNext
-                ? PolicyCursorParser.encode(policySort, policies.getLast())
-                : null;
-
         Long totalCount = policyLikeRepository.countDeadlineLikedPoliciesByDate(
                 user.getId(),
                 RecruitmentStatus.CLOSED,
                 targetDate
         );
 
-        return policyListResponseAssembler.assemble(
+        return assembleLikedPolicyListResponse(
+                fetchedPolicies,
                 totalCount,
-                policyListResponseAssembler.summarize(policies, likedPolicyIds),
-                nextCursor,
-                hasNext
+                size,
+                policy -> encodeLikedPolicyCursor(policySort, policy)
         );
     }
 
@@ -159,10 +148,6 @@ public class MyPolicyService {
                 .map(PolicyLike::getPolicy)
                 .toList();
 
-        Set<Long> likedPolicyIds = policies.stream()
-                .map(Policy::getId)
-                .collect(Collectors.toSet());
-
         String nextCursor = hasNext
                 ? policyLikes.getLast().getId().toString()
                 : null;
@@ -173,12 +158,7 @@ public class MyPolicyService {
                 RecruitmentType.ALWAYS
         );
 
-        return policyListResponseAssembler.assemble(
-                totalCount,
-                policyListResponseAssembler.summarize(policies, likedPolicyIds),
-                nextCursor,
-                hasNext
-        );
+        return assembleLikedPolicyListResponse(policies, totalCount, nextCursor, hasNext);
     }
 
     private List<PolicyLike> fetchOpenEndedLikedPolicies(
@@ -214,5 +194,162 @@ public class MyPolicyService {
         } catch (NumberFormatException exception) {
             throw new PolicyException(PolicyErrorCode.INVALID_POLICY_CURSOR);
         }
+    }
+
+    public PolicyListResponse getMyPoliciesByCategory(
+            User user,
+            PolicyCategoryType category,
+            PolicyListSortType sort,
+            String cursor,
+            int size
+    ) {
+        PolicySortType policySort = sort.getPolicySortType();
+        PolicyCursor decodedCursor = PolicyCursorParser.decode(cursor, policySort);
+
+        List<Policy> fetchedPolicies = fetchMyPoliciesByCategory(
+                user.getId(),
+                category,
+                policySort,
+                decodedCursor,
+                PageRequest.of(0, size + 1)
+        );
+        Long totalCount = policyLikeRepository.countMyLikedPolicies(
+                user.getId(),
+                RecruitmentStatus.CLOSED,
+                category
+        );
+
+        return assembleLikedPolicyListResponse(
+                fetchedPolicies,
+                totalCount,
+                size,
+                policy -> encodeLikedPolicyCursor(policySort, policy)
+        );
+    }
+
+    private PolicyListResponse assembleLikedPolicyListResponse(
+            List<Policy> fetchedPolicies,
+            Long totalCount,
+            int size,
+            Function<Policy, String> nextCursorEncoder
+    ) {
+        boolean hasNext = fetchedPolicies.size() > size;
+        List<Policy> policies = hasNext
+                ? new ArrayList<>(fetchedPolicies.subList(0, size))
+                : fetchedPolicies;
+
+        String nextCursor = hasNext
+                ? nextCursorEncoder.apply(policies.getLast())
+                : null;
+
+        return assembleLikedPolicyListResponse(policies, totalCount, nextCursor, hasNext);
+    }
+
+    private PolicyListResponse assembleLikedPolicyListResponse(
+            List<Policy> policies,
+            Long totalCount,
+            String nextCursor,
+            boolean hasNext
+    ) {
+        Set<Long> likedPolicyIds = policies.stream()
+                .map(Policy::getId)
+                .collect(Collectors.toSet());
+
+        return policyListResponseAssembler.assemble(
+                totalCount,
+                policyListResponseAssembler.summarize(policies, likedPolicyIds),
+                nextCursor,
+                hasNext
+        );
+    }
+
+    private List<Policy> fetchMyPoliciesByCategory(
+            Long userId,
+            PolicyCategoryType category,
+            PolicySortType sort,
+            PolicyCursor cursor,
+            PageRequest pageRequest
+    ) {
+        if (sort == PolicySortType.LATEST) {
+            return fetchMyPoliciesByLatest(userId, category, cursor, pageRequest);
+        }
+
+        return fetchMyPoliciesByDeadline(userId, category, cursor, pageRequest);
+    }
+
+    private List<Policy> fetchMyPoliciesByLatest(
+            Long userId,
+            PolicyCategoryType category,
+            PolicyCursor cursor,
+            PageRequest pageRequest
+    ) {
+        if (cursor == null) {
+            return policyLikeRepository.findMyLikedPoliciesOrderByLatestFirst(
+                    userId,
+                    RecruitmentStatus.CLOSED,
+                    category,
+                    pageRequest
+            );
+        }
+
+        return policyLikeRepository.findMyLikedPoliciesOrderByLatestAfter(
+                userId,
+                RecruitmentStatus.CLOSED,
+                category,
+                cursor.registeredAt(),
+                cursor.policyId(),
+                pageRequest
+        );
+    }
+
+    private List<Policy> fetchMyPoliciesByDeadline(
+            Long userId,
+            PolicyCategoryType category,
+            PolicyCursor cursor,
+            PageRequest pageRequest
+    ) {
+        if (cursor == null) {
+            return policyLikeRepository.findMyLikedPoliciesOrderByDeadlineFirst(
+                    userId,
+                    RecruitmentStatus.CLOSED,
+                    category,
+                    RecruitmentType.ALWAYS,
+                    pageRequest
+            );
+        }
+
+        if (cursor.applyEndDate() == null) {
+            return policyLikeRepository.findMyLikedPoliciesOrderByDeadlineAfterOpenEndedCursor(
+                    userId,
+                    RecruitmentStatus.CLOSED,
+                    category,
+                    RecruitmentType.ALWAYS,
+                    cursor.policyId(),
+                    pageRequest
+            );
+        }
+
+        return policyLikeRepository.findMyLikedPoliciesOrderByDeadlineAfterDatedCursor(
+                userId,
+                RecruitmentStatus.CLOSED,
+                category,
+                RecruitmentType.ALWAYS,
+                cursor.applyEndDate(),
+                cursor.policyId(),
+                pageRequest
+        );
+    }
+
+    private String encodeLikedPolicyCursor(PolicySortType sort, Policy policy) {
+        if (sort == PolicySortType.DEADLINE && isOpenEndedPolicy(policy)) {
+            return PolicyCursorParser.encodeOpenEndedDeadline(policy.getId());
+        }
+
+        return PolicyCursorParser.encode(sort, policy);
+    }
+
+    private boolean isOpenEndedPolicy(Policy policy) {
+        return policy.getRecruitmentType() == RecruitmentType.ALWAYS
+                || policy.getApplyEndDate() == null;
     }
 }
