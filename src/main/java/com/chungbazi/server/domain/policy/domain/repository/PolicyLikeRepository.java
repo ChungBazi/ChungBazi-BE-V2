@@ -266,7 +266,7 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
               AND (:category IS NULL OR policy.category = :category)
             ORDER BY
               CASE WHEN policy.recruitmentType = :openEndedType OR policy.applyEndDate IS NULL THEN 1 ELSE 0 END ASC,
-              policy.applyEndDate ASC,
+              CASE WHEN policy.recruitmentType = :openEndedType OR policy.applyEndDate IS NULL THEN NULL ELSE policy.applyEndDate END ASC,
               policy.id DESC
             """)
     List<Policy> findMyLikedPoliciesOrderByDeadlineFirst(
@@ -292,7 +292,7 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
               )
             ORDER BY
               CASE WHEN policy.recruitmentType = :openEndedType OR policy.applyEndDate IS NULL THEN 1 ELSE 0 END ASC,
-              policy.applyEndDate ASC,
+              CASE WHEN policy.recruitmentType = :openEndedType OR policy.applyEndDate IS NULL THEN NULL ELSE policy.applyEndDate END ASC,
               policy.id DESC
             """)
     List<Policy> findMyLikedPoliciesOrderByDeadlineAfterDatedCursor(

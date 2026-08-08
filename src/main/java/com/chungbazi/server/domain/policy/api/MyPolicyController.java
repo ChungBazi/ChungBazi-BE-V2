@@ -9,8 +9,6 @@ import com.chungbazi.server.domain.policy.domain.type.PolicyListSortType;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.global.common.CommonResponse;
 import com.chungbazi.server.global.resolver.CurrentUser;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -29,44 +27,44 @@ public class MyPolicyController implements MyPolicyDocs {
     private final MyPolicyService myPolicyService;
 
     @Override
-    @GetMapping("/policies/deadline")
+    @GetMapping("/deadline")
     public CommonResponse<MyPolicyDeadlineResponse> getMyPolicyDeadline(@CurrentUser User user) {
 
         return CommonResponse.onSuccess(myPolicyService.getMyPolicyDeadline(user));
     }
 
     @Override
-    @GetMapping("/policies/deadline/date")
+    @GetMapping("/deadline/date")
     public CommonResponse<PolicyListResponse> getDeadlinePoliciesByDate(
             @CurrentUser User user,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate targetDate,
             @RequestParam(defaultValue = "LATEST") PolicyListSortType sort,
             @RequestParam(required = false) String cursor,
-            @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
+            @RequestParam(defaultValue = "20") int size
     ) {
 
         return CommonResponse.onSuccess(myPolicyService.getDeadlinePoliciesByDate(user, targetDate, sort, cursor, size));
     }
 
     @Override
-    @GetMapping("/policies/open-ended")
+    @GetMapping("/open-ended")
     public CommonResponse<PolicyListResponse> getOpenEndedLikedPolicies(
             @CurrentUser User user,
             @RequestParam(required = false) String cursor,
-            @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
+            @RequestParam(defaultValue = "20") int size
     ) {
 
         return CommonResponse.onSuccess(myPolicyService.getOpenEndedLikedPolicies(user, cursor, size));
     }
 
     @Override
-    @GetMapping("/policies")
+    @GetMapping
     public CommonResponse<PolicyListResponse> getMyPoliciesByCategory(
             @CurrentUser User user,
             @RequestParam(required = false) PolicyCategoryType category,
             @RequestParam(defaultValue = "LATEST") PolicyListSortType sort,
             @RequestParam(required = false) String cursor,
-            @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
+            @RequestParam(defaultValue = "20") int size
     ) {
 
         return CommonResponse.onSuccess(myPolicyService.getMyPoliciesByCategory(user, category, sort, cursor, size));
