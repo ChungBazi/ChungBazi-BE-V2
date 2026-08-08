@@ -13,6 +13,7 @@ import com.chungbazi.server.domain.policy.domain.entity.RecentSearchKeyword;
 import com.chungbazi.server.domain.policy.domain.repository.RecentSearchKeywordRepository;
 import com.chungbazi.server.domain.policy.domain.repository.policyRepository.PolicyRepository;
 import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
+import com.chungbazi.server.domain.policy.domain.type.PolicyListSortType;
 import com.chungbazi.server.domain.policy.domain.type.PolicySortType;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
 import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
@@ -42,12 +43,13 @@ public class PolicySearchService {
             User user,
             String keyword,
             PolicyCategoryType category,
-            PolicySortType sort,
+            PolicyListSortType sort,
             String cursor,
             int size
     ) {
         String normalizedKeyword = normalizeKeyword(keyword);
-        PolicyCursor decodedCursor = PolicyCursorParser.decode(cursor, sort);
+        PolicySortType policySort = sort.getPolicySortType();
+        PolicyCursor decodedCursor = PolicyCursorParser.decode(cursor, policySort);
         // 최근 검색어 저장
         if (user.isSearchKeywordAutoSaveEnabled()) {
             saveRecentSearchKeyword(user, normalizedKeyword);
@@ -56,7 +58,7 @@ public class PolicySearchService {
         List<Policy> fetchedPolicies = policyRepository.searchPolicies(
                 normalizedKeyword,
                 category,
-                sort,
+                policySort,
                 RecruitmentStatus.CLOSED,
                 user.getSidoCode(),
                 user.getSigunguCode(),
@@ -73,7 +75,7 @@ public class PolicySearchService {
                 user.getSidoCode(),
                 user.getSigunguCode()
         );
-        return policyListResponseAssembler.assemble(user, sort, fetchedPolicies, totalCount, size);
+        return policyListResponseAssembler.assemble(user, policySort, fetchedPolicies, totalCount, size);
     }
 
     public SearchSuggestionResponse getSearchSuggestions(User user, String keyword) {

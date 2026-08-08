@@ -29,7 +29,7 @@ class YouthPolicyDateMapperTest {
     }
 
     @Test
-    void mapsAlwaysOpenPeriodFromSeparateBusinessDates() {
+    void mapsAlwaysOpenCodeWithSeparateBusinessDatesAsFixedPeriod() {
         ApplyPeriod result = map(
                 YouthPolicyDateMapper.ALWAYS_OPEN_CODE,
                 null,
@@ -40,11 +40,11 @@ class YouthPolicyDateMapperTest {
 
         assertThat(result.startDate()).isEqualTo(LocalDate.of(2026, 1, 1));
         assertThat(result.endDate()).isEqualTo(LocalDate.of(2026, 12, 31));
-        assertThat(result.recruitmentType()).isEqualTo(RecruitmentType.ALWAYS);
+        assertThat(result.recruitmentType()).isEqualTo(RecruitmentType.FIXED_PERIOD);
     }
 
     @Test
-    void mapsAlwaysOpenRangeStoredInBusinessPeriodText() {
+    void mapsAlwaysOpenCodeWithRangeStoredInBusinessPeriodTextAsFixedPeriod() {
         ApplyPeriod result = map(
                 YouthPolicyDateMapper.ALWAYS_OPEN_CODE,
                 null,
@@ -55,11 +55,11 @@ class YouthPolicyDateMapperTest {
 
         assertThat(result.startDate()).isEqualTo(LocalDate.of(2026, 1, 1));
         assertThat(result.endDate()).isEqualTo(LocalDate.of(2026, 12, 31));
-        assertThat(result.recruitmentType()).isEqualTo(RecruitmentType.ALWAYS);
+        assertThat(result.recruitmentType()).isEqualTo(RecruitmentType.FIXED_PERIOD);
     }
 
     @Test
-    void mapsAnnualAlwaysOpenPeriodUsingBusinessYear() {
+    void mapsAnnualAlwaysOpenPeriodUsingBusinessYearAsFixedPeriod() {
         ApplyPeriod result = map(
                 YouthPolicyDateMapper.ALWAYS_OPEN_CODE,
                 null,
@@ -70,11 +70,11 @@ class YouthPolicyDateMapperTest {
 
         assertThat(result.startDate()).isEqualTo(LocalDate.of(2026, 1, 1));
         assertThat(result.endDate()).isEqualTo(LocalDate.of(2026, 12, 31));
-        assertThat(result.recruitmentType()).isEqualTo(RecruitmentType.ALWAYS);
+        assertThat(result.recruitmentType()).isEqualTo(RecruitmentType.FIXED_PERIOD);
     }
 
     @Test
-    void mapsAlwaysOpenYearMonthRange() {
+    void mapsAlwaysOpenCodeWithYearMonthRangeAsFixedPeriod() {
         ApplyPeriod result = map(
                 YouthPolicyDateMapper.ALWAYS_OPEN_CODE,
                 null,
@@ -85,7 +85,7 @@ class YouthPolicyDateMapperTest {
 
         assertThat(result.startDate()).isEqualTo(LocalDate.of(2026, 1, 1));
         assertThat(result.endDate()).isEqualTo(LocalDate.of(2026, 12, 31));
-        assertThat(result.recruitmentType()).isEqualTo(RecruitmentType.ALWAYS);
+        assertThat(result.recruitmentType()).isEqualTo(RecruitmentType.FIXED_PERIOD);
     }
 
     @Test
@@ -100,6 +100,7 @@ class YouthPolicyDateMapperTest {
 
         assertThat(result.startDate()).isEqualTo(LocalDate.of(2026, 3, 1));
         assertThat(result.endDate()).isEqualTo(LocalDate.of(2026, 11, 30));
+        assertThat(result.recruitmentType()).isEqualTo(RecruitmentType.FIXED_PERIOD);
     }
 
     @Test
