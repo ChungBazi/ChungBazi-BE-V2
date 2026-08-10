@@ -40,6 +40,21 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             @Param("policyIds") Collection<Long> policyIds
     );
 
+    @Modifying
+    @Query("""
+            UPDATE PolicyLike policyLike
+            SET policyLike.memo = :memo,
+                policyLike.updatedAt = :updatedAt
+            WHERE policyLike.userId = :userId
+              AND policyLike.policy.id = :policyId
+            """)
+    int updateMemo(
+            @Param("userId") Long userId,
+            @Param("policyId") Long policyId,
+            @Param("memo") String memo,
+            @Param("updatedAt") LocalDateTime updatedAt
+    );
+
     @Query("""
             SELECT policyLike
             FROM PolicyLike policyLike

@@ -1,6 +1,7 @@
 package com.chungbazi.server.domain.policy.api.docs;
 
 import com.chungbazi.server.domain.policy.api.dto.response.CalendarResponse;
+import com.chungbazi.server.domain.policy.api.dto.request.PolicyMemoRequest;
 import com.chungbazi.server.domain.policy.api.dto.response.MyPolicyDeadlineResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
 import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
@@ -13,11 +14,14 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "[My Policy]", description = "내 정책 관련 API")
@@ -127,5 +131,31 @@ public interface MyPolicyDocs {
             @CurrentUser User user,
             @Parameter(description = "사용자가 확인하고 싶은 연도와 월", example = "2026-08")
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM") YearMonth targetMonth
+    );
+
+    @Operation(
+            summary = "정책 메모 작성 및 수정 API",
+            description = """
+                    사용자가 찜한 정책에 메모를 작성하거나 수정하는 API입니다. \n
+                    메모는 찜한 정책에만 작성할 수 있으며, 같은 API로 기존 메모 내용을 수정합니다.
+
+                    ### Path Variables
+                    - `policyId`: 정책 id
+
+                    ### Request Body
+                    - `memo`: 사용자가 정책과 관련하여 작성한 메모 내용
+                    """
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "정책 메모 작성 및 수정 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 메모 내용"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+            @ApiResponse(responseCode = "404", description = "찜한 정책을 찾을 수 없음")
+    })
+    CommonResponse<String> updatePolicyMemo(
+            @CurrentUser User user,
+            @Parameter(description = "정책 id", example = "1", required = true)
+            @PathVariable Long policyId,
+            @Valid @RequestBody PolicyMemoRequest request
     );
 }

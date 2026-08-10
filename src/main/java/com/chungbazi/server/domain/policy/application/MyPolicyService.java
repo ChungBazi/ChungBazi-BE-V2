@@ -20,6 +20,7 @@ import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
 import com.chungbazi.server.domain.policy.exception.PolicyException;
 import com.chungbazi.server.domain.user.domain.User;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -368,5 +369,19 @@ public class MyPolicyService {
         );
 
         return new CalendarResponse(targetMonth, deadlineDates);
+    }
+
+    @Transactional
+    public void updatePolicyMemo(User user, Long policyId, String memo) {
+        int updatedCount = policyLikeRepository.updateMemo(
+                user.getId(),
+                policyId,
+                memo,
+                LocalDateTime.now(SERVICE_ZONE_ID)
+        );
+
+        if (updatedCount == 0) {
+            throw new PolicyException(PolicyErrorCode.LIKED_POLICY_NOT_FOUND);
+        }
     }
 }
