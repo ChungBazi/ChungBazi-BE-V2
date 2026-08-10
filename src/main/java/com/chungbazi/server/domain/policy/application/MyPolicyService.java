@@ -1,6 +1,7 @@
 package com.chungbazi.server.domain.policy.application;
 
 import com.chungbazi.server.domain.policy.api.dto.response.MyPolicyDeadlineResponse;
+import com.chungbazi.server.domain.policy.api.dto.response.CalendarResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse.PolicySummary;
 import com.chungbazi.server.domain.policy.application.cursor.PolicyCursor;
@@ -19,6 +20,7 @@ import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
 import com.chungbazi.server.domain.policy.exception.PolicyException;
 import com.chungbazi.server.domain.user.domain.User;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
@@ -352,5 +354,19 @@ public class MyPolicyService {
     private boolean isOpenEndedPolicy(Policy policy) {
         return policy.getRecruitmentType() == RecruitmentType.ALWAYS
                 || policy.getApplyEndDate() == null;
+    }
+
+    public CalendarResponse getMyCalendar(User user, YearMonth targetMonth) {
+        LocalDate startDate = targetMonth.atDay(1);
+        LocalDate endDate = targetMonth.atEndOfMonth();
+
+        List<LocalDate> deadlineDates = policyLikeRepository.findDistinctLikedPolicyDeadlineDates(
+                user.getId(),
+                RecruitmentStatus.CLOSED,
+                startDate,
+                endDate
+        );
+
+        return new CalendarResponse(targetMonth, deadlineDates);
     }
 }

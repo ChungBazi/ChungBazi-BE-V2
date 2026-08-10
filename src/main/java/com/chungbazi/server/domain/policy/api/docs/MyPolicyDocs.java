@@ -1,5 +1,6 @@
 package com.chungbazi.server.domain.policy.api.docs;
 
+import com.chungbazi.server.domain.policy.api.dto.response.CalendarResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.MyPolicyDeadlineResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
 import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -106,5 +108,24 @@ public interface MyPolicyDocs {
             @RequestParam(required = false) String cursor,
             @Parameter(description = "조회 개수", example = "20")
             @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
+    );
+
+    @Operation(
+            summary = "캘린더 조회 API",
+            description = """
+                    사용자가 찜한 정책 중 마감일이 있는 정책을 캘린더 바 형태로 표시하기 위한 API입니다. \n
+
+                    ### Query Parameter
+                    - `targetMonth`: 사용자가 선택한 연도와 월로, YYYY-MM 형식입니다.
+                    """)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "캘린더 조회 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 연월 형식"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+    })
+    CommonResponse<CalendarResponse> getMyCalendar(
+            @CurrentUser User user,
+            @Parameter(description = "사용자가 확인하고 싶은 연도와 월", example = "2026-08")
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM") YearMonth targetMonth
     );
 }

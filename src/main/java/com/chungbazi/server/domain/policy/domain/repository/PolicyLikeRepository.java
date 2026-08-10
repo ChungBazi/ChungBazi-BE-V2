@@ -158,6 +158,22 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
     );
 
     @Query("""
+            SELECT DISTINCT policy.applyEndDate
+            FROM PolicyLike policyLike
+            JOIN policyLike.policy policy
+            WHERE policyLike.userId = :userId
+              AND policy.recruitmentStatus <> :closedStatus
+              AND policy.applyEndDate BETWEEN :startDate AND :endDate
+            ORDER BY policy.applyEndDate ASC
+            """)
+    List<LocalDate> findDistinctLikedPolicyDeadlineDates(
+            @Param("userId") Long userId,
+            @Param("closedStatus") RecruitmentStatus closedStatus,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
+    @Query("""
             SELECT COUNT(policyLike)
             FROM PolicyLike policyLike
             JOIN policyLike.policy policy
