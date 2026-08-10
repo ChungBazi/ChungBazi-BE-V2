@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -38,6 +39,18 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
     List<Long> findLikedPolicyIds(
             @Param("userId") Long userId,
             @Param("policyIds") Collection<Long> policyIds
+    );
+
+    @Query("""
+            SELECT policyLike
+            FROM PolicyLike policyLike
+            JOIN FETCH policyLike.policy
+            WHERE policyLike.userId = :userId
+              AND policyLike.policy.id = :policyId
+            """)
+    Optional<PolicyLike> findByUserIdAndPolicyIdWithPolicy(
+            @Param("userId") Long userId,
+            @Param("policyId") Long policyId
     );
 
     @Modifying

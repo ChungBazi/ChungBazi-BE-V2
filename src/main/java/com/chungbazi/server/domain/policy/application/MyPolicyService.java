@@ -4,6 +4,7 @@ import com.chungbazi.server.domain.policy.api.dto.response.MyPolicyDeadlineRespo
 import com.chungbazi.server.domain.policy.api.dto.response.CalendarResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse.PolicySummary;
+import com.chungbazi.server.domain.policy.api.dto.response.PolicyMemoResponse;
 import com.chungbazi.server.domain.policy.application.cursor.PolicyCursor;
 import com.chungbazi.server.domain.policy.application.cursor.PolicyCursorParser;
 import com.chungbazi.server.domain.policy.application.mapper.PolicyListResponseAssembler;
@@ -369,6 +370,24 @@ public class MyPolicyService {
         );
 
         return new CalendarResponse(targetMonth, deadlineDates);
+    }
+
+    public PolicyMemoResponse getPolicyMemo(User user, Long policyId) {
+        PolicyLike policyLike = policyLikeRepository.findByUserIdAndPolicyIdWithPolicy(user.getId(), policyId)
+                .orElseThrow(() -> new PolicyException(PolicyErrorCode.LIKED_POLICY_NOT_FOUND));
+
+        Policy policy = policyLike.getPolicy();
+        PolicySummary policySummary = policyDisplayMapper.toSummary(policy, Set.of(policy.getId()));
+        String memo = policyLike.getMemo() == null ? "" : policyLike.getMemo();
+
+        return new PolicyMemoResponse(
+                policySummary.policyId(),
+                policySummary.category(),
+                policySummary.categoryName(),
+                policySummary.dDay(),
+                policySummary.title(),
+                memo
+        );
     }
 
     @Transactional

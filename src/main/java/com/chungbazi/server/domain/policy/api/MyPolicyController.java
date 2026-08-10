@@ -5,6 +5,7 @@ import com.chungbazi.server.domain.policy.api.dto.request.PolicyMemoRequest;
 import com.chungbazi.server.domain.policy.api.dto.response.CalendarResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.MyPolicyDeadlineResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
+import com.chungbazi.server.domain.policy.api.dto.response.PolicyMemoResponse;
 import com.chungbazi.server.domain.policy.application.MyPolicyService;
 import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
 import com.chungbazi.server.domain.policy.domain.type.PolicyListSortType;
@@ -85,6 +86,16 @@ public class MyPolicyController implements MyPolicyDocs {
     ) {
 
         return CommonResponse.onSuccess(myPolicyService.getMyCalendar(user, targetMonth));
+    }
+
+    @Override
+    @GetMapping("/{policyId}/memo")
+    public CommonResponse<PolicyMemoResponse> getPolicyMemo(
+            @CurrentUser User user,
+            @PathVariable Long policyId
+    ) {
+
+        return CommonResponse.onSuccess(myPolicyService.getPolicyMemo(user, policyId));
     }
 
     @Override
