@@ -122,6 +122,10 @@ public interface MyPolicyDocs {
 
                     ### Query Parameter
                     - `targetMonth`: 사용자가 선택한 연도와 월로, YYYY-MM 형식입니다.
+                    
+                    ### Response
+                    마감일인 날짜들을 리스트로 묶어, 응답으로 반환합니다.
+                    
                     """)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "캘린더 조회 성공"),
