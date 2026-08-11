@@ -3,6 +3,8 @@ package com.chungbazi.server.domain.policy.domain.repository;
 import com.chungbazi.server.domain.policy.domain.entity.PolicyLike;
 import java.util.Collection;
 import java.util.List;
+
+import com.chungbazi.server.domain.user.domain.User;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -45,4 +47,6 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             @Param("userId") Long userId,
             Pageable pageable
     );
+
+    void deleteAllByUserId(Long userId);
 }

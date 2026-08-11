@@ -4,4 +4,5 @@ import com.chungbazi.server.domain.auth.domain.RefreshToken;
 import org.springframework.data.repository.CrudRepository;
 
 public interface RefreshTokenRepository extends CrudRepository<RefreshToken, Long> {
+    void deleteByUserId(Long userId);
 }

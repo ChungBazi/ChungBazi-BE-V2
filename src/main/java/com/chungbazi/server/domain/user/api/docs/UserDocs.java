@@ -3,6 +3,7 @@ package com.chungbazi.server.domain.user.api.docs;
 import com.chungbazi.server.domain.user.api.dto.request.UserNameRequest;
 import com.chungbazi.server.domain.user.api.dto.request.UserOnboardingRequest;
 import com.chungbazi.server.domain.user.api.dto.request.UserPolicyRequest;
+import com.chungbazi.server.domain.user.api.dto.request.UserWithdrawalRequest;
 import com.chungbazi.server.domain.user.api.dto.response.UserInfoResponse;
 import com.chungbazi.server.domain.user.api.dto.response.UserPolicyResponse;
 import com.chungbazi.server.domain.user.domain.User;
@@ -125,4 +126,30 @@ public interface UserDocs {
             )
     })
     CommonResponse<UserPolicyResponse> getUserPolicy(@CurrentUser User user);
+
+    @Operation(
+            summary = "회원 탈퇴 API",
+            description = """
+                    ### RequestBody
+                    ---
+                    - `reasons`: 탈퇴 사유 목록. 한 개 이상 선택 필수
+                         - `POLICY_DISCOVERY_DIFFICULT`: 원하는 정책을 찾기 어려워요
+                         - `INSUFFICIENT_POLICY_INFORMATION`: 저에게 맞는 정책 추천이 부족해요
+                         - `NO_LONGER_NEEDED`: 이용할 일이 없어졌어요
+                         - `INCONVENIENT_APP`: 앱 사용이 불편했어요
+                         - `FREQUENT_ERRORS`: 오류가 자주 발생했어요
+                         - `OTHER`: 기타 이유가 있어요
+                    - `detail`: 기타 불편 사항 또는 상세 의견. 선택 입력
+                    """
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "회원 탈퇴가 성공적으로 완료되었습니다."
+            )
+    })
+    CommonResponse<String> withdrawUser(
+            @CurrentUser User user,
+            @Valid @RequestBody UserWithdrawalRequest request
+    );
 }
