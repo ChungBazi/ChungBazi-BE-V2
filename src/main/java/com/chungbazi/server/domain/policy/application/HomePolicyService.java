@@ -14,6 +14,7 @@ import com.chungbazi.server.domain.policy.domain.entity.RecentViewedPolicy;
 import com.chungbazi.server.domain.policy.domain.repository.RecentViewedPolicyRepository;
 import com.chungbazi.server.domain.policy.domain.repository.policyRepository.PolicyRepository;
 import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
+import com.chungbazi.server.domain.policy.domain.type.PolicyListSortType;
 import com.chungbazi.server.domain.policy.domain.type.PolicySortType;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
 import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
@@ -163,6 +164,16 @@ public class HomePolicyService {
     public PolicyListResponse getPolicies(
             User user,
             PolicyCategoryType category,
+            PolicyListSortType sort,
+            String cursor,
+            int size
+    ) {
+        return getPoliciesBySort(user, category, sort.getPolicySortType(), cursor, size);
+    }
+
+    private PolicyListResponse getPoliciesBySort(
+            User user,
+            PolicyCategoryType category,
             PolicySortType sort,
             String cursor,
             int size
@@ -198,7 +209,7 @@ public class HomePolicyService {
             String cursor,
             int size
     ) {
-        return getPolicies(
+        return getPoliciesBySort(
                 user,
                 category,
                 PolicySortType.LATEST,

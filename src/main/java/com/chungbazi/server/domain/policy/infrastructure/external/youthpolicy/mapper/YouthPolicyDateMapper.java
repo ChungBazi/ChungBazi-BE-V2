@@ -116,7 +116,7 @@ public class YouthPolicyDateMapper {
         return createDatedPeriod(
                 parsedPeriod.dateRange(),
                 parsedPeriod.periodText(),
-                RecruitmentType.ALWAYS
+                RecruitmentType.FIXED_PERIOD
         );
     }
 

@@ -5,7 +5,7 @@ import com.chungbazi.server.domain.policy.api.dto.response.SearchSuggestionRespo
 import com.chungbazi.server.domain.policy.api.docs.PolicySearchDocs;
 import com.chungbazi.server.domain.policy.application.PolicySearchService;
 import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
-import com.chungbazi.server.domain.policy.domain.type.PolicySortType;
+import com.chungbazi.server.domain.policy.domain.type.PolicyListSortType;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.global.common.CommonResponse;
 import com.chungbazi.server.global.resolver.CurrentUser;
@@ -27,7 +27,7 @@ public class PolicySearchController implements PolicySearchDocs {
             @CurrentUser User user,
             @RequestParam String keyword,
             @RequestParam(required = false) PolicyCategoryType category,
-            @RequestParam(defaultValue = "LATEST") PolicySortType sort,
+            @RequestParam(defaultValue = "LATEST") PolicyListSortType sort,
             @RequestParam(required = false) String cursor,
             @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
     ) {
