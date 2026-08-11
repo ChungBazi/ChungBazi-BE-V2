@@ -1,6 +1,8 @@
 package com.chungbazi.server.domain.user.domain;
 
 import com.chungbazi.server.domain.user.domain.type.WithdrawalReason;
+import com.chungbazi.server.domain.user.exception.UserException;
+import com.chungbazi.server.domain.user.exception.code.UserErrorCode;
 import com.chungbazi.server.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -58,7 +60,7 @@ public class WithdrawalSurvey extends BaseTimeEntity {
 
     private static void validateReasons(Set<WithdrawalReason> reasons) {
         if (reasons == null || reasons.isEmpty()) {
-            throw new IllegalArgumentException("탈퇴 사유를 한 개 이상 선택해야 합니다.");
+            throw new UserException(UserErrorCode.INVALID_WITHDRAWAL_REASON);
         }
     }
 
