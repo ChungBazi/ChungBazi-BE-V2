@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -39,6 +40,33 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
     List<Long> findLikedPolicyIds(
             @Param("userId") Long userId,
             @Param("policyIds") Collection<Long> policyIds
+    );
+
+    @Query("""
+            SELECT policyLike
+            FROM PolicyLike policyLike
+            JOIN FETCH policyLike.policy
+            WHERE policyLike.userId = :userId
+              AND policyLike.policy.id = :policyId
+            """)
+    Optional<PolicyLike> findByUserIdAndPolicyIdWithPolicy(
+            @Param("userId") Long userId,
+            @Param("policyId") Long policyId
+    );
+
+    @Modifying
+    @Query("""
+            UPDATE PolicyLike policyLike
+            SET policyLike.memo = :memo,
+                policyLike.updatedAt = :updatedAt
+            WHERE policyLike.userId = :userId
+              AND policyLike.policy.id = :policyId
+            """)
+    int updateMemo(
+            @Param("userId") Long userId,
+            @Param("policyId") Long policyId,
+            @Param("memo") String memo,
+            @Param("updatedAt") LocalDateTime updatedAt
     );
 
     @Query("""
@@ -156,6 +184,22 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             @Param("targetDate") LocalDate targetDate,
             @Param("policyId") Long policyId,
             Pageable pageable
+    );
+
+    @Query("""
+            SELECT DISTINCT policy.applyEndDate
+            FROM PolicyLike policyLike
+            JOIN policyLike.policy policy
+            WHERE policyLike.userId = :userId
+              AND policy.recruitmentStatus <> :closedStatus
+              AND policy.applyEndDate BETWEEN :startDate AND :endDate
+            ORDER BY policy.applyEndDate ASC
+            """)
+    List<LocalDate> findDistinctLikedPolicyDeadlineDates(
+            @Param("userId") Long userId,
+            @Param("closedStatus") RecruitmentStatus closedStatus,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
     );
 
     @Query("""
