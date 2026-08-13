@@ -54,7 +54,7 @@ public class NotificationSetting extends BaseTimeEntity {
             boolean chungbaziNotificationEnabled
     ) {
         this.allNotificationEnabled = allNotificationEnabled;
-        this.policyNotificationEnabled = allNotificationEnabled && policyNotificationEnabled;
-        this.chungbaziNotificationEnabled = allNotificationEnabled && chungbaziNotificationEnabled;
+        this.policyNotificationEnabled = policyNotificationEnabled;
+        this.chungbaziNotificationEnabled = chungbaziNotificationEnabled;
     }
 }

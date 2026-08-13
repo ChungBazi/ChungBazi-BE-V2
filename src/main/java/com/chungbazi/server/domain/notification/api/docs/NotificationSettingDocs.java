@@ -32,8 +32,15 @@ public interface NotificationSettingDocs {
             description = """
                     전체 알림, 내 정책 알림, 청바지 알림 설정을 한 번에 변경합니다.
 
+                    ### Request Body
+                    - `allNotificationEnabled` : 전체 알림 수신 여부로, boolean 값입니다.
+                    - `policyNotificationEnabled` : 내 정책 알림 수신 여부로, boolean 값입니다.
+                    - `chungbaziNotificationEnabled` : 청바지 알림 수신 여부로, boolean 값입니다.
+
                     - 전체 알림이 `false`이면 하위 두 설정도 `false`로 저장됩니다.
                     - 전체 알림이 `true`이면 하위 두 설정은 요청받은 값을 각각 유지합니다.
+                    - 전체 알림이 `false`인데 하위 알림이 하나라도 `true`이면 잘못된 요청입니다.
+                    - 전체 알림이 `true`인데 하위 알림이 모두 `false`이면 잘못된 요청입니다.
                     """
     )
     @ApiResponses(value = {

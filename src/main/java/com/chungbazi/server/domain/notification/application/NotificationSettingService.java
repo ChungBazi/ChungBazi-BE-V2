@@ -2,6 +2,7 @@ package com.chungbazi.server.domain.notification.application;
 
 import com.chungbazi.server.domain.notification.api.dto.request.NotificationSettingUpdateRequest;
 import com.chungbazi.server.domain.notification.api.dto.response.NotificationSettingResponse;
+import com.chungbazi.server.domain.notification.application.validator.NotificationSettingValidator;
 import com.chungbazi.server.domain.notification.domain.NotificationSetting;
 import com.chungbazi.server.domain.notification.domain.repository.NotificationSettingRepository;
 import com.chungbazi.server.domain.user.domain.User;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class NotificationSettingService {
 
     private final NotificationSettingRepository notificationSettingRepository;
+    private final NotificationSettingValidator notificationSettingValidator;
 
     @Transactional
     public NotificationSettingResponse getNotificationSetting(User user) {
@@ -26,6 +28,8 @@ public class NotificationSettingService {
             User user,
             NotificationSettingUpdateRequest request
     ) {
+        notificationSettingValidator.validate(request);
+
         NotificationSetting setting = getOrCreateSetting(user);
         setting.updateNotificationSetting(
                 request.allNotificationEnabled(),

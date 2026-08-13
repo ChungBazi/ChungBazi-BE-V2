@@ -2,6 +2,7 @@ package com.chungbazi.server.domain.notification.application;
 
 import com.chungbazi.server.domain.notification.api.dto.request.NotificationSettingUpdateRequest;
 import com.chungbazi.server.domain.notification.api.dto.response.NotificationSettingResponse;
+import com.chungbazi.server.domain.notification.application.validator.NotificationSettingValidator;
 import com.chungbazi.server.domain.notification.domain.NotificationSetting;
 import com.chungbazi.server.domain.notification.domain.repository.NotificationSettingRepository;
 import com.chungbazi.server.domain.user.domain.User;
@@ -25,6 +26,9 @@ class NotificationSettingServiceTest {
 
     @Mock
     private NotificationSettingRepository notificationSettingRepository;
+
+    @Mock
+    private NotificationSettingValidator notificationSettingValidator;
 
     @InjectMocks
     private NotificationSettingService notificationSettingService;
@@ -72,23 +76,6 @@ class NotificationSettingServiceTest {
         assertThat(response.allNotificationEnabled()).isTrue();
         assertThat(response.policyNotificationEnabled()).isFalse();
         assertThat(response.chungbaziNotificationEnabled()).isTrue();
-    }
-
-    @Test
-    void disablingAllNotificationForcesBothChildSettingsOff() {
-        NotificationSetting setting = NotificationSetting.create(user);
-        given(notificationSettingRepository.findByUser(user)).willReturn(Optional.of(setting));
-        NotificationSettingUpdateRequest request = new NotificationSettingUpdateRequest(
-                false,
-                true,
-                true
-        );
-
-        NotificationSettingResponse response =
-                notificationSettingService.updateNotificationSetting(user, request);
-
-        assertThat(response.allNotificationEnabled()).isFalse();
-        assertThat(response.policyNotificationEnabled()).isFalse();
-        assertThat(response.chungbaziNotificationEnabled()).isFalse();
+        verify(notificationSettingValidator).validate(request);
     }
 }

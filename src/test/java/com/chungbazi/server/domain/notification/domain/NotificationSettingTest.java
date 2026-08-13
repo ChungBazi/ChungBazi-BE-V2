@@ -20,10 +20,10 @@ class NotificationSettingTest {
     }
 
     @Test
-    void disablingAllNotificationDisablesBothChildSettings() {
+    void allNotificationAndBothChildSettingsCanBeDisabled() {
         NotificationSetting setting = NotificationSetting.create(createUser());
 
-        setting.updateNotificationSetting(false, true, true);
+        setting.updateNotificationSetting(false, false, false);
 
         assertThat(setting.isAllNotificationEnabled()).isFalse();
         assertThat(setting.isPolicyNotificationEnabled()).isFalse();
