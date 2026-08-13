@@ -1,8 +1,10 @@
 package com.chungbazi.server.domain.policy.application;
 
 import com.chungbazi.server.domain.policy.api.dto.response.MyPolicyDeadlineResponse;
+import com.chungbazi.server.domain.policy.api.dto.response.CalendarResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse.PolicySummary;
+import com.chungbazi.server.domain.policy.api.dto.response.PolicyMemoResponse;
 import com.chungbazi.server.domain.policy.application.cursor.PolicyCursor;
 import com.chungbazi.server.domain.policy.application.cursor.PolicyCursorParser;
 import com.chungbazi.server.domain.policy.application.mapper.PolicyListResponseAssembler;
@@ -19,6 +21,8 @@ import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
 import com.chungbazi.server.domain.policy.exception.PolicyException;
 import com.chungbazi.server.domain.user.domain.User;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
@@ -352,5 +356,51 @@ public class MyPolicyService {
     private boolean isOpenEndedPolicy(Policy policy) {
         return policy.getRecruitmentType() == RecruitmentType.ALWAYS
                 || policy.getApplyEndDate() == null;
+    }
+
+    public CalendarResponse getMyCalendar(User user, YearMonth targetMonth) {
+        LocalDate startDate = targetMonth.atDay(1);
+        LocalDate endDate = targetMonth.atEndOfMonth();
+
+        List<LocalDate> deadlineDates = policyLikeRepository.findDistinctLikedPolicyDeadlineDates(
+                user.getId(),
+                RecruitmentStatus.CLOSED,
+                startDate,
+                endDate
+        );
+
+        return new CalendarResponse(targetMonth, deadlineDates);
+    }
+
+    public PolicyMemoResponse getPolicyMemo(User user, Long policyId) {
+        PolicyLike policyLike = policyLikeRepository.findByUserIdAndPolicyIdWithPolicy(user.getId(), policyId)
+                .orElseThrow(() -> new PolicyException(PolicyErrorCode.LIKED_POLICY_NOT_FOUND));
+
+        Policy policy = policyLike.getPolicy();
+        PolicySummary policySummary = policyDisplayMapper.toSummary(policy, Set.of(policy.getId()));
+        String memo = policyLike.getMemo() == null ? "" : policyLike.getMemo();
+
+        return new PolicyMemoResponse(
+                policySummary.policyId(),
+                policySummary.category(),
+                policySummary.categoryName(),
+                policySummary.dDay(),
+                policySummary.title(),
+                memo
+        );
+    }
+
+    @Transactional
+    public void updatePolicyMemo(User user, Long policyId, String memo) {
+        int updatedCount = policyLikeRepository.updateMemo(
+                user.getId(),
+                policyId,
+                memo,
+                LocalDateTime.now(SERVICE_ZONE_ID)
+        );
+
+        if (updatedCount == 0) {
+            throw new PolicyException(PolicyErrorCode.LIKED_POLICY_NOT_FOUND);
+        }
     }
 }

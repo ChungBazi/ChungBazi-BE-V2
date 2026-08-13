@@ -4,6 +4,7 @@ import com.chungbazi.server.domain.user.api.docs.UserDocs;
 import com.chungbazi.server.domain.user.api.dto.request.UserNameRequest;
 import com.chungbazi.server.domain.user.api.dto.request.UserOnboardingRequest;
 import com.chungbazi.server.domain.user.api.dto.request.UserPolicyRequest;
+import com.chungbazi.server.domain.user.api.dto.request.UserWithdrawalRequest;
 import com.chungbazi.server.domain.user.api.dto.response.UserInfoResponse;
 import com.chungbazi.server.domain.user.api.dto.response.UserPolicyResponse;
 import com.chungbazi.server.domain.user.application.UserService;
@@ -61,5 +62,14 @@ public class UserController implements UserDocs {
     @GetMapping("/policy-profile")
     public CommonResponse<UserPolicyResponse> getUserPolicy(@CurrentUser User user) {
         return CommonResponse.onSuccess(userService.getUserPolicy(user));
+    }
+
+    @DeleteMapping("/me")
+    public CommonResponse<String> withdrawUser(
+            @CurrentUser User user,
+            @Valid @RequestBody UserWithdrawalRequest request
+    ) {
+        userService.withdrawUser(user, request);
+        return CommonResponse.onSuccess("사용자 탈퇴가 성공적으로 실행되었습니다.");
     }
 }

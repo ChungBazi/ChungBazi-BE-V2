@@ -5,6 +5,7 @@ import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
 import com.chungbazi.server.domain.policy.domain.type.SidoCode;
 import java.time.LocalDateTime;
 import java.util.List;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -128,4 +129,6 @@ public interface RecentViewedPolicyRepository extends JpaRepository<RecentViewed
             @Param("sidoCode") SidoCode sidoCode,
             @Param("sigunguCode") String sigunguCode
     );
+
+    void deleteAllByUserId(Long userId);
 }
