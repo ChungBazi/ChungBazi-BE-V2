@@ -54,6 +54,9 @@ public class Notification extends BaseTimeEntity {
     @Column(name = "policy_id")
     private Long policyId;
 
+    @Column(name = "is_read", nullable = false)
+    private boolean read;
+
     public static Notification create(
             Long userId,
             NotificationCategory category,
@@ -67,6 +70,7 @@ public class Notification extends BaseTimeEntity {
         notification.title = title;
         notification.message = message;
         notification.policyId = policyId;
+        notification.read = false;
         return notification;
     }
 }

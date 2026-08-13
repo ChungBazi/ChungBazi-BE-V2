@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "[Notification]", description = "알림 관련 API")
@@ -49,5 +50,20 @@ public interface NotificationDocs {
             @RequestParam(required = false) @Min(1) Long cursor,
             @Parameter(description = "조회 개수", example = "20")
             @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
+    );
+
+    @Operation(
+            summary = "알림 읽음 처리 API",
+            description = "현재 사용자의 알림 한 건을 읽음 상태로 변경합니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "알림 읽음 처리 성공"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+            @ApiResponse(responseCode = "404", description = "알림을 찾을 수 없음")
+    })
+    CommonResponse<String> markNotificationAsRead(
+            @CurrentUser User user,
+            @Parameter(description = "읽음 처리할 알림 ID", example = "43", required = true)
+            @PathVariable Long notificationId
     );
 }

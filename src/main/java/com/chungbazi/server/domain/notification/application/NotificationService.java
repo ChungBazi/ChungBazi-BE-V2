@@ -4,6 +4,8 @@ import com.chungbazi.server.domain.notification.api.dto.response.NotificationLis
 import com.chungbazi.server.domain.notification.domain.Notification;
 import com.chungbazi.server.domain.notification.domain.repository.NotificationRepository;
 import com.chungbazi.server.domain.notification.domain.type.NotificationCategory;
+import com.chungbazi.server.domain.notification.exception.NotificationErrorCode;
+import com.chungbazi.server.domain.notification.exception.NotificationException;
 import com.chungbazi.server.domain.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +23,7 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
 
+    @Transactional
     public NotificationListResponse getNotifications(
             User user,
             NotificationCategory category,
@@ -44,11 +47,35 @@ public class NotificationService {
                 ? pagedNotifications.getLast().getId()
                 : null;
 
+        markFetchedNotificationsAsRead(user.getId(), pagedNotifications);
+
         return NotificationListResponse.of(
                 pagedNotifications,
                 nextCursor,
                 hasNext,
                 LocalDateTime.now()
         );
+    }
+
+    @Transactional
+    public void markNotificationAsRead(User user, Long notificationId) {
+        int updatedCount = notificationRepository.markAsRead(user.getId(), notificationId);
+        if (updatedCount == 0) {
+            throw new NotificationException(NotificationErrorCode.NOTIFICATION_NOT_FOUND);
+        }
+    }
+
+    private void markFetchedNotificationsAsRead(
+            Long userId,
+            List<Notification> notifications
+    ) {
+        List<Long> unreadNotificationIds = notifications.stream()
+                .filter(notification -> !notification.isRead())
+                .map(Notification::getId)
+                .toList();
+
+        if (!unreadNotificationIds.isEmpty()) {
+            notificationRepository.markAllAsRead(userId, unreadNotificationIds);
+        }
     }
 }

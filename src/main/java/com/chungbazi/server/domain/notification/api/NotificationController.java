@@ -12,6 +12,8 @@ import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,5 +37,15 @@ public class NotificationController implements NotificationDocs {
         return CommonResponse.onSuccess(
                 notificationService.getNotifications(user, category, cursor, size)
         );
+    }
+
+    @Override
+    @PatchMapping("/{notificationId}/read")
+    public CommonResponse<String> markNotificationAsRead(
+            @CurrentUser User user,
+            @PathVariable Long notificationId
+    ) {
+        notificationService.markNotificationAsRead(user, notificationId);
+        return CommonResponse.onSuccess("알림 읽음 처리가 완료되었습니다.");
     }
 }
