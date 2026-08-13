@@ -10,6 +10,8 @@ import java.util.Collection;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long>, NotificationRepositoryCustom {
 
+    boolean existsByUserIdAndReadFalse(Long userId);
+
     @Modifying(clearAutomatically = true)
     @Query("""
             UPDATE Notification notification

@@ -23,6 +23,10 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
 
+    public boolean hasUnreadNotification(User user) {
+        return notificationRepository.existsByUserIdAndReadFalse(user.getId());
+    }
+
     @Transactional
     public NotificationListResponse getNotifications(
             User user,

@@ -32,6 +32,7 @@ public interface NotificationDocs {
 
                     ### ResponseBody
                     - `notifications`: 알림 목록
+                    - `notifications[].read`: 조회 직전 알림 읽음 여부. 조회된 알림은 응답 후 읽음 처리
                     - `notifications[].elapsedTime`: `n분 전`, `n시간 전`, `n일 전` 형식의 경과 시간
                     - `nextCursor`: 다음 페이지 조회에 사용할 마지막 알림 ID
                     - `hasNext`: 다음 페이지 존재 여부

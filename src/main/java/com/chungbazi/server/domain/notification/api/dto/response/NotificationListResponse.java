@@ -51,6 +51,9 @@ public record NotificationListResponse(
             @Schema(description = "연결된 정책 ID. 단일 정책과 연결되지 않은 알림이면 null", example = "15", nullable = true)
             Long policyId,
 
+            @Schema(description = "조회 직전 알림 읽음 여부", example = "false")
+            boolean read,
+
             @Schema(description = "알림이 생성된 후 지난 시간", example = "17분 전")
             String elapsedTime
     ) {
@@ -61,6 +64,7 @@ public record NotificationListResponse(
                     notification.getTitle(),
                     notification.getMessage(),
                     notification.getPolicyId(),
+                    notification.isRead(),
                     NotificationElapsedTimeFormatter.format(notification.getCreatedAt(), now)
             );
         }

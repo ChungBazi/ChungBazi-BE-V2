@@ -6,6 +6,9 @@ import java.util.List;
 
 @Schema(description = "홈 화면 정책 섹션 응답")
 public record HomePolicyResponse(
+        @Schema(description = "읽지 않은 알림 존재 여부", example = "true")
+        boolean hasUnreadNotification,
+
         @Schema(description = "맞춤 정책 목록")
         List<PolicySummary> personalizedPolicies,
 

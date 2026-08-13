@@ -27,6 +27,10 @@ import lombok.NoArgsConstructor;
                 @Index(
                         name = "idx_notification_user_category_id",
                         columnList = "user_id,notification_category,notification_id"
+                ),
+                @Index(
+                        name = "idx_notification_user_read",
+                        columnList = "user_id,is_read"
                 )
         }
 )
