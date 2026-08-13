@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -368,4 +369,6 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             @Param("policyId") Long policyId,
             Pageable pageable
     );
+
+    void deleteAllByUserId(Long userId);
 }
