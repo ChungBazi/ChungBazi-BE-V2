@@ -5,6 +5,8 @@ import com.chungbazi.server.domain.notification.api.dto.response.NotificationSet
 import com.chungbazi.server.domain.notification.application.validator.NotificationSettingValidator;
 import com.chungbazi.server.domain.notification.domain.NotificationSetting;
 import com.chungbazi.server.domain.notification.domain.repository.NotificationSettingRepository;
+import com.chungbazi.server.domain.notification.exception.NotificationErrorCode;
+import com.chungbazi.server.domain.notification.exception.NotificationException;
 import com.chungbazi.server.domain.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,7 +22,7 @@ public class NotificationSettingService {
 
     @Transactional
     public NotificationSettingResponse getNotificationSetting(User user) {
-        return NotificationSettingResponse.from(getOrCreateSetting(user));
+        return NotificationSettingResponse.from(getSetting(user));
     }
 
     @Transactional
@@ -30,7 +32,7 @@ public class NotificationSettingService {
     ) {
         notificationSettingValidator.validate(request);
 
-        NotificationSetting setting = getOrCreateSetting(user);
+        NotificationSetting setting = getSetting(user);
         setting.updateNotificationSetting(
                 request.allNotificationEnabled(),
                 request.policyNotificationEnabled(),
@@ -40,8 +42,10 @@ public class NotificationSettingService {
         return NotificationSettingResponse.from(setting);
     }
 
-    private NotificationSetting getOrCreateSetting(User user) {
+    private NotificationSetting getSetting(User user) {
         return notificationSettingRepository.findByUser(user)
-                .orElseGet(() -> notificationSettingRepository.save(NotificationSetting.create(user)));
+                .orElseThrow(() -> new NotificationException(
+                        NotificationErrorCode.NOTIFICATION_SETTING_NOT_FOUND
+                ));
     }
 }

@@ -45,7 +45,7 @@ public interface NotificationSettingDocs {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "알림 설정 변경 성공"),
-            @ApiResponse(responseCode = "400", description = "필수 설정값 누락"),
+            @ApiResponse(responseCode = "400", description = "필수 설정값 누락 또는 유효하지 않은 알림 설정 조합"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
     })
     CommonResponse<NotificationSettingResponse> updateNotificationSetting(
