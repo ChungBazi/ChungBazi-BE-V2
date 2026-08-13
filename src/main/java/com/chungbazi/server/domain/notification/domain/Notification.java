@@ -21,12 +21,12 @@ import lombok.NoArgsConstructor;
         name = "notification",
         indexes = {
                 @Index(
-                        name = "idx_notification_user_created",
-                        columnList = "user_id,created_at"
+                        name = "idx_notification_user_id",
+                        columnList = "user_id,notification_id"
                 ),
                 @Index(
-                        name = "idx_notification_user_category_created",
-                        columnList = "user_id,notification_category,created_at"
+                        name = "idx_notification_user_category_id",
+                        columnList = "user_id,notification_category,notification_id"
                 )
         }
 )
