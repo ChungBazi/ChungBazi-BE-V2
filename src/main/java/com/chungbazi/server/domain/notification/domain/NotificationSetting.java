@@ -30,6 +30,9 @@ public class NotificationSetting extends BaseTimeEntity {
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
+    @Column(name = "all_notification", nullable = false)
+    private boolean allNotificationEnabled;
+
     @Column(name = "policy_notification", nullable = false)
     private boolean policyNotificationEnabled;
 
@@ -39,25 +42,19 @@ public class NotificationSetting extends BaseTimeEntity {
     public static NotificationSetting create(User user) {
         NotificationSetting setting = new NotificationSetting();
         setting.user = user;
+        setting.allNotificationEnabled = true;
         setting.policyNotificationEnabled = true;
         setting.chungbaziNotificationEnabled = true;
         return setting;
     }
 
-    public boolean isAllNotificationEnabled() {
-        return policyNotificationEnabled && chungbaziNotificationEnabled;
-    }
-
-    public void updateAllNotification(boolean enabled) {
-        this.policyNotificationEnabled = enabled;
-        this.chungbaziNotificationEnabled = enabled;
-    }
-
-    public void updatePolicyNotification(boolean enabled) {
-        this.policyNotificationEnabled = enabled;
-    }
-
-    public void updateChungbaziNotification(boolean enabled) {
-        this.chungbaziNotificationEnabled = enabled;
+    public void updateNotificationSetting(
+            boolean allNotificationEnabled,
+            boolean policyNotificationEnabled,
+            boolean chungbaziNotificationEnabled
+    ) {
+        this.allNotificationEnabled = allNotificationEnabled;
+        this.policyNotificationEnabled = allNotificationEnabled && policyNotificationEnabled;
+        this.chungbaziNotificationEnabled = allNotificationEnabled && chungbaziNotificationEnabled;
     }
 }
