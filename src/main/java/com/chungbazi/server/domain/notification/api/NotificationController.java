@@ -11,6 +11,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -47,5 +48,22 @@ public class NotificationController implements NotificationDocs {
     ) {
         notificationService.markNotificationAsRead(user, notificationId);
         return CommonResponse.onSuccess("알림 읽음 처리가 완료되었습니다.");
+    }
+
+    @Override
+    @DeleteMapping("/{notificationId}")
+    public CommonResponse<String> deleteNotification(
+            @CurrentUser User user,
+            @PathVariable Long notificationId
+    ) {
+        notificationService.deleteNotification(user, notificationId);
+        return CommonResponse.onSuccess("알림 삭제가 완료되었습니다.");
+    }
+
+    @Override
+    @DeleteMapping
+    public CommonResponse<String> deleteAllNotifications(@CurrentUser User user) {
+        notificationService.deleteAllNotifications(user);
+        return CommonResponse.onSuccess("알림 전체 삭제가 완료되었습니다.");
     }
 }

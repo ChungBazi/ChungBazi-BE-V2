@@ -36,4 +36,22 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
             @Param("userId") Long userId,
             @Param("notificationId") Long notificationId
     );
+
+    @Modifying(clearAutomatically = true)
+    @Query("""
+            DELETE FROM Notification notification
+            WHERE notification.userId = :userId
+              AND notification.id = :notificationId
+            """)
+    int deleteByUserIdAndNotificationId(
+            @Param("userId") Long userId,
+            @Param("notificationId") Long notificationId
+    );
+
+    @Modifying(clearAutomatically = true)
+    @Query("""
+            DELETE FROM Notification notification
+            WHERE notification.userId = :userId
+            """)
+    int deleteAllByUserId(@Param("userId") Long userId);
 }

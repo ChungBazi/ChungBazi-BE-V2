@@ -67,4 +67,31 @@ public interface NotificationDocs {
             @Parameter(description = "읽음 처리할 알림 ID", example = "43", required = true)
             @PathVariable Long notificationId
     );
+
+    @Operation(
+            summary = "알림 단건 삭제 API",
+            description = "현재 사용자의 알림 한 건을 삭제합니다. 삭제된 알림은 복구할 수 없습니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "알림 삭제 성공"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+            @ApiResponse(responseCode = "404", description = "알림을 찾을 수 없음")
+    })
+    CommonResponse<String> deleteNotification(
+            @CurrentUser User user,
+            @Parameter(description = "삭제할 알림 ID", example = "43", required = true)
+            @PathVariable Long notificationId
+    );
+
+    @Operation(
+            summary = "알림 전체 삭제 API",
+            description = "현재 사용자의 모든 알림을 삭제합니다. 삭제된 알림은 복구할 수 없습니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "알림 전체 삭제 성공"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+    })
+    CommonResponse<String> deleteAllNotifications(
+            @CurrentUser User user
+    );
 }
