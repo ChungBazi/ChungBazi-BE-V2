@@ -69,6 +69,17 @@ public class NotificationService {
         }
     }
 
+    @Transactional
+    public void deleteNotification(User user, Long notificationId) {
+        int deletedCount = notificationRepository.deleteByUserIdAndNotificationId(
+                user.getId(),
+                notificationId
+        );
+        if (deletedCount == 0) {
+            throw new NotificationException(NotificationErrorCode.NOTIFICATION_NOT_FOUND);
+        }
+    }
+
     private void markFetchedNotificationsAsRead(
             Long userId,
             List<Notification> notifications
