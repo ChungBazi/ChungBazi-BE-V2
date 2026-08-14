@@ -6,10 +6,7 @@ import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.repository.PolicyLikeRepository;
 import com.chungbazi.server.domain.policy.domain.repository.RecentViewedPolicyRepository;
 import com.chungbazi.server.domain.policy.domain.repository.policyRepository.PolicyRepository;
-import com.chungbazi.server.domain.policy.domain.type.IncomeConditionType;
-import com.chungbazi.server.domain.policy.domain.type.PolicySubCategoryType;
-import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
-import com.chungbazi.server.domain.policy.domain.type.RecruitmentType;
+import com.chungbazi.server.domain.policy.domain.type.*;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.domain.user.domain.UserInterest;
 import com.chungbazi.server.domain.user.infrastructure.UserInterestRepository;
@@ -28,8 +25,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PersonalizedPolicyServiceTest {
@@ -181,6 +177,112 @@ public class PersonalizedPolicyServiceTest {
         assertThat(result)
                 .extracting(Policy::getId)
                 .containsExactly(1L, 2L, 3L, 5L);
+    }
+
+    @Test
+    @DisplayName("사용자가 선택하지 않은 카테고리를 조회하면 빈 목록을 반환한다")
+    void returnsEmptyWhenCategoryIsNotInterested() {
+        User user = mock(User.class);
+
+        UserInterest interest = UserInterest.createUserInterest(
+                user,
+                PolicySubCategoryType.EMPLOYMENT_PREPARATION
+        );
+
+        when(userInterestRepository.findAllByUser(user))
+                .thenReturn(List.of(interest));
+
+        List<Policy> result = service.getPersonalizedPolicyEntities(
+                user,
+                PolicyCategoryType.HOUSING,
+                5
+        );
+
+        assertThat(result).isEmpty();
+
+        // 관심 카테고리가 아니므로 정책 후보 조회도 실행하지 않는다.
+        verifyNoInteractions(policyRepository);
+    }
+
+    @Test
+    @DisplayName("추천 결과는 요청한 개수를 초과하지 않는다")
+    void limitsRecommendationResultSize() {
+        // given
+        User user = mock(User.class);
+        when(user.getId()).thenReturn(1L);
+
+        Policy policy1 = policy(
+                1L,
+                PolicySubCategoryType.EMPLOYMENT_PREPARATION,
+                LocalDateTime.of(2026, 8, 5, 0, 0)
+        );
+        Policy policy2 = policy(
+                2L,
+                PolicySubCategoryType.WORK_LIFE,
+                LocalDateTime.of(2026, 8, 4, 0, 0)
+        );
+        Policy policy3 = policy(
+                3L,
+                PolicySubCategoryType.STARTUP_BUSINESS,
+                LocalDateTime.of(2026, 8, 3, 0, 0)
+        );
+        Policy policy4 = policy(
+                4L,
+                PolicySubCategoryType.HOUSING_COST_SPACE,
+                LocalDateTime.of(2026, 8, 2, 0, 0)
+        );
+        Policy policy5 = policy(
+                5L,
+                PolicySubCategoryType.EDUCATION_COMPETENCY,
+                LocalDateTime.of(2026, 8, 1, 0, 0)
+        );
+
+        when(policyRepository.findAllLatestPolicies(
+                eq(RecruitmentStatus.CLOSED),
+                isNull(),
+                isNull(),
+                any(Pageable.class)
+        )).thenReturn(List.of(
+                policy1,
+                policy2,
+                policy3,
+                policy4,
+                policy5
+        ));
+
+        when(userInterestRepository.findAllByUser(user))
+                .thenReturn(List.of());
+
+        when(policyLikeRepository.findRecentPolicyLikesWithPolicy(
+                eq(1L),
+                any(Pageable.class)
+        )).thenReturn(List.of());
+
+        when(recentViewedPolicyRepository.findRecentViewedPolicies(
+                eq(1L),
+                eq(RecruitmentStatus.CLOSED),
+                isNull(),
+                isNull(),
+                any(Pageable.class)
+        )).thenReturn(List.of());
+
+        when(scorer.isEligible(eq(user), any(Policy.class)))
+                .thenReturn(true);
+
+        when(scorer.score(
+                eq(user),
+                any(PolicyRecommendationContext.class),
+                any(Policy.class)
+        )).thenReturn(10);
+
+        // when
+        List<Policy> result =
+                service.getPersonalizedPolicyEntities(user, 3);
+
+        // then
+        assertThat(result)
+                .extracting(Policy::getId)
+                .containsExactly(1L, 2L, 3L);
     }
 
     private void prepareRecommendationData(

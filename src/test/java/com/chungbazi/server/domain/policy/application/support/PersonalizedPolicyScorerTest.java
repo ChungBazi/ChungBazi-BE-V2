@@ -84,4 +84,24 @@ public class PersonalizedPolicyScorerTest {
 
         assertThat(result).isFalse();
     }
+
+    @Test
+    @DisplayName("사용자 나이가 정책의 최소·최대 연령과 같으면 추천 대상에 포함한다")
+    void includesPolicyAtAgeBoundary() {
+        User user = mock(User.class);
+        Policy policy = mock(Policy.class);
+
+        when(policy.getMinAge()).thenReturn(19);
+        when(policy.getMaxAge()).thenReturn(34);
+
+        // 최소 연령 경계
+        when(user.getAge(any(LocalDate.class))).thenReturn(19);
+
+        assertThat(scorer.isEligible(user, policy)).isTrue();
+
+        // 최대 연령 경계
+        when(user.getAge(any(LocalDate.class))).thenReturn(34);
+
+        assertThat(scorer.isEligible(user, policy)).isTrue();
+    }
 }
