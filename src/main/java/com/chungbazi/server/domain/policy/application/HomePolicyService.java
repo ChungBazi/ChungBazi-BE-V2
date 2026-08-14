@@ -1,6 +1,7 @@
 package com.chungbazi.server.domain.policy.application;
 
 import com.chungbazi.server.domain.policy.api.dto.response.HomePolicyResponse;
+import com.chungbazi.server.domain.notification.application.NotificationService;
 import com.chungbazi.server.domain.policy.api.dto.response.PersonalizedPolicyResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyListResponse;
 import com.chungbazi.server.domain.policy.application.cursor.PolicyCursor;
@@ -44,6 +45,7 @@ public class HomePolicyService {
     private final PolicyListResponseAssembler policyListResponseAssembler;
     private final HomePolicyResponseAssembler homePolicyResponseAssembler;
     private final PersonalizedPolicyService personalizedPolicyService;
+    private final NotificationService notificationService;
 
     public HomePolicyResponse getHomePolicies(User user) {
         LocalDate today = LocalDate.now(SERVICE_ZONE_ID);
@@ -78,6 +80,7 @@ public class HomePolicyService {
 
         return homePolicyResponseAssembler.assemble(
                 user,
+                notificationService.hasUnreadNotification(user),
                 personalizedPolicies,
                 recentViewedPolicies,
                 popularPolicies,

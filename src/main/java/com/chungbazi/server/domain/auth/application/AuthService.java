@@ -5,6 +5,8 @@ import com.chungbazi.server.domain.auth.api.dto.request.AuthReissueRequest;
 import com.chungbazi.server.domain.auth.api.dto.request.KakaoLoginRequest;
 import com.chungbazi.server.domain.auth.api.dto.response.AuthReissueResponse;
 import com.chungbazi.server.domain.auth.api.dto.response.AuthTokenResponse;
+import com.chungbazi.server.domain.notification.domain.NotificationSetting;
+import com.chungbazi.server.domain.notification.domain.repository.NotificationSettingRepository;
 import com.chungbazi.server.domain.auth.domain.RefreshToken;
 import com.chungbazi.server.domain.auth.exception.AuthException;
 import com.chungbazi.server.domain.auth.exception.code.AuthErrorCode;
@@ -33,6 +35,7 @@ public class AuthService {
 
     private final KakaoClient kakaoClient;
     private final UserRepository userRepository;
+    private final NotificationSettingRepository notificationSettingRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtProvider jwtProvider;
     private final AppleTokenVerifier appleTokenVerifier;
@@ -93,14 +96,12 @@ public class AuthService {
             String fcmToken
     ) {
         User user = userRepository.findBySocialTypeAndProviderId(socialType, providerId)
-                .orElseGet(() -> userRepository.save(
-                        User.create(
-                                providerId,
-                                socialType,
-                                email,
-                                name,
-                                fcmToken
-                        )
+                .orElseGet(() -> createUserWithNotificationSetting(
+                        providerId,
+                        socialType,
+                        email,
+                        name,
+                        fcmToken
                 ));
         user.updateFcmToken(fcmToken);
 
@@ -109,17 +110,29 @@ public class AuthService {
 
     private User loginOrSignUpWithApple(AppleTokenInfo tokenInfo, String name, String fcmToken) {
         User user = userRepository.findBySocialTypeAndProviderId(SocialType.APPLE, tokenInfo.providerId())
-                .orElseGet(() -> userRepository.save(
-                        User.create(
-                                tokenInfo.providerId(),
-                                SocialType.APPLE,
-                                resolveAppleEmail(tokenInfo.email()),
-                                resolveAppleName(name),
-                                fcmToken
-                        )
+                .orElseGet(() -> createUserWithNotificationSetting(
+                        tokenInfo.providerId(),
+                        SocialType.APPLE,
+                        resolveAppleEmail(tokenInfo.email()),
+                        resolveAppleName(name),
+                        fcmToken
                 ));
         user.updateFcmToken(fcmToken);
 
+        return user;
+    }
+
+    private User createUserWithNotificationSetting(
+            String providerId,
+            SocialType socialType,
+            String email,
+            String name,
+            String fcmToken
+    ) {
+        User user = userRepository.save(
+                User.create(providerId, socialType, email, name, fcmToken)
+        );
+        notificationSettingRepository.save(NotificationSetting.create(user));
         return user;
     }
 

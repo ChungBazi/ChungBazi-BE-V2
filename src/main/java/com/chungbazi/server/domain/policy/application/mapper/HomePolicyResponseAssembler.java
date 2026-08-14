@@ -20,6 +20,7 @@ public class HomePolicyResponseAssembler {
 
     public HomePolicyResponse assemble(
             User user,
+            boolean hasUnreadNotification,
             List<Policy> personalizedPolicies,
             List<Policy> recentViewedPolicies,
             List<Policy> popularPolicies,
@@ -36,6 +37,7 @@ public class HomePolicyResponseAssembler {
         );
 
         return new HomePolicyResponse(
+                hasUnreadNotification,
                 policyDisplayMapper.toSummaries(personalizedPolicies, likedPolicyIds),
                 policyDisplayMapper.toSummaries(recentViewedPolicies, likedPolicyIds),
                 policyDisplayMapper.toSummaries(popularPolicies, likedPolicyIds),
