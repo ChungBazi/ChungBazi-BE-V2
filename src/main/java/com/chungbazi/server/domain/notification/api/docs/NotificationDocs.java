@@ -82,4 +82,16 @@ public interface NotificationDocs {
             @Parameter(description = "삭제할 알림 ID", example = "43", required = true)
             @PathVariable Long notificationId
     );
+
+    @Operation(
+            summary = "알림 전체 삭제 API",
+            description = "현재 사용자의 모든 알림을 삭제합니다. 삭제된 알림은 복구할 수 없습니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "알림 전체 삭제 성공"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+    })
+    CommonResponse<String> deleteAllNotifications(
+            @CurrentUser User user
+    );
 }

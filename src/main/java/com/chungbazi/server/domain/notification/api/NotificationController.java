@@ -59,4 +59,11 @@ public class NotificationController implements NotificationDocs {
         notificationService.deleteNotification(user, notificationId);
         return CommonResponse.onSuccess("알림 삭제가 완료되었습니다.");
     }
+
+    @Override
+    @DeleteMapping
+    public CommonResponse<String> deleteAllNotifications(@CurrentUser User user) {
+        notificationService.deleteAllNotifications(user);
+        return CommonResponse.onSuccess("알림 전체 삭제가 완료되었습니다.");
+    }
 }

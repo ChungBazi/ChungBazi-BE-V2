@@ -80,6 +80,11 @@ public class NotificationService {
         }
     }
 
+    @Transactional
+    public void deleteAllNotifications(User user) {
+        notificationRepository.deleteAllByUserId(user.getId());
+    }
+
     private void markFetchedNotificationsAsRead(
             Long userId,
             List<Notification> notifications
