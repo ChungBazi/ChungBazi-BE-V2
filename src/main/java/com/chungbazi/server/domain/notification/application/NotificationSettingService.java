@@ -20,7 +20,6 @@ public class NotificationSettingService {
     private final NotificationSettingRepository notificationSettingRepository;
     private final NotificationSettingValidator notificationSettingValidator;
 
-    @Transactional
     public NotificationSettingResponse getNotificationSetting(User user) {
         return NotificationSettingResponse.from(getSetting(user));
     }
