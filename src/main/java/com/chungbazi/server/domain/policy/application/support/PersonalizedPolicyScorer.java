@@ -3,6 +3,7 @@ package com.chungbazi.server.domain.policy.application.support;
 import com.chungbazi.server.domain.policy.application.dto.PolicyRecommendationContext;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.user.domain.User;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -10,6 +11,7 @@ import java.time.ZoneId;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class PersonalizedPolicyScorer {
 
     private static final ZoneId SERVICE_ZONE_ID = ZoneId.of("Asia/Seoul");
@@ -19,9 +21,12 @@ public class PersonalizedPolicyScorer {
     private static final int LIKED_SUB_CATEGORY_SCORE = 30;
     private static final int EDUCATION_SCORE = 8;
     private static final int EMPLOYMENT_SCORE = 10;
+    private static final int INCOME_MATCH_SCORE = 10;
     private static final int RECENT_VIEWED_SUB_CATEGORY_SCORE = 10;
     // 최근 본 정책 조회 섹션과 겹치지 않게 페널티 부여
     private static final int RECENT_VIEWED_POLICY_PENALTY = -15;
+
+    private final PolicyIncomeMatcher incomeMatcher;
 
     private final List<RecommendationRule> rules = List.of(
             RecommendationRule.of(
@@ -43,7 +48,6 @@ public class PersonalizedPolicyScorer {
                     EMPLOYMENT_SCORE,
                     input -> matchesEmployment(input.user(), input.policy())
             ),
-            // TODO: 정책 소득 조건 정규화 기준이 확정되면 소득 매칭 점수 규칙 추가
             RecommendationRule.fixed(
                     "RECENT_VIEWED_SUB_CATEGORY",
                     RECENT_VIEWED_SUB_CATEGORY_SCORE,
@@ -61,11 +65,19 @@ public class PersonalizedPolicyScorer {
     }
 
     public int score(User user, PolicyRecommendationContext context, Policy policy) {
-        RecommendationInput input = new RecommendationInput(user, context, policy);
+        RecommendationInput input = RecommendationInput.of(user, context, policy);
 
-        return rules.stream()
+        int recommendationScore = rules.stream()
                 .mapToInt(rule -> rule.evaluate(input))
                 .sum();
+
+        return recommendationScore + incomeScore(user, policy);
+    }
+
+    private int incomeScore(User user, Policy policy) {
+        return incomeMatcher.match(user, policy) == IncomeMatchResult.MATCH
+                ? INCOME_MATCH_SCORE
+                : 0;
     }
 
     private int interestScore(RecommendationInput input) {
