@@ -5,6 +5,7 @@ import com.chungbazi.server.domain.user.api.dto.request.UserOnboardingRequest;
 import com.chungbazi.server.domain.user.api.dto.request.UserPolicyRequest;
 import com.chungbazi.server.domain.user.api.dto.request.UserWithdrawalRequest;
 import com.chungbazi.server.domain.user.api.dto.response.UserInfoResponse;
+import com.chungbazi.server.domain.user.api.dto.response.UserOnboardingResponse;
 import com.chungbazi.server.domain.user.api.dto.response.UserPolicyResponse;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.global.common.CommonResponse;
@@ -30,6 +31,10 @@ public interface UserDocs {
                     - `employmentCode`: 현재 취업 상태 코드
                     - `incomeLevel`: 소득 구간
                     - `interestCategories`: 관심 정책 분야 목록. 3개 이상 선택 필수
+
+                    ### ResponseBody
+                    ---
+                    - `nickname`: 사용자 닉네임
                     """
     )
     @ApiResponses(value = {
@@ -38,7 +43,7 @@ public interface UserDocs {
                     description = "온보딩이 성공적으로 완료됐습니다."
             )
     })
-    CommonResponse<String> saveUserOnboarding(
+    CommonResponse<UserOnboardingResponse> saveUserOnboarding(
             @CurrentUser User user,
             @Valid @RequestBody UserOnboardingRequest request
     );
