@@ -1,0 +1,123 @@
+package com.chungbazi.server.domain.notification.application;
+
+import com.chungbazi.server.domain.notification.application.dto.DeadlineReminderCreationResult;
+import com.chungbazi.server.domain.notification.application.dto.NotificationKey;
+import com.chungbazi.server.domain.notification.application.dto.PolicyReminderTargets;
+import com.chungbazi.server.domain.notification.application.mapper.NotificationReminderMapper;
+import com.chungbazi.server.domain.notification.domain.Notification;
+import com.chungbazi.server.domain.notification.domain.repository.NotificationRepository;
+import com.chungbazi.server.domain.notification.domain.type.NotificationType;
+import com.chungbazi.server.domain.policy.domain.entity.Policy;
+import com.chungbazi.server.domain.policy.domain.entity.PolicyLike;
+import com.chungbazi.server.domain.policy.domain.repository.PolicyLikeRepository;
+import com.chungbazi.server.domain.policy.domain.repository.policyRepository.PolicyRepository;
+import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class NotificationReminderService {
+
+    private final PolicyRepository policyRepository;
+    private final PolicyLikeRepository policyLikeRepository;
+    private final NotificationRepository notificationRepository;
+    private final NotificationReminderMapper notificationReminderMapper;
+
+    @Transactional
+    public DeadlineReminderCreationResult createDeadlineReminderNotifications(LocalDate today) {
+        PolicyReminderTargets targets = findReminderTargetPolicies(today);
+        Map<Long, NotificationType> reminderTypeByPolicyId =
+                notificationReminderMapper.toReminderTypeByPolicyId(targets);
+
+        if (reminderTypeByPolicyId.isEmpty()) {
+            return creationResult(targets, 0);
+        }
+
+        List<PolicyLike> recipients = policyLikeRepository.findDeadlineReminderRecipients(
+                reminderTypeByPolicyId.keySet()
+        );
+
+        if (recipients.isEmpty()) {
+            return creationResult(targets, 0);
+        }
+
+        Set<NotificationKey> existingNotificationKeys = findExistingNotificationKeys(
+                recipients,
+                reminderTypeByPolicyId
+        );
+
+        List<Notification> notifications = recipients.stream()
+                .map(policyLike -> notificationReminderMapper.toDeadlineNotification(
+                        policyLike,
+                        reminderTypeByPolicyId.get(policyLike.getPolicy().getId())
+                ))
+                .filter(notification -> !existingNotificationKeys.contains(NotificationKey.from(notification)))
+                .toList();
+
+        notificationRepository.saveAll(notifications);
+        return creationResult(targets, notifications.size());
+    }
+
+    public PolicyReminderTargets findReminderTargetPolicies(LocalDate today) {
+        LocalDate deadlineInSevenDays = today.plusDays(7);
+        LocalDate deadlineInThreeDays = today.plusDays(3);
+
+        List<Policy> reminderTargetPolicies =
+                policyRepository.findAllByApplyEndDateInAndRecruitmentStatusNot(
+                        List.of(deadlineInSevenDays, deadlineInThreeDays),
+                        RecruitmentStatus.CLOSED
+                );
+
+        List<Policy> deadlineInSevenDaysPolicies = reminderTargetPolicies.stream()
+                .filter(policy -> deadlineInSevenDays.equals(policy.getApplyEndDate()))
+                .toList();
+        List<Policy> deadlineInThreeDaysPolicies = reminderTargetPolicies.stream()
+                .filter(policy -> deadlineInThreeDays.equals(policy.getApplyEndDate()))
+                .toList();
+
+        return PolicyReminderTargets.of(
+                deadlineInSevenDaysPolicies,
+                deadlineInThreeDaysPolicies
+        );
+    }
+
+    private Set<NotificationKey> findExistingNotificationKeys(
+            List<PolicyLike> recipients,
+            Map<Long, NotificationType> reminderTypeByPolicyId
+    ) {
+        Set<Long> userIds = new HashSet<>();
+        Set<Long> policyIds = new HashSet<>();
+        recipients.forEach(policyLike -> {
+            userIds.add(policyLike.getUserId());
+            policyIds.add(policyLike.getPolicy().getId());
+        });
+
+        return notificationRepository.findAllByUserIdInAndPolicyIdInAndTypeIn(
+                        userIds,
+                        policyIds,
+                        new HashSet<>(reminderTypeByPolicyId.values())
+                ).stream()
+                .map(NotificationKey::from)
+                .collect(java.util.stream.Collectors.toSet());
+    }
+
+    private DeadlineReminderCreationResult creationResult(
+            PolicyReminderTargets targets,
+            int createdNotificationCount
+    ) {
+        return DeadlineReminderCreationResult.of(
+                targets.deadlineInSevenDaysPolicies().size(),
+                targets.deadlineInThreeDaysPolicies().size(),
+                createdNotificationCount
+        );
+    }
+
+}
