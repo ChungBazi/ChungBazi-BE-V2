@@ -3,12 +3,12 @@ package com.chungbazi.server.domain.notification.application.event;
 import com.chungbazi.server.domain.notification.application.dto.NotificationPushMessage;
 import java.util.List;
 
-public record DeadlineReminderNotificationsCreatedEvent(
+public record PolicyReminderNotificationsCreatedEvent(
         List<NotificationPushMessage> messages
 ) {
-    public static DeadlineReminderNotificationsCreatedEvent of(
+    public static PolicyReminderNotificationsCreatedEvent of(
             List<NotificationPushMessage> messages
     ) {
-        return new DeadlineReminderNotificationsCreatedEvent(List.copyOf(messages));
+        return new PolicyReminderNotificationsCreatedEvent(List.copyOf(messages));
     }
 }

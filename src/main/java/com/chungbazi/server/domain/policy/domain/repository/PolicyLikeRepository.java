@@ -57,6 +57,22 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
     @Query("""
             SELECT policyLike
             FROM PolicyLike policyLike
+            JOIN FETCH policyLike.policy policy
+            JOIN User user ON user.id = policyLike.userId
+            WHERE policyLike.createdAt >= :likedFrom
+              AND policyLike.createdAt < :likedUntil
+              AND policy.recruitmentStatus <> :closedStatus
+              AND user.deleted = false
+            """)
+    List<PolicyLike> findPreparationReminderTargets(
+            @Param("likedFrom") LocalDateTime likedFrom,
+            @Param("likedUntil") LocalDateTime likedUntil,
+            @Param("closedStatus") RecruitmentStatus closedStatus
+    );
+
+    @Query("""
+            SELECT policyLike
+            FROM PolicyLike policyLike
             JOIN FETCH policyLike.policy
             WHERE policyLike.userId = :userId
               AND policyLike.policy.id = :policyId

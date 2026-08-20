@@ -1,7 +1,7 @@
 package com.chungbazi.server.domain.notification.infrastructure.fcm;
 
 import com.chungbazi.server.domain.notification.application.dto.NotificationPushMessage;
-import com.chungbazi.server.domain.notification.application.event.DeadlineReminderNotificationsCreatedEvent;
+import com.chungbazi.server.domain.notification.application.event.PolicyReminderNotificationsCreatedEvent;
 import com.chungbazi.server.domain.notification.domain.NotificationSetting;
 import com.chungbazi.server.domain.notification.domain.repository.NotificationSettingRepository;
 import com.chungbazi.server.domain.notification.infrastructure.fcm.dto.FirebasePushResult;
@@ -26,7 +26,7 @@ public class FirebaseNotificationService {
     private final UserRepository userRepository;
     private final FirebaseNotificationSender firebaseNotificationSender;
 
-    public void sendDeadlineReminders(DeadlineReminderNotificationsCreatedEvent event) {
+    public void sendPolicyReminders(PolicyReminderNotificationsCreatedEvent event) {
         Set<Long> userIds = event.messages().stream()
                 .map(NotificationPushMessage::userId)
                 .collect(Collectors.toSet());

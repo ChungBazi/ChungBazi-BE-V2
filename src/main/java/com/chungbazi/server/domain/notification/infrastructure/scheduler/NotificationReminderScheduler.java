@@ -2,7 +2,9 @@ package com.chungbazi.server.domain.notification.infrastructure.scheduler;
 
 import com.chungbazi.server.domain.notification.application.NotificationReminderService;
 import com.chungbazi.server.domain.notification.application.dto.DeadlineReminderCreationResult;
+import com.chungbazi.server.domain.notification.application.dto.PreparationReminderCreationResult;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,8 +29,8 @@ public class NotificationReminderScheduler {
 
         DeadlineReminderCreationResult result =
                 notificationReminderService.createDeadlineReminderNotifications(
-                LocalDate.now(SERVICE_ZONE_ID)
-        );
+                        LocalDate.now(SERVICE_ZONE_ID)
+                );
 
         log.info(
                 "정책 리마인드 알림 생성 완료. 마감 7일 전 정책 수={}, 마감 3일 전 정책 수={}, 생성 알림 수={}",
@@ -37,5 +39,24 @@ public class NotificationReminderScheduler {
                 result.createdNotificationCount()
         );
 
+    }
+
+    @Scheduled(
+            cron = "${notification.reminder.preparation-cron:0 0 * * * *}",
+            zone = "Asia/Seoul"
+    )
+    public void sendPolicyPreparationNotifications() {
+        log.info("찜한 정책 신청 준비 알림 스케줄러 실행");
+
+        PreparationReminderCreationResult result =
+                notificationReminderService.createPreparationReminderNotifications(
+                        LocalDateTime.now(SERVICE_ZONE_ID)
+                );
+
+        log.info(
+                "찜한 정책 신청 준비 알림 생성 완료. 대상 수={}, 생성 알림 수={}",
+                result.targetCount(),
+                result.createdNotificationCount()
+        );
     }
 }
