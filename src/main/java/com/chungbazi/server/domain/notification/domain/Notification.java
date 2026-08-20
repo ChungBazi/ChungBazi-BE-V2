@@ -1,6 +1,7 @@
 package com.chungbazi.server.domain.notification.domain;
 
 import com.chungbazi.server.domain.notification.domain.type.NotificationCategory;
+import com.chungbazi.server.domain.notification.domain.type.NotificationType;
 import com.chungbazi.server.global.common.BaseTimeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -49,6 +50,10 @@ public class Notification extends BaseTimeEntity {
     @Column(name = "notification_category", nullable = false, length = 20)
     private NotificationCategory category;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "notification_type", nullable = false, length = 40)
+    private NotificationType type;
+
     @Column(name = "title", nullable = false, length = 100)
     private String title;
 
@@ -64,6 +69,7 @@ public class Notification extends BaseTimeEntity {
     public static Notification create(
             Long userId,
             NotificationCategory category,
+            NotificationType type,
             String title,
             String message,
             Long policyId
@@ -71,6 +77,7 @@ public class Notification extends BaseTimeEntity {
         Notification notification = new Notification();
         notification.userId = userId;
         notification.category = category;
+        notification.type = type;
         notification.title = title;
         notification.message = message;
         notification.policyId = policyId;
