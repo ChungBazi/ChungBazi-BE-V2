@@ -7,6 +7,7 @@ import com.chungbazi.server.domain.policy.domain.repository.RecentViewedPolicyRe
 import com.chungbazi.server.domain.policy.domain.type.PolicySubCategoryType;
 import com.chungbazi.server.domain.user.api.dto.request.UserNameRequest;
 import com.chungbazi.server.domain.user.api.dto.request.UserOnboardingRequest;
+import com.chungbazi.server.domain.user.api.dto.response.UserOnboardingResponse;
 import com.chungbazi.server.domain.user.api.dto.request.UserPolicyRequest;
 import com.chungbazi.server.domain.user.api.dto.request.UserWithdrawalRequest;
 import com.chungbazi.server.domain.user.api.dto.response.UserInfoResponse;
@@ -41,7 +42,7 @@ public class UserService {
     private final UserValidator userValidator;
 
     @Transactional
-    public void saveUserOnboarding(User user, UserOnboardingRequest request) {
+    public UserOnboardingResponse saveUserOnboarding(User user, UserOnboardingRequest request) {
         userValidator.validateOnboarding(request);
 
         user.saveUserOnboarding(
@@ -55,6 +56,7 @@ public class UserService {
         updateUserInterests(user, request.interestCategories());
 
         // TODO: 온보딩 가중치 로직 추가
+        return UserOnboardingResponse.from(user);
     }
 
     @Transactional

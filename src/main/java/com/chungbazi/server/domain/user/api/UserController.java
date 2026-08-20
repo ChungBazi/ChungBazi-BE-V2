@@ -6,6 +6,7 @@ import com.chungbazi.server.domain.user.api.dto.request.UserOnboardingRequest;
 import com.chungbazi.server.domain.user.api.dto.request.UserPolicyRequest;
 import com.chungbazi.server.domain.user.api.dto.request.UserWithdrawalRequest;
 import com.chungbazi.server.domain.user.api.dto.response.UserInfoResponse;
+import com.chungbazi.server.domain.user.api.dto.response.UserOnboardingResponse;
 import com.chungbazi.server.domain.user.api.dto.response.UserPolicyResponse;
 import com.chungbazi.server.domain.user.application.UserService;
 import com.chungbazi.server.domain.user.domain.User;
@@ -24,12 +25,11 @@ public class UserController implements UserDocs {
 
     @Override
     @PostMapping("/onboarding")
-    public CommonResponse<String> saveUserOnboarding(
+    public CommonResponse<UserOnboardingResponse> saveUserOnboarding(
             @CurrentUser User user,
             @Valid @RequestBody UserOnboardingRequest request
     ) {
-        userService.saveUserOnboarding(user, request);
-        return CommonResponse.onSuccess("온보딩이 성공적으로 완료되었습니다.");
+        return CommonResponse.onSuccess(userService.saveUserOnboarding(user, request));
     }
 
     @Override
