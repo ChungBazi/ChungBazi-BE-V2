@@ -109,6 +109,10 @@ public class User extends BaseTimeEntity {
         this.fcmToken = fcmToken;
     }
 
+    public void clearFcmToken() {
+        this.fcmToken = null;
+    }
+
     public void updateName(String name) {
         this.name = name;
         this.nicknameChanged = true;
