@@ -6,6 +6,9 @@ import java.util.List;
 
 @Schema(description = "홈 화면 정책 섹션 응답")
 public record HomePolicyResponse(
+        @Schema(description = "사용자 닉네임", example = "청바지")
+        String nickname,
+
         @Schema(description = "읽지 않은 알림 존재 여부", example = "true")
         boolean hasUnreadNotification,
 

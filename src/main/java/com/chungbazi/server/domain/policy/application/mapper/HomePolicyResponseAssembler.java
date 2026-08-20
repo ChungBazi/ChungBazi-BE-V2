@@ -37,6 +37,7 @@ public class HomePolicyResponseAssembler {
         );
 
         return new HomePolicyResponse(
+                user.getName(),
                 hasUnreadNotification,
                 policyDisplayMapper.toSummaries(personalizedPolicies, likedPolicyIds),
                 policyDisplayMapper.toSummaries(recentViewedPolicies, likedPolicyIds),
