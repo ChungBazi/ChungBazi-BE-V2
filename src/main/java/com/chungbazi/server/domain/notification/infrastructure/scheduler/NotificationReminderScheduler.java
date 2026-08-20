@@ -37,6 +37,5 @@ public class NotificationReminderScheduler {
                 result.createdNotificationCount()
         );
 
-        // TODO: 생성된 알림의 FCM 발송 로직 구현
     }
 }

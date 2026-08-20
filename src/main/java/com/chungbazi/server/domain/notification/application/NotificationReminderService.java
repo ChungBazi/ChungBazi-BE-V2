@@ -4,6 +4,7 @@ import com.chungbazi.server.domain.notification.application.dto.DeadlineReminder
 import com.chungbazi.server.domain.notification.application.dto.NotificationKey;
 import com.chungbazi.server.domain.notification.application.dto.PolicyReminderTargets;
 import com.chungbazi.server.domain.notification.application.mapper.NotificationReminderMapper;
+import com.chungbazi.server.domain.notification.application.event.DeadlineReminderNotificationsCreatedEvent;
 import com.chungbazi.server.domain.notification.domain.Notification;
 import com.chungbazi.server.domain.notification.domain.repository.NotificationRepository;
 import com.chungbazi.server.domain.notification.domain.type.NotificationType;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +32,7 @@ public class NotificationReminderService {
     private final PolicyLikeRepository policyLikeRepository;
     private final NotificationRepository notificationRepository;
     private final NotificationReminderMapper notificationReminderMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public DeadlineReminderCreationResult createDeadlineReminderNotifications(LocalDate today) {
@@ -63,6 +66,11 @@ public class NotificationReminderService {
                 .toList();
 
         notificationRepository.saveAll(notifications);
+        if (!notifications.isEmpty()) {
+            eventPublisher.publishEvent(DeadlineReminderNotificationsCreatedEvent.of(
+                    notificationReminderMapper.toPushMessages(notifications)
+            ));
+        }
         return creationResult(targets, notifications.size());
     }
 

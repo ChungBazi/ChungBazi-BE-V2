@@ -1,12 +1,14 @@
 package com.chungbazi.server.domain.notification.application.mapper;
 
 import com.chungbazi.server.domain.notification.application.dto.PolicyReminderTargets;
+import com.chungbazi.server.domain.notification.application.dto.NotificationPushMessage;
 import com.chungbazi.server.domain.notification.domain.Notification;
 import com.chungbazi.server.domain.notification.domain.type.NotificationCategory;
 import com.chungbazi.server.domain.notification.domain.type.NotificationType;
 import com.chungbazi.server.domain.policy.domain.entity.PolicyLike;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -40,5 +42,11 @@ public class NotificationReminderMapper {
                 deadlineInSevenDays ? DEADLINE_D7_MESSAGE : DEADLINE_D3_MESSAGE,
                 policyLike.getPolicy().getId()
         );
+    }
+
+    public List<NotificationPushMessage> toPushMessages(List<Notification> notifications) {
+        return notifications.stream()
+                .map(NotificationPushMessage::from)
+                .toList();
     }
 }
