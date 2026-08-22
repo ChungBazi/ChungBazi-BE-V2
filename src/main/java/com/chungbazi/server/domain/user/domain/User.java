@@ -19,10 +19,16 @@ import java.time.format.DateTimeParseException;
 @Getter
 @Table(
         name = "user",
-        uniqueConstraints = @UniqueConstraint(
-                name = "uk_user_social_provider",
-                columnNames = {"social_type", "provider_id"}
-        )
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_user_social_provider",
+                        columnNames = {"social_type", "provider_id"}
+                ),
+                @UniqueConstraint(
+                        name = "uk_user_fcm_token",
+                        columnNames = "fcm_token"
+                )
+        }
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseTimeEntity {
