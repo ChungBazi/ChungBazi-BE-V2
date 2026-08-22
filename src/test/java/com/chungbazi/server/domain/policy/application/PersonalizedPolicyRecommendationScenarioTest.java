@@ -9,11 +9,12 @@ import com.chungbazi.server.domain.policy.domain.repository.policyRepository.Pol
 import com.chungbazi.server.domain.policy.domain.type.IncomeConditionType;
 import com.chungbazi.server.domain.policy.domain.type.PolicySubCategoryType;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
-import com.chungbazi.server.domain.policy.domain.type.RecruitmentType;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.domain.user.domain.UserInterest;
 import com.chungbazi.server.domain.user.domain.type.IncomeLevel;
 import com.chungbazi.server.domain.user.infrastructure.UserInterestRepository;
+import com.chungbazi.server.fixture.PolicyFixture;
+import com.chungbazi.server.fixture.UserFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,9 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.util.ReflectionTestUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -31,7 +30,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -70,7 +68,11 @@ public class PersonalizedPolicyRecommendationScenarioTest {
     @DisplayName("취업 관심 4분위 사용자에게 적합한 정책을 우선 추천한다")
     void recommendsSuitablePoliciesForJobSeeker() {
         // given
-        User user = user(IncomeLevel.LEVEL_4, 25);
+        User user = UserFixture.user()
+                .id(1L)
+                .age(25)
+                .incomeLevel(IncomeLevel.LEVEL_4)
+                .build();
 
         /*
          * 관심사와 소득 조건 모두 일치
@@ -80,16 +82,14 @@ public class PersonalizedPolicyRecommendationScenarioTest {
          * 소득분위 일치  +10
          * 총점  55
          */
-        Policy suitableIncomePolicy = policy(
-                1L,
-                "청년 취업 지원",
-                PolicySubCategoryType.EMPLOYMENT_PREPARATION,
-                18,
-                34,
-                IncomeConditionType.OTHER,
-                "소득 6분위 이하",
-                LocalDateTime.of(2026, 8, 1, 0, 0)
-        );
+        Policy suitableIncomePolicy = PolicyFixture.policy()
+                .id(1L)
+                .title("청년 취업 지원")
+                .subCategory(PolicySubCategoryType.EMPLOYMENT_PREPARATION)
+                .age(18, 34)
+                .income(IncomeConditionType.OTHER, "소득 6분위 이하")
+                .registeredAt(LocalDateTime.of(2026, 8, 1, 0, 0))
+                .build();
 
         /*
          * 관심사는 일치하지만 소득 조건은 불일치
@@ -99,56 +99,46 @@ public class PersonalizedPolicyRecommendationScenarioTest {
          * 소득 가산점  0
          * 총점  45
          */
-        Policy mismatchedIncomePolicy = policy(
-                2L,
-                "저소득 청년 취업 지원",
-                PolicySubCategoryType.EMPLOYMENT_PREPARATION,
-                18,
-                34,
-                IncomeConditionType.OTHER,
-                "소득 3분위 이하",
-                LocalDateTime.of(2026, 8, 5, 0, 0)
-        );
+        Policy mismatchedIncomePolicy = PolicyFixture.policy()
+                .id(2L)
+                .title("저소득 청년 취업 지원")
+                .subCategory(PolicySubCategoryType.EMPLOYMENT_PREPARATION)
+                .age(18, 34)
+                .income(IncomeConditionType.OTHER, "소득 3분위 이하")
+                .registeredAt(LocalDateTime.of(2026, 8, 5, 0, 0))
+                .build();
 
         /*
          * 동일 대분류지만 관심 소분류는 아님
          *
          * 관심 대분류 개수  +10
          */
-        Policy sameCategoryPolicy = policy(
-                3L,
-                "청년 재직 지원",
-                PolicySubCategoryType.WORK_LIFE,
-                18,
-                34,
-                IncomeConditionType.NO_LIMIT,
-                null,
-                LocalDateTime.of(2026, 8, 4, 0, 0)
-        );
+        Policy sameCategoryPolicy = PolicyFixture.policy()
+                .id(3L)
+                .title("청년 재직 지원")
+                .subCategory(PolicySubCategoryType.WORK_LIFE)
+                .age(18, 34)
+                .registeredAt(LocalDateTime.of(2026, 8, 4, 0, 0))
+                .build();
 
         // 관심 분야와 관계없는 정책
-        Policy unrelatedPolicy = policy(
-                4L,
-                "청년 주거 지원",
-                PolicySubCategoryType.HOUSING_COST_SPACE,
-                18,
-                34,
-                IncomeConditionType.NO_LIMIT,
-                null,
-                LocalDateTime.of(2026, 8, 3, 0, 0)
-        );
+        Policy unrelatedPolicy = PolicyFixture.policy()
+                .id(4L)
+                .title("청년 주거 지원")
+                .subCategory(PolicySubCategoryType.HOUSING_COST_SPACE)
+                .age(18, 34)
+                .registeredAt(LocalDateTime.of(2026, 8, 3, 0, 0))
+                .build();
 
         // 관심사와 소득은 일치하지만 사용자 나이가 대상 범위 밖인 경우, 추천 결과에서 제외되어야 한다.
-        Policy ageIneligiblePolicy = policy(
-                5L,
-                "중장년 취업 지원",
-                PolicySubCategoryType.EMPLOYMENT_PREPARATION,
-                30,
-                39,
-                IncomeConditionType.OTHER,
-                "소득 6분위 이하",
-                LocalDateTime.of(2026, 8, 6, 0, 0)
-        );
+        Policy ageIneligiblePolicy = PolicyFixture.policy()
+                .id(5L)
+                .title("중장년 취업 지원")
+                .subCategory(PolicySubCategoryType.EMPLOYMENT_PREPARATION)
+                .age(30, 39)
+                .income(IncomeConditionType.OTHER, "소득 6분위 이하")
+                .registeredAt(LocalDateTime.of(2026, 8, 6, 0, 0))
+                .build();
 
         List<Policy> candidates = List.of(
                 unrelatedPolicy,
@@ -158,9 +148,8 @@ public class PersonalizedPolicyRecommendationScenarioTest {
                 suitableIncomePolicy
         );
 
-        UserInterest interest = mock(UserInterest.class);
-
-        when(interest.getSubCategory()).thenReturn(
+        UserInterest interest = UserInterest.createUserInterest(
+                user,
                 PolicySubCategoryType.EMPLOYMENT_PREPARATION
         );
 
@@ -193,33 +182,31 @@ public class PersonalizedPolicyRecommendationScenarioTest {
     @DisplayName("소득분위가 UNKNOWN이면 소득 조건이 추천 순위에 영향을 주지 않는다")
     void ignoresIncomeConditionWhenUserIncomeIsUnknown() {
         // given
-        User user = user(IncomeLevel.UNKNOWN, 25);
+        User user = UserFixture.user()
+                .id(1L)
+                .age(25)
+                .incomeLevel(IncomeLevel.UNKNOWN)
+                .build();
 
-        Policy olderIncomePolicy = policy(
-                1L,
-                "소득 조건 취업 정책",
-                PolicySubCategoryType.EMPLOYMENT_PREPARATION,
-                18,
-                34,
-                IncomeConditionType.OTHER,
-                "소득 6분위 이하",
-                LocalDateTime.of(2026, 8, 1, 0, 0)
-        );
+        Policy olderIncomePolicy = PolicyFixture.policy()
+                .id(1L)
+                .title("소득 조건 취업 정책")
+                .subCategory(PolicySubCategoryType.EMPLOYMENT_PREPARATION)
+                .age(18, 34)
+                .income(IncomeConditionType.OTHER, "소득 6분위 이하")
+                .registeredAt(LocalDateTime.of(2026, 8, 1, 0, 0))
+                .build();
 
-        Policy newerNoLimitPolicy = policy(
-                2L,
-                "소득 제한 없는 취업 정책",
-                PolicySubCategoryType.EMPLOYMENT_PREPARATION,
-                18,
-                34,
-                IncomeConditionType.NO_LIMIT,
-                null,
-                LocalDateTime.of(2026, 8, 5, 0, 0)
-        );
+        Policy newerNoLimitPolicy = PolicyFixture.policy()
+                .id(2L)
+                .title("소득 제한 없는 취업 정책")
+                .subCategory(PolicySubCategoryType.EMPLOYMENT_PREPARATION)
+                .age(18, 34)
+                .registeredAt(LocalDateTime.of(2026, 8, 5, 0, 0))
+                .build();
 
-        UserInterest interest = mock(UserInterest.class);
-
-        when(interest.getSubCategory()).thenReturn(
+        UserInterest interest = UserInterest.createUserInterest(
+                user,
                 PolicySubCategoryType.EMPLOYMENT_PREPARATION
         );
 
@@ -240,16 +227,6 @@ public class PersonalizedPolicyRecommendationScenarioTest {
         assertThat(result)
                 .extracting(Policy::getId)
                 .containsExactly(2L, 1L);
-    }
-
-    private User user(IncomeLevel incomeLevel, int age) {
-        User user = mock(User.class);
-
-        when(user.getId()).thenReturn(1L);
-        when(user.getIncomeLevel()).thenReturn(incomeLevel);
-        when(user.getAge(any(LocalDate.class))).thenReturn(age);
-
-        return user;
     }
 
     private void prepareRepositories(
@@ -281,43 +258,4 @@ public class PersonalizedPolicyRecommendationScenarioTest {
         )).thenReturn(List.of());
     }
 
-    private Policy policy(
-            Long id,
-            String title,
-            PolicySubCategoryType subCategory,
-            Integer minAge,
-            Integer maxAge,
-            IncomeConditionType incomeConditionType,
-            String incomeDescription,
-            LocalDateTime registeredAt
-    ) {
-        Policy policy = Policy.createPolicy(
-                "P-" + id,
-                title,
-                null,
-                null,
-                null,
-                subCategory,
-                true,
-                null,
-                null,
-                null,
-                RecruitmentType.ALWAYS,
-                RecruitmentStatus.OPEN,
-                minAge,
-                maxAge,
-                null,
-                null,
-                incomeConditionType,
-                null,
-                null,
-                incomeDescription,
-                null,
-                registeredAt,
-                registeredAt
-        );
-        ReflectionTestUtils.setField(policy, "id", id);
-
-        return policy;
-    }
 }
