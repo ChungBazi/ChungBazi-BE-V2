@@ -1,6 +1,7 @@
 package com.chungbazi.server.domain.auth.api.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 
 @Builder
@@ -16,6 +17,7 @@ public record KakaoLoginRequest(
                 description = "현재 사용자 기기의 fcmToken",
                 example = "YYrt9DQdv2djk6Q..."
         )
+        @NotBlank
         String fcmToken
 ) {
 }

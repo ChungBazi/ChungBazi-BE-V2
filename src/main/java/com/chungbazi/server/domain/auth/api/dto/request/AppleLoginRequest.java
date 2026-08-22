@@ -25,6 +25,7 @@ public record AppleLoginRequest(
                 description = "현재 사용자 기기의 fcmToken",
                 example = "YYrt9DQdv2djk6Q..."
         )
+        @NotBlank
         String fcmToken
 ) {
 }

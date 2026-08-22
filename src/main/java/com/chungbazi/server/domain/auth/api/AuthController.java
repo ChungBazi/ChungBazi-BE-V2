@@ -48,7 +48,7 @@ public class AuthController implements AuthDocs {
             @CurrentUser User user,
             @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization
     ) {
-        authService.logout(user.getId(), BearerTokenExtractor.extract(authorization));
+        authService.logout(user, BearerTokenExtractor.extract(authorization));
         return CommonResponse.onSuccess("로그아웃이 성공적으로 실행되었습니다.");
     }
 }

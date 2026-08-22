@@ -79,13 +79,14 @@ public class AuthService {
     }
 
     @Transactional
-    public void logout(Long userId, String accessToken) {
+    public void logout(User user, String accessToken) {
         Duration remainingExpiration = jwtProvider.getRemainingExpiration(accessToken);
 
         if (!remainingExpiration.isZero()) {
             tokenBlacklist.add(accessToken, remainingExpiration);
         }
-        refreshTokenRepository.deleteById(userId);
+        refreshTokenRepository.deleteById(user.getId());
+        user.clearFcmToken();
     }
 
     private User loginOrSignUp(
@@ -100,10 +101,9 @@ public class AuthService {
                         providerId,
                         socialType,
                         email,
-                        name,
-                        fcmToken
+                        name
                 ));
-        user.updateFcmToken(fcmToken);
+        registerFcmToken(user, fcmToken);
 
         return user;
     }
@@ -114,10 +114,9 @@ public class AuthService {
                         tokenInfo.providerId(),
                         SocialType.APPLE,
                         resolveAppleEmail(tokenInfo.email()),
-                        resolveAppleName(name),
-                        fcmToken
+                        resolveAppleName(name)
                 ));
-        user.updateFcmToken(fcmToken);
+        registerFcmToken(user, fcmToken);
 
         return user;
     }
@@ -126,14 +125,18 @@ public class AuthService {
             String providerId,
             SocialType socialType,
             String email,
-            String name,
-            String fcmToken
+            String name
     ) {
         User user = userRepository.save(
-                User.create(providerId, socialType, email, name, fcmToken)
+                User.create(providerId, socialType, email, name, null)
         );
         notificationSettingRepository.save(NotificationSetting.create(user));
         return user;
+    }
+
+    private void registerFcmToken(User user, String fcmToken) {
+        userRepository.clearFcmTokenFromOtherUsers(fcmToken, user.getId());
+        user.updateFcmToken(fcmToken);
     }
 
     private AuthTokenResponse issueTokenResponse(User user) {

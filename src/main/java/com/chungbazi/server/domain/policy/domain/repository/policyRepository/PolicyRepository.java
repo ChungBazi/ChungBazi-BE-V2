@@ -1,6 +1,10 @@
 package com.chungbazi.server.domain.policy.domain.repository.policyRepository;
 
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
+import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -11,6 +15,11 @@ public interface PolicyRepository extends JpaRepository<Policy, Long>, PolicyRep
     Optional<Policy> findByPlcyNo(String plcyNo);
 
     boolean existsByPlcyNo(String plcyNo);
+
+    List<Policy> findAllByApplyEndDateInAndRecruitmentStatusNot(
+            Collection<LocalDate> applyEndDates,
+            RecruitmentStatus recruitmentStatus
+    );
 
     @Modifying
     @Query("""

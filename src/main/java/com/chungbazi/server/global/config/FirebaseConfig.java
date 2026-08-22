@@ -3,6 +3,7 @@ package com.chungbazi.server.global.config;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import com.google.firebase.messaging.FirebaseMessaging;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -40,6 +41,12 @@ public class FirebaseConfig {
 
             return FirebaseApp.initializeApp(options);
         }
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "firebase", name = "enabled", havingValue = "true")
+    public FirebaseMessaging firebaseMessaging(FirebaseApp firebaseApp) {
+        return FirebaseMessaging.getInstance(firebaseApp);
     }
 
     private InputStream openServiceAccount(String location) throws IOException {
