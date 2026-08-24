@@ -47,7 +47,7 @@ public class NotificationReminderService {
             return creationResult(targets, 0);
         }
 
-        List<PolicyLike> recipients = policyLikeRepository.findDeadlineReminderRecipients(
+        List<PolicyLike> recipients = policyLikeRepository.findNotificationRecipientsByPolicyIds(
                 reminderTypeByPolicyId.keySet()
         );
 

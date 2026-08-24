@@ -12,6 +12,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,6 +34,17 @@ import lombok.NoArgsConstructor;
                 @Index(
                         name = "idx_notification_user_read",
                         columnList = "user_id,is_read"
+                )
+        },
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_notification_policy_update_event",
+                        columnNames = {
+                                "user_id",
+                                "policy_id",
+                                "notification_type",
+                                "policy_source_modified_at"
+                        }
                 )
         }
 )
@@ -63,6 +76,9 @@ public class Notification extends BaseTimeEntity {
     @Column(name = "policy_id")
     private Long policyId;
 
+    @Column(name = "policy_source_modified_at")
+    private LocalDateTime policySourceModifiedAt;
+
     @Column(name = "is_read", nullable = false)
     private boolean read;
 
@@ -74,6 +90,18 @@ public class Notification extends BaseTimeEntity {
             String message,
             Long policyId
     ) {
+        return create(userId, category, type, title, message, policyId, null);
+    }
+
+    public static Notification create(
+            Long userId,
+            NotificationCategory category,
+            NotificationType type,
+            String title,
+            String message,
+            Long policyId,
+            LocalDateTime policySourceModifiedAt
+    ) {
         Notification notification = new Notification();
         notification.userId = userId;
         notification.category = category;
@@ -81,6 +109,7 @@ public class Notification extends BaseTimeEntity {
         notification.title = title;
         notification.message = message;
         notification.policyId = policyId;
+        notification.policySourceModifiedAt = policySourceModifiedAt;
         notification.read = false;
         return notification;
     }
