@@ -1,0 +1,105 @@
+package com.chungbazi.server.fixture;
+
+import com.chungbazi.server.domain.policy.domain.entity.Policy;
+import com.chungbazi.server.domain.policy.domain.type.IncomeConditionType;
+import com.chungbazi.server.domain.policy.domain.type.PolicySubCategoryType;
+import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
+import com.chungbazi.server.domain.policy.domain.type.RecruitmentType;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import java.time.LocalDateTime;
+
+public final class PolicyFixture {
+
+    private PolicyFixture() {
+    }
+
+    public static PolicyBuilder policy() {
+        return new PolicyBuilder();
+    }
+
+    public static final class PolicyBuilder {
+
+        private Long id = 1L;
+        private String title = "테스트 정책";
+        private PolicySubCategoryType subCategory = PolicySubCategoryType.EMPLOYMENT_PREPARATION;
+        private Integer minAge;
+        private Integer maxAge;
+        private IncomeConditionType incomeConditionType = IncomeConditionType.NO_LIMIT;
+        private String incomeDescription;
+        private int viewCount;
+        private int saveCount;
+        private LocalDateTime registeredAt = LocalDateTime.of(2026, 1, 1, 0, 0);
+
+        public PolicyBuilder id(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        public PolicyBuilder title(String title) {
+            this.title = title;
+            return this;
+        }
+
+        public PolicyBuilder subCategory(PolicySubCategoryType subCategory) {
+            this.subCategory = subCategory;
+            return this;
+        }
+
+        public PolicyBuilder age(Integer minAge, Integer maxAge) {
+            this.minAge = minAge;
+            this.maxAge = maxAge;
+            return this;
+        }
+
+        public PolicyBuilder income(IncomeConditionType type, String description) {
+            this.incomeConditionType = type;
+            this.incomeDescription = description;
+            return this;
+        }
+
+        public PolicyBuilder counts(int viewCount, int saveCount) {
+            this.viewCount = viewCount;
+            this.saveCount = saveCount;
+            return this;
+        }
+
+        public PolicyBuilder registeredAt(LocalDateTime registeredAt) {
+            this.registeredAt = registeredAt;
+            return this;
+        }
+
+        public Policy build() {
+            Policy policy = Policy.createPolicy(
+                    "TEST-" + id,
+                    title,
+                    null,
+                    null,
+                    null,
+                    subCategory,
+                    true,
+                    null,
+                    null,
+                    null,
+                    RecruitmentType.ALWAYS,
+                    RecruitmentStatus.OPEN,
+                    minAge,
+                    maxAge,
+                    null,
+                    null,
+                    incomeConditionType,
+                    null,
+                    null,
+                    incomeDescription,
+                    null,
+                    registeredAt,
+                    registeredAt
+            );
+
+            ReflectionTestUtils.setField(policy, "id", id);
+            ReflectionTestUtils.setField(policy, "viewCount", viewCount);
+            ReflectionTestUtils.setField(policy, "saveCount", saveCount);
+            return policy;
+        }
+    }
+}
