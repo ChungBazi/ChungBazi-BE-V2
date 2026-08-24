@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 
 import com.chungbazi.server.domain.notification.application.dto.NotificationPushMessage;
 import com.chungbazi.server.domain.notification.application.event.PolicyReminderNotificationsCreatedEvent;
+import com.chungbazi.server.domain.notification.application.event.PolicyUpdateNotificationsCreatedEvent;
 import com.chungbazi.server.domain.notification.domain.NotificationSetting;
 import com.chungbazi.server.domain.notification.domain.repository.NotificationSettingRepository;
 import com.chungbazi.server.domain.notification.domain.type.NotificationCategory;
@@ -79,6 +80,29 @@ class FirebaseNotificationServiceTest {
 
         verify(firebaseNotificationSender, never()).sendAll(org.mockito.ArgumentMatchers.anyList());
         verify(userRepository, never()).clearInvalidFcmTokens(org.mockito.ArgumentMatchers.anySet());
+    }
+
+    @Test
+    void sendsPolicyUpdateNotificationToPushEnabledUsers() {
+        NotificationPushMessage message = pushMessage(1L, 10L);
+        PolicyUpdateNotificationsCreatedEvent event =
+                PolicyUpdateNotificationsCreatedEvent.of(List.of(message));
+
+        User enabledUser = org.mockito.Mockito.mock(User.class);
+        NotificationSetting enabledSetting = org.mockito.Mockito.mock(NotificationSetting.class);
+        given(enabledSetting.getUser()).willReturn(enabledUser);
+        given(enabledUser.getId()).willReturn(1L);
+        given(enabledUser.getFcmToken()).willReturn("fcm-token");
+        given(notificationSettingRepository.findPolicyPushEnabledSettings(Set.of(1L)))
+                .willReturn(List.of(enabledSetting));
+
+        FirebasePushTarget target = FirebasePushTarget.of("fcm-token", message);
+        given(firebaseNotificationSender.sendAll(List.of(target)))
+                .willReturn(FirebasePushResult.of(1, 0, Set.of()));
+
+        firebaseNotificationService.sendPolicyUpdates(event);
+
+        verify(firebaseNotificationSender).sendAll(List.of(target));
     }
 
     private NotificationPushMessage pushMessage(Long userId, Long policyId) {

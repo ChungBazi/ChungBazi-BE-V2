@@ -1,10 +1,12 @@
 package com.chungbazi.server.domain.notification.application.mapper;
 
+import com.chungbazi.server.domain.notification.application.dto.NotificationPushMessage;
 import com.chungbazi.server.domain.notification.domain.Notification;
 import com.chungbazi.server.domain.notification.domain.type.NotificationCategory;
 import com.chungbazi.server.domain.notification.domain.type.NotificationType;
 import com.chungbazi.server.domain.policy.domain.entity.PolicyLike;
 import java.time.LocalDateTime;
+import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -30,5 +32,11 @@ public class PolicyUpdateNotificationMapper {
                 policyLike.getPolicy().getId(),
                 sourceModifiedAt
         );
+    }
+
+    public List<NotificationPushMessage> toPushMessages(List<Notification> notifications) {
+        return notifications.stream()
+                .map(NotificationPushMessage::from)
+                .toList();
     }
 }

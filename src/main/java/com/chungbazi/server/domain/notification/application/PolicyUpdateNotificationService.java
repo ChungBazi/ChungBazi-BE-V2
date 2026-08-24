@@ -1,5 +1,6 @@
 package com.chungbazi.server.domain.notification.application;
 
+import com.chungbazi.server.domain.notification.application.event.PolicyUpdateNotificationsCreatedEvent;
 import com.chungbazi.server.domain.notification.application.mapper.PolicyUpdateNotificationMapper;
 import com.chungbazi.server.domain.notification.domain.Notification;
 import com.chungbazi.server.domain.notification.domain.repository.NotificationRepository;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,7 @@ public class PolicyUpdateNotificationService {
     private final PolicyLikeRepository policyLikeRepository;
     private final NotificationRepository notificationRepository;
     private final PolicyUpdateNotificationMapper policyUpdateNotificationMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public void createPolicyUpdateNotifications(PolicyInformationChangedEvent event) {
@@ -70,5 +73,10 @@ public class PolicyUpdateNotificationService {
         }
 
         notificationRepository.saveAll(notifications);
+
+        //FCM 발송
+        eventPublisher.publishEvent(PolicyUpdateNotificationsCreatedEvent.of(
+                policyUpdateNotificationMapper.toPushMessages(notifications)
+        ));
     }
 }

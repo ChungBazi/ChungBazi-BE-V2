@@ -12,7 +12,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -34,17 +33,6 @@ import lombok.NoArgsConstructor;
                 @Index(
                         name = "idx_notification_user_read",
                         columnList = "user_id,is_read"
-                )
-        },
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uk_notification_policy_update_event",
-                        columnNames = {
-                                "user_id",
-                                "policy_id",
-                                "notification_type",
-                                "policy_source_modified_at"
-                        }
                 )
         }
 )

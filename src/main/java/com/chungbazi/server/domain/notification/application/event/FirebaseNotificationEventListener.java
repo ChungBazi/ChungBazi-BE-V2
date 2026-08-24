@@ -27,4 +27,14 @@ public class FirebaseNotificationEventListener {
             log.error("비동기 FCM 정책 리마인드 발송 중 오류 발생", exception);
         }
     }
+
+    @Async(AsyncConfig.NOTIFICATION_EXECUTOR)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handle(PolicyUpdateNotificationsCreatedEvent event) {
+        try {
+            firebaseNotificationService.sendPolicyUpdates(event);
+        } catch (RuntimeException exception) {
+            log.error("비동기 FCM 찜한 정책 정보 변경 알림 발송 중 오류 발생", exception);
+        }
+    }
 }
