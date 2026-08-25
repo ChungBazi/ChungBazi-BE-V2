@@ -1,6 +1,7 @@
 package com.chungbazi.server.domain.policy.application;
 
 import com.chungbazi.server.domain.policy.application.dto.PolicySyncStatus;
+import com.chungbazi.server.domain.policy.application.event.PolicyInformationChangedEvent;
 import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.client.dto.YouthPolicyItem;
 import com.chungbazi.server.domain.policy.domain.type.internal.PolicyRegionMapping;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
@@ -14,6 +15,7 @@ import com.chungbazi.server.domain.policy.domain.repository.PolicyDetailReposito
 import com.chungbazi.server.domain.policy.domain.repository.PolicyRegionRepository;
 import com.chungbazi.server.domain.policy.domain.repository.policyRepository.PolicyRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +33,7 @@ public class YouthPolicyPersistenceService {
     private final PolicyRepository policyRepository;
     private final PolicyDetailRepository policyDetailRepository;
     private final PolicyRegionRepository policyRegionRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public PolicySyncStatus syncPolicy(YouthPolicyItem item) {
@@ -90,6 +93,9 @@ public class YouthPolicyPersistenceService {
         policyRegionRepository.deleteAllByPolicyId(policy.getId());
         policyRegionRepository.saveAll(policyRegionMapper.toPolicyRegions(policy, regionMapping));
 
+        //정책 정보 변경 알림 전송
+        publishPolicyInformationChangedEvent(policy, sourceModifiedAt);
+
         return PolicySyncStatus.UPDATED;
     }
 
@@ -105,6 +111,19 @@ public class YouthPolicyPersistenceService {
                 .orElseGet(() -> policyDetailRepository.save(policyEntityMapper.toPolicyDetail(policy, item)));
 
         policyEntityMapper.updatePolicyDetail(policyDetail, item);
+    }
+
+    private void publishPolicyInformationChangedEvent(
+            Policy policy,
+            LocalDateTime sourceModifiedAt
+    ) {
+        if (sourceModifiedAt == null) {
+            return;
+        }
+        eventPublisher.publishEvent(PolicyInformationChangedEvent.of(
+                policy.getId(),
+                sourceModifiedAt
+        ));
     }
 
     private String normalizePolicyNumber(String value) {

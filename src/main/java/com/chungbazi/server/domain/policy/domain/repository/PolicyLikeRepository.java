@@ -50,7 +50,7 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             WHERE policy.id IN :policyIds
               AND user.deleted = false
             """)
-    List<PolicyLike> findDeadlineReminderRecipients(
+    List<PolicyLike> findNotificationRecipientsByPolicyIds(
             @Param("policyIds") Collection<Long> policyIds
     );
 

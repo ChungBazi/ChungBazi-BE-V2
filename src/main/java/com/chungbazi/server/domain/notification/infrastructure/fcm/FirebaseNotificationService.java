@@ -2,6 +2,7 @@ package com.chungbazi.server.domain.notification.infrastructure.fcm;
 
 import com.chungbazi.server.domain.notification.application.dto.NotificationPushMessage;
 import com.chungbazi.server.domain.notification.application.event.PolicyReminderNotificationsCreatedEvent;
+import com.chungbazi.server.domain.notification.application.event.PolicyUpdateNotificationsCreatedEvent;
 import com.chungbazi.server.domain.notification.domain.NotificationSetting;
 import com.chungbazi.server.domain.notification.domain.repository.NotificationSettingRepository;
 import com.chungbazi.server.domain.notification.infrastructure.fcm.dto.FirebasePushResult;
@@ -27,7 +28,18 @@ public class FirebaseNotificationService {
     private final FirebaseNotificationSender firebaseNotificationSender;
 
     public void sendPolicyReminders(PolicyReminderNotificationsCreatedEvent event) {
-        Set<Long> userIds = event.messages().stream()
+        sendPolicyNotifications(event.messages(), "정책 리마인드");
+    }
+
+    public void sendPolicyUpdates(PolicyUpdateNotificationsCreatedEvent event) {
+        sendPolicyNotifications(event.messages(), "찜한 정책 정보 변경");
+    }
+
+    private void sendPolicyNotifications(
+            List<NotificationPushMessage> messages,
+            String notificationName
+    ) {
+        Set<Long> userIds = messages.stream()
                 .map(NotificationPushMessage::userId)
                 .collect(Collectors.toSet());
 
@@ -40,7 +52,7 @@ public class FirebaseNotificationService {
                         setting -> setting.getUser().getFcmToken()
                 ));
 
-        List<FirebasePushTarget> targets = event.messages().stream()
+        List<FirebasePushTarget> targets = messages.stream()
                 .filter(message -> fcmTokenByUserId.containsKey(message.userId()))
                 .map(message -> FirebasePushTarget.of(
                         fcmTokenByUserId.get(message.userId()),
@@ -58,7 +70,8 @@ public class FirebaseNotificationService {
         }
 
         log.info(
-                "FCM 정책 리마인드 발송 완료. 성공={}, 실패={}, 무효 토큰={}",
+                "FCM {} 발송 완료. 성공={}, 실패={}, 무효 토큰={}",
+                notificationName,
                 result.successCount(),
                 result.failureCount(),
                 result.invalidFcmTokens().size()

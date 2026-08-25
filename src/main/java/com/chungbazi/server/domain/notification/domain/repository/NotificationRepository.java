@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -18,6 +19,13 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
             Collection<Long> userIds,
             Collection<Long> policyIds,
             Collection<NotificationType> types
+    );
+
+    List<Notification> findAllByUserIdInAndPolicyIdAndTypeAndPolicySourceModifiedAt(
+            Collection<Long> userIds,
+            Long policyId,
+            NotificationType type,
+            LocalDateTime policySourceModifiedAt
     );
 
     @Modifying(clearAutomatically = true)
