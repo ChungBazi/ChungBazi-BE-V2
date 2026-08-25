@@ -1,5 +1,6 @@
 package com.chungbazi.server.domain.policy.application;
 
+import com.chungbazi.server.domain.policy.application.dto.PolicySyncItemResult;
 import com.chungbazi.server.domain.policy.application.dto.PolicySyncStatus;
 import com.chungbazi.server.domain.policy.application.event.PolicyInformationChangedEvent;
 import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.client.dto.YouthPolicyItem;
@@ -36,21 +37,28 @@ public class YouthPolicyPersistenceService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
-    public PolicySyncStatus syncPolicy(YouthPolicyItem item) {
+    public PolicySyncItemResult syncPolicy(YouthPolicyItem item) {
         String applyPeriodCode = item.aplyPrdSeCd() == null ? null : item.aplyPrdSeCd().trim();
         String plcyNo = normalizePolicyNumber(item.plcyNo());
         if (plcyNo == null) {
-            return PolicySyncStatus.SKIPPED;
+            return PolicySyncItemResult.of(PolicySyncStatus.SKIPPED, null);
         }
 
         return policyRepository.findByPlcyNo(plcyNo)
-                .map(policy -> syncExistingPolicy(policy, item, applyPeriodCode))
+                .map(policy -> PolicySyncItemResult.of(
+                        syncExistingPolicy(policy, item, applyPeriodCode),
+                        policy.getId()
+                ))
                 .orElseGet(() -> syncNewPolicy(item, plcyNo, applyPeriodCode));
     }
 
-    private PolicySyncStatus syncNewPolicy(YouthPolicyItem item, String plcyNo, String applyPeriodCode) {
+    private PolicySyncItemResult syncNewPolicy(
+            YouthPolicyItem item,
+            String plcyNo,
+            String applyPeriodCode
+    ) {
         if (CLOSED_PERIOD_CODE.equals(applyPeriodCode)) {
-            return PolicySyncStatus.SKIPPED_CLOSED;
+            return PolicySyncItemResult.of(PolicySyncStatus.SKIPPED_CLOSED, null);
         }
 
         PolicyRegionMapping regionMapping = policyRegionMapper.toRegionMapping(item.zipCd());
@@ -63,7 +71,7 @@ public class YouthPolicyPersistenceService {
         policyDetailRepository.save(policyEntityMapper.toPolicyDetail(savedPolicy, item));
         policyRegionRepository.saveAll(policyRegionMapper.toPolicyRegions(savedPolicy, regionMapping));
 
-        return PolicySyncStatus.INSERTED;
+        return PolicySyncItemResult.of(PolicySyncStatus.INSERTED, savedPolicy.getId());
     }
 
     private PolicySyncStatus syncExistingPolicy(Policy policy, YouthPolicyItem item, String applyPeriodCode) {
