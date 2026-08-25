@@ -1,6 +1,7 @@
 package com.chungbazi.server.domain.policy.application;
 
 import com.chungbazi.server.domain.policy.application.support.PersonalizedPolicyScorer;
+import com.chungbazi.server.domain.policy.application.support.PersonalizedPolicyRanker;
 import com.chungbazi.server.domain.policy.application.support.PolicyIncomeMatcher;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.repository.PolicyLikeRepository;
@@ -60,7 +61,7 @@ public class PersonalizedPolicyRecommendationScenarioTest {
                 userInterestRepository,
                 policyLikeRepository,
                 recentViewedPolicyRepository,
-                scorer
+                new PersonalizedPolicyRanker(scorer)
         );
     }
 
