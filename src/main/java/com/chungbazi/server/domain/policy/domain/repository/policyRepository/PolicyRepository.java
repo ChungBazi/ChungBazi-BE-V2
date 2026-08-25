@@ -21,6 +21,11 @@ public interface PolicyRepository extends JpaRepository<Policy, Long>, PolicyRep
             RecruitmentStatus recruitmentStatus
     );
 
+    List<Policy> findAllByIdInAndRecruitmentStatusNot(
+            Collection<Long> policyIds,
+            RecruitmentStatus recruitmentStatus
+    );
+
     @Modifying
     @Query("""
             UPDATE Policy policy
