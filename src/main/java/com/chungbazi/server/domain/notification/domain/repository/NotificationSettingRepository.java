@@ -26,4 +26,17 @@ public interface NotificationSettingRepository extends JpaRepository<Notificatio
     List<NotificationSetting> findPolicyPushEnabledSettings(
             @Param("userIds") Collection<Long> userIds
     );
+
+    @Query("""
+            SELECT setting
+            FROM NotificationSetting setting
+            JOIN FETCH setting.user user
+            WHERE user.id IN :userIds
+              AND user.deleted = false
+              AND user.fcmToken IS NOT NULL
+              AND setting.chungbaziNotificationEnabled = true
+            """)
+    List<NotificationSetting> findChungbaziPushEnabledSettings(
+            @Param("userIds") Collection<Long> userIds
+    );
 }

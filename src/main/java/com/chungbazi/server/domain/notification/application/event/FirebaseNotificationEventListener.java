@@ -37,4 +37,17 @@ public class FirebaseNotificationEventListener {
             log.error("비동기 FCM 찜한 정책 정보 변경 알림 발송 중 오류 발생", exception);
         }
     }
+
+    @Async(AsyncConfig.NOTIFICATION_EXECUTOR)
+    @TransactionalEventListener(
+            phase = TransactionPhase.AFTER_COMMIT,
+            fallbackExecution = true
+    )
+    public void handle(PersonalizedPolicyNotificationsCreatedEvent event) {
+        try {
+            firebaseNotificationService.sendPersonalizedPolicies(event);
+        } catch (RuntimeException exception) {
+            log.error("비동기 FCM 신규 맞춤 정책 알림 발송 중 오류 발생", exception);
+        }
+    }
 }

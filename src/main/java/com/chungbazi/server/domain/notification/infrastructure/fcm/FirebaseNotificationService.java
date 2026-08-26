@@ -1,6 +1,7 @@
 package com.chungbazi.server.domain.notification.infrastructure.fcm;
 
 import com.chungbazi.server.domain.notification.application.dto.NotificationPushMessage;
+import com.chungbazi.server.domain.notification.application.event.PersonalizedPolicyNotificationsCreatedEvent;
 import com.chungbazi.server.domain.notification.application.event.PolicyReminderNotificationsCreatedEvent;
 import com.chungbazi.server.domain.notification.application.event.PolicyUpdateNotificationsCreatedEvent;
 import com.chungbazi.server.domain.notification.domain.NotificationSetting;
@@ -35,17 +36,28 @@ public class FirebaseNotificationService {
         sendPolicyNotifications(event.messages(), "찜한 정책 정보 변경");
     }
 
+    public void sendPersonalizedPolicies(PersonalizedPolicyNotificationsCreatedEvent event) {
+        Set<Long> userIds = findUserIds(event.messages());
+        List<NotificationSetting> enabledSettings =
+                notificationSettingRepository.findChungbaziPushEnabledSettings(userIds);
+        sendNotifications(event.messages(), enabledSettings, "신규 맞춤 정책");
+    }
+
     private void sendPolicyNotifications(
             List<NotificationPushMessage> messages,
             String notificationName
     ) {
-        Set<Long> userIds = messages.stream()
-                .map(NotificationPushMessage::userId)
-                .collect(Collectors.toSet());
-
+        Set<Long> userIds = findUserIds(messages);
         List<NotificationSetting> enabledSettings =
                 notificationSettingRepository.findPolicyPushEnabledSettings(userIds);
+        sendNotifications(messages, enabledSettings, notificationName);
+    }
 
+    private void sendNotifications(
+            List<NotificationPushMessage> messages,
+            List<NotificationSetting> enabledSettings,
+            String notificationName
+    ) {
         Map<Long, String> fcmTokenByUserId = enabledSettings.stream()
                 .collect(Collectors.toMap(
                         setting -> setting.getUser().getId(),
@@ -76,5 +88,11 @@ public class FirebaseNotificationService {
                 result.failureCount(),
                 result.invalidFcmTokens().size()
         );
+    }
+
+    private Set<Long> findUserIds(List<NotificationPushMessage> messages) {
+        return messages.stream()
+                .map(NotificationPushMessage::userId)
+                .collect(Collectors.toSet());
     }
 }

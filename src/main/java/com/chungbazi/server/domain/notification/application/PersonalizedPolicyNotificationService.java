@@ -2,6 +2,7 @@ package com.chungbazi.server.domain.notification.application;
 
 import com.chungbazi.server.domain.notification.application.dto.NotificationKey;
 import com.chungbazi.server.domain.notification.application.dto.PersonalizedPolicyNotificationTarget;
+import com.chungbazi.server.domain.notification.application.event.PersonalizedPolicyNotificationsCreatedEvent;
 import com.chungbazi.server.domain.notification.application.mapper.PersonalizedPolicyContextMapper;
 import com.chungbazi.server.domain.notification.application.mapper.PersonalizedPolicyNotificationMapper;
 import com.chungbazi.server.domain.notification.domain.Notification;
@@ -27,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -47,6 +49,7 @@ public class PersonalizedPolicyNotificationService {
     private final PersonalizedPolicyContextMapper personalizedPolicyContextMapper;
     private final PersonalizedPolicyNotificationMapper personalizedPolicyNotificationMapper;
     private final PersonalizedPolicyRanker personalizedPolicyRanker;
+    private final ApplicationEventPublisher eventPublisher;
 
     public void createPersonalizedPolicyNotifications(NewPoliciesRegisteredEvent event) {
         List<Policy> newPolicies = policyRepository.findAllByIdInAndRecruitmentStatusNot(
@@ -92,6 +95,16 @@ public class PersonalizedPolicyNotificationService {
                     chunkNumber,
                     notifications.size()
             );
+
+            //FCM 알림 발송
+            if (!notifications.isEmpty()) {
+                eventPublisher.publishEvent(PersonalizedPolicyNotificationsCreatedEvent.of(
+                        //알림이 여러 개일 경우 한 개만 FCM 발송
+                        personalizedPolicyNotificationMapper.toRepresentativePushMessages(
+                                notifications
+                        )
+                ));
+            }
 
             cursor = users.getLast().getId();
         }
