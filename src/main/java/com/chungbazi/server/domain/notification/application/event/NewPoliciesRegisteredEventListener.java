@@ -23,7 +23,7 @@ public class NewPoliciesRegisteredEventListener {
             personalizedPolicyNotificationService.createPersonalizedPolicyNotifications(event);
         } catch (RuntimeException exception) {
             log.error(
-                    "신규 맞춤 정책 알림 대상 사용자 조회 중 오류 발생. policyIds={}",
+                    "신규 맞춤 정책 알림 생성 중 오류 발생. policyIds={}",
                     event.policyIds(),
                     exception
             );

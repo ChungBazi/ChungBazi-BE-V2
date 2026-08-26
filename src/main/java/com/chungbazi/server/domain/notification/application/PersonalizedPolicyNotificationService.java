@@ -1,7 +1,12 @@
 package com.chungbazi.server.domain.notification.application;
 
+import com.chungbazi.server.domain.notification.application.dto.NotificationKey;
 import com.chungbazi.server.domain.notification.application.dto.PersonalizedPolicyNotificationTarget;
 import com.chungbazi.server.domain.notification.application.mapper.PersonalizedPolicyContextMapper;
+import com.chungbazi.server.domain.notification.application.mapper.PersonalizedPolicyNotificationMapper;
+import com.chungbazi.server.domain.notification.domain.Notification;
+import com.chungbazi.server.domain.notification.domain.repository.NotificationRepository;
+import com.chungbazi.server.domain.notification.domain.type.NotificationType;
 import com.chungbazi.server.domain.policy.application.dto.PolicyRecommendationContext;
 import com.chungbazi.server.domain.policy.application.event.NewPoliciesRegisteredEvent;
 import com.chungbazi.server.domain.policy.application.support.PersonalizedPolicyRanker;
@@ -38,7 +43,9 @@ public class PersonalizedPolicyNotificationService {
     private final UserInterestRepository userInterestRepository;
     private final PolicyRepository policyRepository;
     private final PolicyRegionRepository policyRegionRepository;
+    private final NotificationRepository notificationRepository;
     private final PersonalizedPolicyContextMapper personalizedPolicyContextMapper;
+    private final PersonalizedPolicyNotificationMapper personalizedPolicyNotificationMapper;
     private final PersonalizedPolicyRanker personalizedPolicyRanker;
 
     public void createPersonalizedPolicyNotifications(NewPoliciesRegisteredEvent event) {
@@ -67,12 +74,6 @@ public class PersonalizedPolicyNotificationService {
             }
 
             chunkNumber++;
-            log.info(
-                    "신규 맞춤 정책 알림 사용자 청크 조회 완료. policyCount={}, chunk={}, userCount={}",
-                    event.policyIds().size(),
-                    chunkNumber,
-                    users.size()
-            );
 
             Map<Long, PolicyRecommendationContext> contexts = findRecommendationContexts(users);
 
@@ -84,16 +85,55 @@ public class PersonalizedPolicyNotificationService {
                     policyRegionsByPolicyId
             );
 
+            //알림 저장
+            List<Notification> notifications = savePersonalizedPolicyNotifications(targets);
             log.info(
-                    "신규 맞춤 정책 알림 대상 선별 완료. chunk={}, contextCount={}, targetUserCount={}",
+                    "신규 맞춤 정책 알림 저장 완료. chunk={}, notificationCount={}",
                     chunkNumber,
-                    contexts.size(),
-                    targets.size()
+                    notifications.size()
             );
 
-            // TODO: 선별된 신규 맞춤 정책 알림 저장
             cursor = users.getLast().getId();
         }
+    }
+
+    public List<Notification> savePersonalizedPolicyNotifications(
+            List<PersonalizedPolicyNotificationTarget> targets
+    ) {
+        if (targets.isEmpty()) {
+            return List.of();
+        }
+
+        Set<Long> userIds = targets.stream()
+                .map(target -> target.user().getId())
+                .collect(java.util.stream.Collectors.toSet());
+
+        Set<Long> policyIds = targets.stream()
+                .flatMap(target -> target.policies().stream())
+                .map(Policy::getId)
+                .collect(java.util.stream.Collectors.toSet());
+
+        Set<NotificationKey> existingNotificationKeys = notificationRepository
+                .findAllByUserIdInAndPolicyIdInAndTypeIn(
+                        userIds,
+                        policyIds,
+                        Set.of(NotificationType.PERSONALIZED_POLICY)
+                ).stream()
+                .map(NotificationKey::from)
+                .collect(java.util.stream.Collectors.toSet());
+
+        List<Notification> notifications = targets.stream()
+                .flatMap(target -> target.policies().stream()
+                        .map(policy -> personalizedPolicyNotificationMapper.toNotification(
+                                target.user(),
+                                policy
+                        )))
+                .filter(notification -> !existingNotificationKeys.contains(
+                        NotificationKey.from(notification)
+                ))
+                .toList();
+
+        return notificationRepository.saveAll(notifications);
     }
 
     public Map<Long, PolicyRecommendationContext> findRecommendationContexts(List<User> users) {

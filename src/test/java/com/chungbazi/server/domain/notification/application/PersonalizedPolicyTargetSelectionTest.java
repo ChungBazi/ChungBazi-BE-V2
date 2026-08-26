@@ -6,6 +6,8 @@ import static org.mockito.Mockito.verify;
 
 import com.chungbazi.server.domain.notification.application.dto.PersonalizedPolicyNotificationTarget;
 import com.chungbazi.server.domain.notification.application.mapper.PersonalizedPolicyContextMapper;
+import com.chungbazi.server.domain.notification.application.mapper.PersonalizedPolicyNotificationMapper;
+import com.chungbazi.server.domain.notification.domain.repository.NotificationRepository;
 import com.chungbazi.server.domain.policy.application.dto.PolicyRecommendationContext;
 import com.chungbazi.server.domain.policy.application.support.PersonalizedPolicyRanker;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
@@ -40,7 +42,13 @@ class PersonalizedPolicyTargetSelectionTest {
     private PolicyRegionRepository policyRegionRepository;
 
     @Mock
+    private NotificationRepository notificationRepository;
+
+    @Mock
     private PersonalizedPolicyContextMapper personalizedPolicyContextMapper;
+
+    @Mock
+    private PersonalizedPolicyNotificationMapper personalizedPolicyNotificationMapper;
 
     @Mock
     private PersonalizedPolicyRanker personalizedPolicyRanker;
