@@ -15,19 +15,11 @@ public class MdcTaskDecorator implements TaskDecorator {
         return () -> {
             Map<String, String> workerContext = MDC.getCopyOfContextMap();
             try {
-                replaceContext(callerContext);
+                MdcContext.replace(callerContext);
                 task.run();
             } finally {
-                replaceContext(workerContext);
+                MdcContext.replace(workerContext);
             }
         };
-    }
-
-    private void replaceContext(Map<String, String> context) {
-        if (context == null || context.isEmpty()) {
-            MDC.clear();
-            return;
-        }
-        MDC.setContextMap(context);
     }
 }

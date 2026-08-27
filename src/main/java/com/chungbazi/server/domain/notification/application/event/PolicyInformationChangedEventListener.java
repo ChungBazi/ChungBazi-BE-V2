@@ -3,6 +3,7 @@ package com.chungbazi.server.domain.notification.application.event;
 import com.chungbazi.server.domain.notification.application.PolicyUpdateNotificationService;
 import com.chungbazi.server.domain.policy.application.event.PolicyInformationChangedEvent;
 import com.chungbazi.server.global.config.AsyncConfig;
+import com.chungbazi.server.global.logging.AsyncTaskMdc;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -20,14 +21,16 @@ public class PolicyInformationChangedEventListener {
     @Async(AsyncConfig.NOTIFICATION_EXECUTOR)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(PolicyInformationChangedEvent event) {
-        try {
-            policyUpdateNotificationService.createPolicyUpdateNotifications(event);
-        } catch (RuntimeException exception) {
-            log.error(
-                    "찜한 정책 정보 변경 알림 생성 중 오류 발생. policyId={}",
-                    event.policyId(),
-                    exception
-            );
+        try (AsyncTaskMdc ignored = AsyncTaskMdc.start("policy-update-notification-create")) {
+            try {
+                policyUpdateNotificationService.createPolicyUpdateNotifications(event);
+            } catch (RuntimeException exception) {
+                log.error(
+                        "찜한 정책 정보 변경 알림 생성 중 오류 발생. policyId={}",
+                        event.policyId(),
+                        exception
+                );
+            }
         }
     }
 }
