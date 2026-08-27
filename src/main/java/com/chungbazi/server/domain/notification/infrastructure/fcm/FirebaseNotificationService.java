@@ -1,6 +1,7 @@
 package com.chungbazi.server.domain.notification.infrastructure.fcm;
 
 import com.chungbazi.server.domain.notification.application.dto.NotificationPushMessage;
+import com.chungbazi.server.domain.notification.application.event.InterestPolicyNotificationsCreatedEvent;
 import com.chungbazi.server.domain.notification.application.event.PersonalizedPolicyNotificationsCreatedEvent;
 import com.chungbazi.server.domain.notification.application.event.PolicyReminderNotificationsCreatedEvent;
 import com.chungbazi.server.domain.notification.application.event.PolicyUpdateNotificationsCreatedEvent;
@@ -94,5 +95,12 @@ public class FirebaseNotificationService {
         return messages.stream()
                 .map(NotificationPushMessage::userId)
                 .collect(Collectors.toSet());
+    }
+
+    public void sendInterestPolicies(InterestPolicyNotificationsCreatedEvent event) {
+        Set<Long> userIds = findUserIds(event.messages());
+        List<NotificationSetting> enabledSettings =
+                notificationSettingRepository.findChungbaziPushEnabledSettings(userIds);
+        sendNotifications(event.messages(), enabledSettings, "관심 분야 신규 정책");
     }
 }

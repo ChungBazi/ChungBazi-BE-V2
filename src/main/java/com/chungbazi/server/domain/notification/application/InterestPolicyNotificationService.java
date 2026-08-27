@@ -2,6 +2,7 @@ package com.chungbazi.server.domain.notification.application;
 
 import com.chungbazi.server.domain.notification.application.dto.InterestPolicyNotificationTarget;
 import com.chungbazi.server.domain.notification.application.dto.NotificationKey;
+import com.chungbazi.server.domain.notification.application.event.InterestPolicyNotificationsCreatedEvent;
 import com.chungbazi.server.domain.notification.application.mapper.InterestPolicyNotificationMapper;
 import com.chungbazi.server.domain.notification.domain.Notification;
 import com.chungbazi.server.domain.notification.domain.repository.NotificationRepository;
@@ -23,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +41,7 @@ public class InterestPolicyNotificationService {
     private final UserInterestRepository userInterestRepository;
     private final NotificationRepository notificationRepository;
     private final InterestPolicyNotificationMapper interestPolicyNotificationMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     public void createInterestPolicyNotifications(NewPoliciesRegisteredEvent event) {
         List<Policy> newPolicies = policyRepository.findAllByIdInAndRecruitmentStatusNot(
@@ -91,7 +94,16 @@ public class InterestPolicyNotificationService {
                     notifications.size()
             );
 
-            // TODO: 관심 분야 신규 정책 FCM 발송
+            // FCM 발송
+            if (!notifications.isEmpty()) {
+                eventPublisher.publishEvent(InterestPolicyNotificationsCreatedEvent.of(
+                        //알림이 여러 개일 경우 한 개만 FCM 발송
+                        interestPolicyNotificationMapper.toRepresentativePushMessages(
+                                notifications
+                        )
+                ));
+            }
+
             cursor = users.getLast().getId();
         }
     }

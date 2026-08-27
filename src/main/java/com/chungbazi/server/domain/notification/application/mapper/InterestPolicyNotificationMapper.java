@@ -1,11 +1,16 @@
 package com.chungbazi.server.domain.notification.application.mapper;
 
+import com.chungbazi.server.domain.notification.application.dto.NotificationPushMessage;
 import com.chungbazi.server.domain.notification.domain.Notification;
 import com.chungbazi.server.domain.notification.domain.type.NotificationCategory;
 import com.chungbazi.server.domain.notification.domain.type.NotificationType;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.user.domain.User;
 import org.springframework.stereotype.Component;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 @Component
 public class InterestPolicyNotificationMapper {
@@ -25,5 +30,15 @@ public class InterestPolicyNotificationMapper {
         );
     }
 
+    public List<NotificationPushMessage> toRepresentativePushMessages(
+            List<Notification> notifications
+    ) {
+        Map<Long, NotificationPushMessage> messageByUserId = new LinkedHashMap<>();
+        notifications.forEach(notification -> messageByUserId.putIfAbsent(
+                notification.getUserId(),
+                NotificationPushMessage.from(notification)
+        ));
+        return List.copyOf(messageByUserId.values());
+    }
 
 }
