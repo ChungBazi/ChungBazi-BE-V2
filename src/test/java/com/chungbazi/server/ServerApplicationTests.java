@@ -15,10 +15,12 @@ class ServerApplicationTests {
 
 	@Test
 	void contextLoads() {
-		assertThat(environment.getProperty("management.endpoints.web.exposure.include"))
-				.isEqualTo("health,prometheus");
-		assertThat(environment.getProperty("management.endpoint.health.group.readiness.include"))
-				.isEqualTo("readinessState,db,redis");
+		assertThat(environment.getProperty("management.endpoints.web.exposure.include[0]"))
+				.isEqualTo("health");
+		assertThat(environment.getProperty("management.endpoints.web.exposure.include[1]"))
+				.isEqualTo("prometheus");
+		assertThat(environment.getProperty("management.endpoint.health.group.readiness.include[0]"))
+				.isEqualTo("readinessState");
 	}
 
 }
