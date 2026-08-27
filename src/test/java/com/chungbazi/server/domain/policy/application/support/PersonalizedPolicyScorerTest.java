@@ -24,7 +24,7 @@ public class PersonalizedPolicyScorerTest {
 
     @BeforeEach
     void setUp() {
-        scorer = new PersonalizedPolicyScorer();
+        scorer = new PersonalizedPolicyScorer(new PolicyIncomeMatcher());
     }
 
     @Test

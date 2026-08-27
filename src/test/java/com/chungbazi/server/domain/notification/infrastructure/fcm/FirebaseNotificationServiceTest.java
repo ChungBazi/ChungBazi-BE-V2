@@ -5,6 +5,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.chungbazi.server.domain.notification.application.dto.NotificationPushMessage;
+import com.chungbazi.server.domain.notification.application.event.PersonalizedPolicyNotificationsCreatedEvent;
 import com.chungbazi.server.domain.notification.application.event.PolicyReminderNotificationsCreatedEvent;
 import com.chungbazi.server.domain.notification.application.event.PolicyUpdateNotificationsCreatedEvent;
 import com.chungbazi.server.domain.notification.domain.NotificationSetting;
@@ -103,6 +104,30 @@ class FirebaseNotificationServiceTest {
         firebaseNotificationService.sendPolicyUpdates(event);
 
         verify(firebaseNotificationSender).sendAll(List.of(target));
+    }
+
+    @Test
+    void sendsPersonalizedPolicyNotificationToChungbaziPushEnabledUsers() {
+        NotificationPushMessage message = pushMessage(1L, 10L);
+        PersonalizedPolicyNotificationsCreatedEvent event =
+                PersonalizedPolicyNotificationsCreatedEvent.of(List.of(message));
+
+        User enabledUser = org.mockito.Mockito.mock(User.class);
+        NotificationSetting enabledSetting = org.mockito.Mockito.mock(NotificationSetting.class);
+        given(enabledSetting.getUser()).willReturn(enabledUser);
+        given(enabledUser.getId()).willReturn(1L);
+        given(enabledUser.getFcmToken()).willReturn("fcm-token");
+        given(notificationSettingRepository.findChungbaziPushEnabledSettings(Set.of(1L)))
+                .willReturn(List.of(enabledSetting));
+
+        FirebasePushTarget target = FirebasePushTarget.of("fcm-token", message);
+        given(firebaseNotificationSender.sendAll(List.of(target)))
+                .willReturn(FirebasePushResult.of(1, 0, Set.of()));
+
+        firebaseNotificationService.sendPersonalizedPolicies(event);
+
+        verify(firebaseNotificationSender).sendAll(List.of(target));
+        verify(notificationSettingRepository, never()).findPolicyPushEnabledSettings(Set.of(1L));
     }
 
     private NotificationPushMessage pushMessage(Long userId, Long policyId) {
