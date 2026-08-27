@@ -14,7 +14,10 @@ public class YouthPolicyScheduler {
 
     private final YouthPolicySyncService youthPolicySyncService;
 
-    @Scheduled(cron = "0 0 4 * * *", zone = "Asia/Seoul")
+    @Scheduled(
+            cron = "${policy.sync.cron:0 0 4 * * *}",
+            zone = "${policy.sync.zone:Asia/Seoul}"
+    )
     public void syncPoliciesEveryDay() {
         log.info("정책 동기화 시작");
         SyncResult result = youthPolicySyncService.syncPolicies();
