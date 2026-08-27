@@ -1,6 +1,11 @@
 package com.chungbazi.server.domain.notification.application;
 
 import com.chungbazi.server.domain.notification.application.dto.InterestPolicyNotificationTarget;
+import com.chungbazi.server.domain.notification.application.dto.NotificationKey;
+import com.chungbazi.server.domain.notification.application.mapper.InterestPolicyNotificationMapper;
+import com.chungbazi.server.domain.notification.domain.Notification;
+import com.chungbazi.server.domain.notification.domain.repository.NotificationRepository;
+import com.chungbazi.server.domain.notification.domain.type.NotificationType;
 import com.chungbazi.server.domain.policy.application.event.NewPoliciesRegisteredEvent;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.repository.policyRepository.PolicyRepository;
@@ -32,6 +37,8 @@ public class InterestPolicyNotificationService {
     private final PolicyRepository policyRepository;
     private final UserRepository userRepository;
     private final UserInterestRepository userInterestRepository;
+    private final NotificationRepository notificationRepository;
+    private final InterestPolicyNotificationMapper interestPolicyNotificationMapper;
 
     public void createInterestPolicyNotifications(NewPoliciesRegisteredEvent event) {
         List<Policy> newPolicies = policyRepository.findAllByIdInAndRecruitmentStatusNot(
@@ -78,9 +85,60 @@ public class InterestPolicyNotificationService {
                     targets.size()
             );
 
-            // TODO: 관심 분야 신규 정책 알림 저장
+            List<Notification> notifications = saveInterestPolicyNotifications(targets);
+            log.info(
+                    "관심 분야 신규 정책 알림 저장 완료. notificationCount={}",
+                    notifications.size()
+            );
+
+            // TODO: 관심 분야 신규 정책 FCM 발송
             cursor = users.getLast().getId();
         }
+    }
+
+    public List<Notification> saveInterestPolicyNotifications(
+            List<InterestPolicyNotificationTarget> targets
+    ) {
+        if (targets.isEmpty()) {
+            return List.of();
+        }
+
+        Set<Long> userIds = targets.stream()
+                .map(target -> target.user().getId())
+                .collect(java.util.stream.Collectors.toSet());
+        Set<Long> policyIds = targets.stream()
+                .flatMap(target -> target.policies().stream())
+                .map(Policy::getId)
+                .collect(java.util.stream.Collectors.toSet());
+
+        Set<NotificationKey> existingNotificationKeys = notificationRepository
+                .findAllByUserIdInAndPolicyIdInAndTypeIn(
+                        userIds,
+                        policyIds,
+                        Set.of(
+                                NotificationType.PERSONALIZED_POLICY,
+                                NotificationType.INTEREST_POLICY
+                        )
+                ).stream()
+                .map(NotificationKey::from)
+                .collect(java.util.stream.Collectors.toSet());
+
+        List<Notification> notifications = targets.stream()
+                .flatMap(target -> target.policies().stream()
+                        .map(policy -> interestPolicyNotificationMapper.toNotification(
+                                target.user(),
+                                policy
+                        )))
+                .filter(notification -> !hasExistingNotification(
+                        notification,
+                        existingNotificationKeys
+                ))
+                .toList();
+
+        if (notifications.isEmpty()) {
+            return List.of();
+        }
+        return notificationRepository.saveAll(notifications);
     }
 
     public List<InterestPolicyNotificationTarget> findInterestPolicyTargets(
@@ -105,5 +163,19 @@ public class InterestPolicyNotificationService {
             }
         }
         return targets;
+    }
+
+    private boolean hasExistingNotification(
+            Notification notification,
+            Set<NotificationKey> existingNotificationKeys
+    ) {
+        NotificationKey interestPolicyKey = NotificationKey.from(notification);
+        NotificationKey personalizedPolicyKey = new NotificationKey(
+                notification.getUserId(),
+                notification.getPolicyId(),
+                NotificationType.PERSONALIZED_POLICY
+        );
+        return existingNotificationKeys.contains(interestPolicyKey)
+                || existingNotificationKeys.contains(personalizedPolicyKey);
     }
 }
