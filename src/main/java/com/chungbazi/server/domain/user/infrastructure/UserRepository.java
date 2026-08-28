@@ -2,6 +2,7 @@ package com.chungbazi.server.domain.user.infrastructure;
 
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.domain.user.domain.type.SocialType;
+import com.chungbazi.server.domain.policy.domain.type.PolicySubCategoryType;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +25,26 @@ public interface UserRepository extends JpaRepository<User, Long> {
             ORDER BY user.id ASC
             """)
     List<User> findNotificationTargetUsersAfterId(
+            @Param("cursor") Long cursor,
+            Pageable pageable
+    );
+
+    @Query("""
+            SELECT user
+            FROM User user
+            WHERE user.id > :cursor
+              AND user.deleted = false
+              AND user.onboardingCompleted = true
+              AND EXISTS (
+                    SELECT userInterest.id
+                    FROM UserInterest userInterest
+                    WHERE userInterest.user = user
+                      AND userInterest.subCategory IN :subCategories
+              )
+            ORDER BY user.id ASC
+            """)
+    List<User> findInterestNotificationTargetUsersAfterId(
+            @Param("subCategories") Collection<PolicySubCategoryType> subCategories,
             @Param("cursor") Long cursor,
             Pageable pageable
     );
