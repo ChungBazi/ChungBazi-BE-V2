@@ -14,6 +14,7 @@ application-local.yml
 application-dev.yml
 application-prod.yml
 application-test.yml
+!src/test/resources/application-test.yml
 
 ### QueryDsl ###
 src/main/generated/
