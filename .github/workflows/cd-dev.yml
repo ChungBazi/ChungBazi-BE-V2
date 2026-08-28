@@ -80,57 +80,21 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: deploy/docker-compose.dev.yml
-          target: /home/ubuntu/app
+          source: deploy/docker-compose.dev.yml,deploy/deploy.sh
+          target: /home/ubuntu/app/incoming
           strip_components: 1
 
       - name: Deploy development
         uses: appleboy/ssh-action@v1
         env:
           APP_IMAGE: ${{ secrets.DOCKER_REPO }}:${{ github.event.workflow_run.head_sha }}
+          COMPOSE_FILE: docker-compose.dev.yml
           APPLICATION_YML: ${{ secrets.APPLICATION_DEV_YML }}
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: APP_IMAGE,APPLICATION_YML,FIREBASE_SERVICE_ACCOUNT_JSON
+          envs: APP_IMAGE,COMPOSE_FILE,APPLICATION_YML,FIREBASE_SERVICE_ACCOUNT_JSON
           script: |
-            set -eu
-            cd /home/ubuntu/app
-
-            : "${APP_IMAGE:?APP_IMAGE is required}"
-            : "${APPLICATION_YML:?APPLICATION_DEV_YML secret is required}"
-            : "${FIREBASE_SERVICE_ACCOUNT_JSON:?FIREBASE_SERVICE_ACCOUNT_JSON secret is required}"
-
-            umask 077
-            mkdir -p ./config ./secrets
-            printf '%s' "$APPLICATION_YML" > ./config/application.yml
-            printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > ./secrets/firebase-service-account.json
-            chmod 0444 ./config/application.yml ./secrets/firebase-service-account.json
-
-            PREVIOUS_IMAGE=$(docker inspect --format '{{.Config.Image}}' chungbazi-app 2>/dev/null || true)
-            export APP_IMAGE
-
-            docker compose -f docker-compose.dev.yml pull
-            docker compose -f docker-compose.dev.yml up -d mysql redis
-            docker compose -f docker-compose.dev.yml up -d --no-deps chungbazi-app
-
-            READY=false
-            for attempt in $(seq 1 30); do
-              if curl --fail --silent --output /dev/null http://127.0.0.1:8080/api/v1/global/health-check; then
-                READY=true
-                break
-              fi
-              sleep 5
-            done
-
-            if [ "$READY" != "true" ]; then
-              docker compose -f docker-compose.dev.yml logs --tail=100 chungbazi-app
-              if [ -n "$PREVIOUS_IMAGE" ]; then
-                APP_IMAGE="$PREVIOUS_IMAGE" docker compose -f docker-compose.dev.yml up -d --no-deps chungbazi-app
-              fi
-              exit 1
-            fi
-
-            docker image prune -f
+            bash /home/ubuntu/app/incoming/deploy.sh
