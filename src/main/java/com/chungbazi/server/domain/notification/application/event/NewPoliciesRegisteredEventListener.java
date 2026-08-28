@@ -25,10 +25,22 @@ public class NewPoliciesRegisteredEventListener {
         try (AsyncTaskMdc ignored = AsyncTaskMdc.start("personalized-policy-notification-create")) {
             try {
                 personalizedPolicyNotificationService.createPersonalizedPolicyNotifications(event);
-                interestPolicyNotificationService.createInterestPolicyNotifications(event);
             } catch (RuntimeException exception) {
                 log.error(
                         "신규 맞춤 정책 알림 생성 중 오류 발생. policyIds={}",
+                        event.policyIds(),
+                        exception
+                );
+                return;
+            }
+        }
+
+        try (AsyncTaskMdc ignored = AsyncTaskMdc.start("interest-policy-notification-create")) {
+            try {
+                interestPolicyNotificationService.createInterestPolicyNotifications(event);
+            } catch (RuntimeException exception) {
+                log.error(
+                        "관심 분야 신규 정책 알림 생성 중 오류 발생. policyIds={}",
                         event.policyIds(),
                         exception
                 );

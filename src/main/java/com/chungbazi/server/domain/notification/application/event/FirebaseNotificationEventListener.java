@@ -64,10 +64,12 @@ public class FirebaseNotificationEventListener {
             fallbackExecution = true
     )
     public void handle(InterestPolicyNotificationsCreatedEvent event) {
-        try {
-            firebaseNotificationService.sendInterestPolicies(event);
-        } catch (RuntimeException exception) {
-            log.error("비동기 FCM 관심 분야 신규 정책 알림 발송 중 오류 발생", exception);
+        try (AsyncTaskMdc ignored = AsyncTaskMdc.start("interest-policy-fcm-send")) {
+            try {
+                firebaseNotificationService.sendInterestPolicies(event);
+            } catch (RuntimeException exception) {
+                log.error("비동기 FCM 관심 분야 신규 정책 알림 발송 중 오류 발생", exception);
+            }
         }
     }
 }
