@@ -4,9 +4,14 @@ on:
   pull_request:
     branches:
       - develop
+      - main
   push:
     branches:
       - develop
+      - main
+
+permissions:
+  contents: read
 
 jobs:
   ci:
@@ -24,27 +29,20 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
-          cache: gradle
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: make application.yml
-        run: |
-          cd ./src/main/resources
-          touch ./application.yml
-          echo "${{ secrets.APPLICATION_DEV_YML }}" > ./application.yml
-        shell: bash
-
-      - name: Grant gradlew permission
-        run: chmod +x ./gradlew
-
-      - name: Build
-        run: ./gradlew build -x test
+      - name: Build and test
+        run: ./gradlew build
 
       - name: Upload JAR artifact
+        if: github.event_name == 'push'
         uses: actions/upload-artifact@v4
         with:
           name: app-jar
-          path: build/libs/*.jar
+          path: |
+            build/libs/*.jar
+            !build/libs/*-plain.jar
+          if-no-files-found: error
           retention-days: 1
