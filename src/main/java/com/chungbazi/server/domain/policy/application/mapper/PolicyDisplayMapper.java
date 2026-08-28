@@ -66,6 +66,7 @@ public class PolicyDisplayMapper {
                 policy.getCategory().getDescription(),
                 formatDDay(policy),
                 policy.getTitle(),
+                policy.getSummary(),
                 policy.getViewCount(),
                 likedPolicyIds.contains(policy.getId()),
                 policyDetail == null ? null : policyDetail.getEligibilityDescription(),

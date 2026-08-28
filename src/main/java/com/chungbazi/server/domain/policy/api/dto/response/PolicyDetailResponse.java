@@ -21,6 +21,9 @@ public record PolicyDetailResponse(
         @Schema(description = "정책 제목", example = "청년 일자리 도약 장려금")
         String title,
 
+        @Schema(description = "정책 요약", example = "청년 일자리 도약 장려금을 제공하는 정책입니다.")
+        String summary,
+
         @Schema(description = "조회수", example = "153")
         int viewCount,
 
