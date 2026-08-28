@@ -1,5 +1,6 @@
 package com.chungbazi.server.global.config;
 
+import com.chungbazi.server.global.logging.MdcTaskDecorator;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 import org.springframework.context.annotation.Bean;
@@ -14,12 +15,13 @@ public class AsyncConfig {
     public static final String NOTIFICATION_EXECUTOR = "notificationExecutor";
 
     @Bean(name = NOTIFICATION_EXECUTOR)
-    public Executor notificationExecutor() {
+    public Executor notificationExecutor(MdcTaskDecorator mdcTaskDecorator) {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(1);
         executor.setMaxPoolSize(1);
         executor.setQueueCapacity(10);
         executor.setThreadNamePrefix("notification-async-");
+        executor.setTaskDecorator(mdcTaskDecorator);
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.setAwaitTerminationSeconds(30);
