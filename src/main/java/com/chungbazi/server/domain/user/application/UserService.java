@@ -1,6 +1,7 @@
 package com.chungbazi.server.domain.user.application;
 
 import com.chungbazi.server.domain.auth.infrastructure.redis.RefreshTokenRepository;
+import com.chungbazi.server.domain.notification.domain.repository.NotificationSettingRepository;
 import com.chungbazi.server.domain.policy.domain.repository.PolicyLikeRepository;
 import com.chungbazi.server.domain.policy.domain.repository.RecentSearchKeywordRepository;
 import com.chungbazi.server.domain.policy.domain.repository.RecentViewedPolicyRepository;
@@ -39,6 +40,7 @@ public class UserService {
     private final RecentSearchKeywordRepository recentSearchKeywordRepository;
     private final WithdrawalSurveyRepository withdrawalSurveyRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final NotificationSettingRepository notificationSettingRepository;
     private final UserValidator userValidator;
 
     @Transactional
@@ -55,7 +57,6 @@ public class UserService {
         );
         updateUserInterests(user, request.interestCategories());
 
-        // TODO: 온보딩 가중치 로직 추가
         return UserOnboardingResponse.from(user);
     }
 
@@ -78,8 +79,6 @@ public class UserService {
                 request.incomeLevel()
         );
         updateUserInterests(user, request.interestCategories());
-
-        // TODO: 온보딩 가중치 로직 추가
     }
 
     public UserInfoResponse getUserInfo(User user) {
@@ -99,6 +98,7 @@ public class UserService {
         saveWithdrawalSurvey(request);
         deleteAuthenticationData(user);
         deleteUserActivity(user);
+        deleteNotificationSetting(user);
         deleteUser(user);
     }
 
@@ -139,6 +139,10 @@ public class UserService {
         policyLikeRepository.deleteAllByUserId(user.getId());
         recentViewedPolicyRepository.deleteAllByUserId(user.getId());
         recentSearchKeywordRepository.deleteAllByUserId(user.getId());
+    }
+
+    private void deleteNotificationSetting(User user) {
+        notificationSettingRepository.deleteAllByUserId(user.getId());
     }
 
     private void deleteUser(User user) {

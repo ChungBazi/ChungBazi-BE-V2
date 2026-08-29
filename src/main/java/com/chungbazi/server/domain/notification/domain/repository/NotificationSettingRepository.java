@@ -39,4 +39,6 @@ public interface NotificationSettingRepository extends JpaRepository<Notificatio
     List<NotificationSetting> findChungbaziPushEnabledSettings(
             @Param("userIds") Collection<Long> userIds
     );
+
+    void deleteAllByUserId(Long userId);
 }
