@@ -43,8 +43,10 @@ install_new_release() {
   test -s "$APP_ROOT/.firebase.json.tmp"
 
   cp "$INCOMING_DIR/$COMPOSE_FILE" "$APP_ROOT/$COMPOSE_FILE"
-  sudo install -o 10001 -g 10001 -m 0400 "$APP_ROOT/.application.yml.tmp" "$APP_ROOT/config/application.yml"
-  sudo install -o 10001 -g 10001 -m 0400 "$APP_ROOT/.firebase.json.tmp" "$APP_ROOT/secrets/firebase-service-account.json"
+  sudo cp "$APP_ROOT/.application.yml.tmp" "$APP_ROOT/config/application.yml"
+  sudo cp "$APP_ROOT/.firebase.json.tmp" "$APP_ROOT/secrets/firebase-service-account.json"
+  sudo chown 10001:10001 "$APP_ROOT/config/application.yml" "$APP_ROOT/secrets/firebase-service-account.json"
+  sudo chmod 0400 "$APP_ROOT/config/application.yml" "$APP_ROOT/secrets/firebase-service-account.json"
   rm -f "$APP_ROOT/.application.yml.tmp" "$APP_ROOT/.firebase.json.tmp"
 }
 
