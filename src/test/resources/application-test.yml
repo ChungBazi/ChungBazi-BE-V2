@@ -1,0 +1,56 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE;NON_KEYWORDS=USER
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: false
+  sql:
+    init:
+      mode: never
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: test
+
+springdoc:
+  local-server-url: http://localhost:8080/api
+  dev-server-url: https://dev.chungbazi.store/api
+  prod-server-url: https://api.chungbazi.store/api
+
+jwt:
+  secret: test-secret-key-test-secret-key-test-secret-key
+  access-exp: 3600000
+  refresh-exp: 604800000
+
+apple:
+  audience: test-audience
+
+firebase:
+  enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - prometheus
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+      group:
+        liveness:
+          include:
+            - livenessState
+        readiness:
+          include:
+            - readinessState
+            - db
+            - redis

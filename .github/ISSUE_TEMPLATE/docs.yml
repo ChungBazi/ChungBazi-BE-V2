@@ -1,6 +1,6 @@
 name: 📝 문서 작업
 description: README, 이슈/PR 템플릿, 가이드 등 문서 관련 작업을 기록하는 템플릿입니다.
-title: "docs: "
+title: "[Docs] "
 labels: ["📝docs"]
 assignees: []
 

@@ -1,4 +1,4 @@
-serviceAccountKey.json
+chungbazi-serviceAccountKey.json
 docker-compose.yml
 
 HELP.md
@@ -14,6 +14,7 @@ application-local.yml
 application-dev.yml
 application-prod.yml
 application-test.yml
+!src/test/resources/application-test.yml
 
 ### QueryDsl ###
 src/main/generated/
@@ -48,7 +49,7 @@ out/
 
 ### VS Code ###
 .vscode/
-src/main/resources/serviceAccountKey.json
+src/main/resources/chungbazi-serviceAccountKey.json
 src/main/resources/application-local.yml
 src/main/resources/application-dev.yml
 src/main/resources/application-prod.yml
