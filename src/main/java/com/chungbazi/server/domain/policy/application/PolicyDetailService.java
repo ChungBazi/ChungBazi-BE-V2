@@ -34,6 +34,7 @@ public class PolicyDetailService {
     private final PolicyLikeRepository policyLikeRepository;
     private final RecentViewedPolicyRepository recentViewedPolicyRepository;
     private final PolicyDisplayMapper policyDisplayMapper;
+    private final PersonalizedPolicyService personalizedPolicyService;
 
     @Transactional
     public PolicyCardResponse getPolicyCard(User user, Long policyId) {
@@ -41,7 +42,7 @@ public class PolicyDetailService {
 
         recentViewedPolicyRepository.save(RecentViewedPolicy.createRecentViewedPolicy(user.getId(), policy));
 
-        Set<Long> likedPolicyIds = findLikedPolicyIds(user, policy, List.of());
+        Set<Long> likedPolicyIds = findLikedPolicyIds(user, policy, List.of(), List.of());
 
         return policyDisplayMapper.toCardResponse(policy, likedPolicyIds);
     }
@@ -54,10 +55,17 @@ public class PolicyDetailService {
 
         PolicyDetail policyDetail = policyDetailRepository.findByPolicyId(policy.getId())
                 .orElse(null);
+        List<Policy> personalizedPolicies = findPersonalizedPolicies(user, policy);
         List<Policy> popularPolicies = findPopularPoliciesInSameCategory(user, policy);
-        Set<Long> likedPolicyIds = findLikedPolicyIds(user, policy, popularPolicies);
+        Set<Long> likedPolicyIds = findLikedPolicyIds(user, policy, personalizedPolicies, popularPolicies);
 
-        return policyDisplayMapper.toDetailResponse(policy, policyDetail, likedPolicyIds, popularPolicies);
+        return policyDisplayMapper.toDetailResponse(
+                policy,
+                policyDetail,
+                likedPolicyIds,
+                personalizedPolicies,
+                popularPolicies
+        );
     }
 
     private Policy increaseViewCountAndFindPolicy(Long policyId) {
@@ -87,8 +95,26 @@ public class PolicyDetailService {
                 .toList();
     }
 
-    private Set<Long> findLikedPolicyIds(User user, Policy policy, List<Policy> popularPolicies) {
-        List<Long> policyIds = Stream.concat(Stream.of(policy), popularPolicies.stream())
+    private List<Policy> findPersonalizedPolicies(User user, Policy policy) {
+        return personalizedPolicyService.getPersonalizedPolicyEntities(user, RELATED_POLICY_SIZE + 1)
+                .stream()
+                .filter(personalizedPolicy -> !personalizedPolicy.getId().equals(policy.getId()))
+                .limit(RELATED_POLICY_SIZE)
+                .toList();
+    }
+
+    private Set<Long> findLikedPolicyIds(
+            User user,
+            Policy policy,
+            List<Policy> personalizedPolicies,
+            List<Policy> popularPolicies
+    ) {
+        List<Long> policyIds = Stream.of(
+                        Stream.of(policy),
+                        personalizedPolicies.stream(),
+                        popularPolicies.stream()
+                )
+                .flatMap(stream -> stream)
                 .map(Policy::getId)
                 .distinct()
                 .toList();

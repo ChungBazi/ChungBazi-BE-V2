@@ -58,6 +58,7 @@ public class PolicyDisplayMapper {
             Policy policy,
             PolicyDetail policyDetail,
             Set<Long> likedPolicyIds,
+            List<Policy> personalizedPolicies,
             List<Policy> popularPolicies
     ) {
         return new PolicyDetailResponse(
@@ -76,7 +77,7 @@ public class PolicyDisplayMapper {
                 policyDetail == null ? null : policyDetail.getSubmittedDocument(),
                 policyDetail == null ? null : policyDetail.getScreeningMethod(),
                 toReferenceUrls(policyDetail),
-                null,
+                toDetailSummaries(personalizedPolicies, likedPolicyIds),
                 toDetailSummaries(popularPolicies, likedPolicyIds)
         );
     }

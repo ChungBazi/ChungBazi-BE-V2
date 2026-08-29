@@ -46,7 +46,7 @@ public interface PolicyDetailDocs {
                     ### ResponseBody
                     ---
                     - 본문 영역은 7개 필드로 반환합니다.
-                    - `policies`: 맞춤 추천 정책 목록. 추천 로직 구현 전까지 null로 반환합니다.
+                    - `policies`: 맞춤 추천 정책 목록
                     - `popularPolicies`: 같은 분야의 인기 정책 목록
                     """
     )
