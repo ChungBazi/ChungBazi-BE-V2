@@ -73,6 +73,7 @@ public class PolicyDisplayMapper {
                 policyDetail == null ? null : policyDetail.getEligibilityDescription(),
                 formatApplyPeriod(policy),
                 policy.getSupportContent(),
+                policy.getApplyUrl(),
                 policyDetail == null ? null : policyDetail.getApplicationMethod(),
                 policyDetail == null ? null : policyDetail.getSubmittedDocument(),
                 policyDetail == null ? null : policyDetail.getScreeningMethod(),

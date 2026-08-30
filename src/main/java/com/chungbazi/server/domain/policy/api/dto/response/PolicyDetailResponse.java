@@ -39,6 +39,9 @@ public record PolicyDetailResponse(
         @Schema(description = "지원 내용", example = "월세근무제 활용 장려금을 지원합니다.")
         String supportContent,
 
+        @Schema(description = "신청 URL", example = "https://www.youthcenter.go.kr")
+        String applyUrl,
+
         @Schema(description = "신청 방법", example = "신청인 본인 주민등록지 동 주민센터 방문접수")
         String applicationMethod,
 
