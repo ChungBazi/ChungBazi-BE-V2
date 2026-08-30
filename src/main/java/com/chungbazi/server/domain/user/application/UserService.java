@@ -16,9 +16,14 @@ import com.chungbazi.server.domain.user.api.dto.response.UserPolicyResponse;
 import com.chungbazi.server.domain.user.application.validator.UserValidator;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.domain.user.domain.UserInterest;
+import com.chungbazi.server.domain.user.domain.UserSpecialEligibility;
 import com.chungbazi.server.domain.user.domain.WithdrawalSurvey;
+import com.chungbazi.server.domain.user.domain.type.SpecialEligibilityType;
+import com.chungbazi.server.domain.user.exception.UserException;
+import com.chungbazi.server.domain.user.exception.code.UserErrorCode;
 import com.chungbazi.server.domain.user.infrastructure.UserInterestRepository;
 import com.chungbazi.server.domain.user.infrastructure.UserRepository;
+import com.chungbazi.server.domain.user.infrastructure.UserSpecialEligibilityRepository;
 import com.chungbazi.server.domain.user.infrastructure.WithdrawalSurveyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,6 +40,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserInterestRepository userInterestRepository;
+    private final UserSpecialEligibilityRepository userSpecialEligibilityRepository;
     private final PolicyLikeRepository policyLikeRepository;
     private final RecentViewedPolicyRepository recentViewedPolicyRepository;
     private final RecentSearchKeywordRepository recentSearchKeywordRepository;
@@ -47,7 +53,9 @@ public class UserService {
     public UserOnboardingResponse saveUserOnboarding(User user, UserOnboardingRequest request) {
         userValidator.validateOnboarding(request);
 
-        user.saveUserOnboarding(
+        User lockedUser = getUserForUpdate(user.getId());
+
+        lockedUser.saveUserOnboarding(
                 request.birth(),
                 request.sidoCode(),
                 request.sigunguCode(),
@@ -55,9 +63,10 @@ public class UserService {
                 request.employmentCode(),
                 request.incomeLevel()
         );
-        updateUserInterests(user, request.interestCategories());
+        updateUserInterests(lockedUser, request.interestCategories());
+        updateUserSpecialEligibilities(lockedUser, request.specialEligibilities());
 
-        return UserOnboardingResponse.from(user);
+        return UserOnboardingResponse.from(lockedUser);
     }
 
     @Transactional
@@ -70,7 +79,9 @@ public class UserService {
     public void updateUserPolicy(User user, UserPolicyRequest request) {
         userValidator.validatePolicy(request);
 
-        user.updateUserPolicy(
+        User lockedUser = getUserForUpdate(user.getId());
+
+        lockedUser.updateUserPolicy(
                 request.birth(),
                 request.sidoCode(),
                 request.sigunguCode(),
@@ -78,7 +89,8 @@ public class UserService {
                 request.employmentCode(),
                 request.incomeLevel()
         );
-        updateUserInterests(user, request.interestCategories());
+        updateUserInterests(lockedUser, request.interestCategories());
+        updateUserSpecialEligibilities(lockedUser, request.specialEligibilities());
     }
 
     public UserInfoResponse getUserInfo(User user) {
@@ -90,7 +102,12 @@ public class UserService {
                 .map(UserInterest::getSubCategory)
                 .collect(Collectors.toSet());
 
-        return UserPolicyResponse.of(user, interestCategories);
+        Set<SpecialEligibilityType> specialEligibilities =
+                userSpecialEligibilityRepository.findAllByUser(user).stream()
+                        .map(UserSpecialEligibility::getEligibilityType)
+                        .collect(Collectors.toSet());
+
+        return UserPolicyResponse.of(user, interestCategories, specialEligibilities);
     }
 
     @Transactional
@@ -122,6 +139,31 @@ public class UserService {
         userInterestRepository.saveAll(addTargets);
     }
 
+    private void updateUserSpecialEligibilities(User user, Set<SpecialEligibilityType> requestedEligibilities) {
+        List<UserSpecialEligibility> existingEligibilities = userSpecialEligibilityRepository.findAllByUser(user);
+
+        List<UserSpecialEligibility> deleteTargets = existingEligibilities.stream()
+                .filter(eligibility -> !requestedEligibilities.contains(eligibility.getEligibilityType()))
+                .toList();
+
+        Set<SpecialEligibilityType> existingTypes = existingEligibilities.stream()
+                        .map(UserSpecialEligibility::getEligibilityType)
+                        .collect(Collectors.toSet());
+
+        List<UserSpecialEligibility> addTargets = requestedEligibilities.stream()
+                .filter(type -> !existingTypes.contains(type))
+                .map(type -> UserSpecialEligibility.create(user, type))
+                .toList();
+
+        userSpecialEligibilityRepository.deleteAll(deleteTargets);
+        userSpecialEligibilityRepository.saveAll(addTargets);
+    }
+
+    private User getUserForUpdate(Long userId) {
+        return userRepository.findByIdForUpdate(userId)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+    }
+
     private void saveWithdrawalSurvey(UserWithdrawalRequest request) {
         WithdrawalSurvey survey = WithdrawalSurvey.create(
                 request.reasons(),
@@ -136,6 +178,7 @@ public class UserService {
 
     private void deleteUserActivity(User user) {
         userInterestRepository.deleteAllByUserId(user.getId());
+        userSpecialEligibilityRepository.deleteAllByUserId(user.getId());
         policyLikeRepository.deleteAllByUserId(user.getId());
         recentViewedPolicyRepository.deleteAllByUserId(user.getId());
         recentSearchKeywordRepository.deleteAllByUserId(user.getId());
