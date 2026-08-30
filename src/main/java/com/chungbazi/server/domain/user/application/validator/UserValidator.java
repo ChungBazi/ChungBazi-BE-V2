@@ -98,8 +98,7 @@ public class UserValidator {
             throw new UserException(UserErrorCode.SPECIAL_ELIGIBILITY_REQUIRED);
         }
 
-        if (specialEligibilities.contains(SpecialEligibilityType.NONE)
-                && specialEligibilities.size() > 1) {
+        if (specialEligibilities.contains(SpecialEligibilityType.NONE) && specialEligibilities.size() > 1) {
             throw new UserException(UserErrorCode.INVALID_SPECIAL_ELIGIBILITY_COMBINATION);
         }
     }

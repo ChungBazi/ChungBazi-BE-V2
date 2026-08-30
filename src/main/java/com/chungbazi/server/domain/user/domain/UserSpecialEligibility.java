@@ -1,6 +1,8 @@
 package com.chungbazi.server.domain.user.domain;
 
 import com.chungbazi.server.domain.user.domain.type.SpecialEligibilityType;
+import com.chungbazi.server.domain.user.exception.UserException;
+import com.chungbazi.server.domain.user.exception.code.UserErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -47,7 +49,7 @@ public class UserSpecialEligibility {
             SpecialEligibilityType eligibilityType
     ) {
         if (eligibilityType == null) {
-            throw new IllegalArgumentException("특별 지원 자격 선택은 필수입니다.");
+            throw new UserException(UserErrorCode.SPECIAL_ELIGIBILITY_REQUIRED);
         }
         UserSpecialEligibility eligibility = new UserSpecialEligibility();
         eligibility.user = user;

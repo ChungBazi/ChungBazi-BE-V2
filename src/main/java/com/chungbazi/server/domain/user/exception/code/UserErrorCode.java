@@ -20,7 +20,7 @@ public enum UserErrorCode implements BaseErrorCode {
     INVALID_INCOME_LEVEL(HttpStatus.BAD_REQUEST, "USER4007", "소득 구간을 선택해주세요."),
     INVALID_INTEREST_CATEGORY_COUNT(HttpStatus.BAD_REQUEST, "USER4008", "관심 분야는 3개 이상 선택해야 합니다."),
     INVALID_WITHDRAWAL_REASON(HttpStatus.BAD_REQUEST, "USER4009", "탈퇴 사유를 한 개 이상 선택해야 합니다."),
-    SPECIAL_ELIGIBILITY_REQUIRED(HttpStatus.BAD_REQUEST, "USER4010", "특별 지원 자격을 선택해주세요."),
+    SPECIAL_ELIGIBILITY_REQUIRED(HttpStatus.BAD_REQUEST, "USER4010", "특별 지원 자격을 한 개 이상 선택해야 합니다."),
     INVALID_SPECIAL_ELIGIBILITY_COMBINATION(HttpStatus.BAD_REQUEST, "USER4011", "'해당 없음'은 다른 항목과 함께 선택할 수 없습니다."),
     ;
 
