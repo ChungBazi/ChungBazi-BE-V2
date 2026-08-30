@@ -7,6 +7,7 @@ import com.chungbazi.server.domain.policy.domain.type.SidoCode;
 import com.chungbazi.server.domain.user.api.dto.request.UserOnboardingRequest;
 import com.chungbazi.server.domain.user.api.dto.request.UserPolicyRequest;
 import com.chungbazi.server.domain.user.domain.type.IncomeLevel;
+import com.chungbazi.server.domain.user.domain.type.SpecialEligibilityType;
 import com.chungbazi.server.domain.user.exception.UserException;
 import com.chungbazi.server.domain.user.exception.code.UserErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,8 @@ public class UserValidator {
                 request.educationCode(),
                 request.employmentCode(),
                 request.incomeLevel(),
-                request.interestCategories()
+                request.interestCategories(),
+                request.specialEligibilities()
         );
     }
 
@@ -43,7 +45,8 @@ public class UserValidator {
                 request.educationCode(),
                 request.employmentCode(),
                 request.incomeLevel(),
-                request.interestCategories()
+                request.interestCategories(),
+                request.specialEligibilities()
         );
     }
 
@@ -60,7 +63,8 @@ public class UserValidator {
             EducationCode educationCode,
             EmploymentCode employmentCode,
             IncomeLevel incomeLevel,
-            Set<PolicySubCategoryType> interestCategories
+            Set<PolicySubCategoryType> interestCategories,
+            Set<SpecialEligibilityType> specialEligibilities
     ) {
         if (!isValidBirth(birth)) {
             throw new UserException(UserErrorCode.INVALID_BIRTH);
@@ -88,6 +92,15 @@ public class UserValidator {
 
         if (interestCategories == null || interestCategories.size() < MIN_INTEREST_CATEGORY_COUNT) {
             throw new UserException(UserErrorCode.INVALID_INTEREST_CATEGORY_COUNT);
+        }
+
+        if (specialEligibilities == null || specialEligibilities.isEmpty()) {
+            throw new UserException(UserErrorCode.SPECIAL_ELIGIBILITY_REQUIRED);
+        }
+
+        if (specialEligibilities.contains(SpecialEligibilityType.NONE)
+                && specialEligibilities.size() > 1) {
+            throw new UserException(UserErrorCode.INVALID_SPECIAL_ELIGIBILITY_COMBINATION);
         }
     }
 
