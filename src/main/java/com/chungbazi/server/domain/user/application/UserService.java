@@ -133,10 +133,7 @@ public class UserService {
         userInterestRepository.saveAll(addTargets);
     }
 
-    private void updateUserSpecialEligibilities(
-            User user,
-            Set<SpecialEligibilityType> requestedEligibilities
-    ) {
+    private void updateUserSpecialEligibilities(User user, Set<SpecialEligibilityType> requestedEligibilities) {
         List<UserSpecialEligibility> existingEligibilities = userSpecialEligibilityRepository.findAllByUser(user);
 
         List<UserSpecialEligibility> deleteTargets = existingEligibilities.stream()
