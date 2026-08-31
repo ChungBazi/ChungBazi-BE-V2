@@ -41,6 +41,7 @@ public class MyPolicyService {
 
     private static final ZoneId SERVICE_ZONE_ID = ZoneId.of("Asia/Seoul");
     private static final int MAX_DEADLINE_SIZE = 5;
+    private static final int UPCOMING_DEADLINE_PERIOD_DAYS = 14;
 
     private final PolicyLikeRepository policyLikeRepository;
     private final PolicyDisplayMapper policyDisplayMapper;
@@ -72,6 +73,19 @@ public class MyPolicyService {
                 user.getId(),
                 targetDate,
                 RecruitmentStatus.CLOSED
+        );
+
+        return assembleLikedPolicyListResponse(policies, (long) policies.size(), null, false);
+    }
+
+    public PolicyListResponse getUpcomingDeadlinePoliciesWithinTwoWeeks(User user, LocalDate targetDate) {
+        LocalDate deadlineUntil = targetDate.plusDays(UPCOMING_DEADLINE_PERIOD_DAYS);
+        List<Policy> policies = policyLikeRepository.findUpcomingDeadlineLikedPoliciesWithinPeriod(
+                user.getId(),
+                RecruitmentStatus.CLOSED,
+                RecruitmentType.ALWAYS,
+                targetDate,
+                deadlineUntil
         );
 
         return assembleLikedPolicyListResponse(policies, (long) policies.size(), null, false);

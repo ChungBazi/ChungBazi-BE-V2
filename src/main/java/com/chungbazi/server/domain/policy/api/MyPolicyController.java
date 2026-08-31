@@ -52,6 +52,16 @@ public class MyPolicyController implements MyPolicyDocs {
     }
 
     @Override
+    @GetMapping("/deadline/upcoming")
+    public CommonResponse<PolicyListResponse> getUpcomingDeadlinePoliciesWithinTwoWeeks(
+            @CurrentUser User user,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate targetDate
+    ) {
+
+        return CommonResponse.onSuccess(myPolicyService.getUpcomingDeadlinePoliciesWithinTwoWeeks(user, targetDate));
+    }
+
+    @Override
     @GetMapping("/open-ended")
     public CommonResponse<PolicyListResponse> getOpenEndedLikedPolicies(
             @CurrentUser User user,

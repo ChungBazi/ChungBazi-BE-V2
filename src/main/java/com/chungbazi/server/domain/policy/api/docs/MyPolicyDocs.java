@@ -61,6 +61,28 @@ public interface MyPolicyDocs {
     );
 
     @Operation(
+            summary = "2주 이내 마감되는 찜한 정책 조회 API",
+            description = """
+                    사용자가 확인하고 싶은 날짜를 기준으로 2주 이내에 마감되는 찜한 정책을 조회하는 API입니다. \n
+                    기준일 당일 마감 정책부터 기준일 14일 뒤에 마감되는 정책까지 조회합니다.
+                    마감일이 가까운 순으로 조회하며, 같은 마감일이면 최근 찜한 순으로 조회합니다.
+
+                    ### Query Parameter
+                    - `targetDate`: 사용자가 확인하고 싶은 기준 날짜로, YYYY-MM-DD 형식입니다.
+                    """
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "2주 이내 마감되는 찜한 정책 조회 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 날짜"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+    })
+    CommonResponse<PolicyListResponse> getUpcomingDeadlinePoliciesWithinTwoWeeks(
+            @CurrentUser User user,
+            @Parameter(description = "사용자가 확인하고 싶은 기준 날짜", example = "2026-08-06", required = true)
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate targetDate
+    );
+
+    @Operation(
             summary = "찜한 상시 정책 리스트 조회 API",
             description = """
                     찜한 상시 정책 리스트를 조회하는 API입니다. \n

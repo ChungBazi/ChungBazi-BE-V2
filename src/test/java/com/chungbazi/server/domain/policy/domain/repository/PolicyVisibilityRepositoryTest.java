@@ -7,6 +7,7 @@ import com.chungbazi.server.domain.policy.domain.entity.PolicyLike;
 import com.chungbazi.server.domain.policy.domain.repository.policyRepository.PolicyRepository;
 import com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
+import com.chungbazi.server.domain.policy.domain.type.RecruitmentType;
 import com.chungbazi.server.fixture.PolicyFixture;
 import java.time.LocalDate;
 import java.util.List;
@@ -118,6 +119,57 @@ class PolicyVisibilityRepositoryTest {
         assertThat(count).isEqualTo(2L);
     }
 
+    @Test
+    void findsLikedPoliciesDeadlineWithinTwoWeeks() {
+        Long userId = 1L;
+        LocalDate targetDate = LocalDate.of(2026, 8, 31);
+        LocalDate deadlineUntil = targetDate.plusDays(14);
+        Policy deadlineTodayPolicy = fixedPeriodPolicy("liked-deadline-today-policy", targetDate);
+        Policy deadlineInFourteenDaysPolicy = fixedPeriodPolicy("liked-deadline-d14-policy", deadlineUntil);
+        Policy deadlineInFifteenDaysPolicy = fixedPeriodPolicy("liked-deadline-d15-policy", targetDate.plusDays(15));
+        Policy openEndedPolicy = PolicyFixture.policy()
+                .id(null)
+                .policyNumber("liked-open-ended-policy")
+                .applyEndDate(targetDate.plusDays(1))
+                .recruitmentType(RecruitmentType.ALWAYS)
+                .build();
+        Policy hiddenPolicy = PolicyFixture.policy()
+                .id(null)
+                .policyNumber("liked-hidden-deadline-policy")
+                .applyEndDate(targetDate.plusDays(2))
+                .recruitmentType(RecruitmentType.FIXED_PERIOD)
+                .displayStatus(PolicyDisplayStatus.HIDDEN_EXPIRED)
+                .build();
+        Policy notLikedPolicy = fixedPeriodPolicy("not-liked-deadline-policy", targetDate.plusDays(3));
+        policyRepository.saveAllAndFlush(List.of(
+                deadlineTodayPolicy,
+                deadlineInFourteenDaysPolicy,
+                deadlineInFifteenDaysPolicy,
+                openEndedPolicy,
+                hiddenPolicy,
+                notLikedPolicy
+        ));
+        policyLikeRepository.saveAllAndFlush(List.of(
+                PolicyLike.createPolicyLike(userId, deadlineInFourteenDaysPolicy, null),
+                PolicyLike.createPolicyLike(userId, hiddenPolicy, null),
+                PolicyLike.createPolicyLike(userId, openEndedPolicy, null),
+                PolicyLike.createPolicyLike(userId, deadlineInFifteenDaysPolicy, null),
+                PolicyLike.createPolicyLike(userId, deadlineTodayPolicy, null)
+        ));
+
+        List<Policy> policies = policyLikeRepository.findUpcomingDeadlineLikedPoliciesWithinPeriod(
+                userId,
+                RecruitmentStatus.CLOSED,
+                RecruitmentType.ALWAYS,
+                targetDate,
+                deadlineUntil
+        );
+
+        assertThat(policies)
+                .extracting(Policy::getPlcyNo)
+                .containsExactly("liked-deadline-today-policy", "liked-deadline-d14-policy");
+    }
+
     private Policy policy(String policyNumber, PolicyDisplayStatus displayStatus) {
         return PolicyFixture.policy()
                 .id(null)
@@ -131,6 +183,15 @@ class PolicyVisibilityRepositoryTest {
                 .id(null)
                 .policyNumber(policyNumber)
                 .applyEndDate(applyEndDate)
+                .build();
+    }
+
+    private Policy fixedPeriodPolicy(String policyNumber, LocalDate applyEndDate) {
+        return PolicyFixture.policy()
+                .id(null)
+                .policyNumber(policyNumber)
+                .applyEndDate(applyEndDate)
+                .recruitmentType(RecruitmentType.FIXED_PERIOD)
                 .build();
     }
 }
