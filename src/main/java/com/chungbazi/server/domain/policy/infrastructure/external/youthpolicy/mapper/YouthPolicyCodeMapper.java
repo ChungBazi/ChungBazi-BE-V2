@@ -45,7 +45,7 @@ public class YouthPolicyCodeMapper {
             return Set.of(SpecialEligibilityType.NONE);
         }
 
-        Set<SpecialEligibilityType> eligibilityTypes = Arrays.stream(normalizedCode.split(","))
+        Set<SpecialEligibilityType> eligibilityTypes = Arrays.stream(normalizedCode.split(",", -1))
                 .map(YouthPolicyTextUtils::trimToNull)
                 .map(this::toSpecialEligibilityType)
                 .collect(Collectors.toSet());

@@ -103,7 +103,7 @@ public class YouthPolicyPersistenceService {
         syncPolicyDetail(policy, item);
         policyRegionRepository.deleteAllByPolicyId(policy.getId());
         policyRegionRepository.saveAll(policyRegionMapper.toPolicyRegions(policy, regionMapping));
-        policySpecialEligibilityRepository.deleteAllByPolicy_Id(policy.getId());
+        policySpecialEligibilityRepository.deleteAllByPolicyId(policy.getId());
         policySpecialEligibilityRepository.saveAll(policyEntityMapper.toPolicySpecialEligibilities(policy, item));
 
         //정책 정보 변경 알림 전송

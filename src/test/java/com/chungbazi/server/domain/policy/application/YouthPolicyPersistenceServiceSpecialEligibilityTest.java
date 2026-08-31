@@ -99,6 +99,25 @@ class YouthPolicyPersistenceServiceSpecialEligibilityTest {
                 .containsExactly(SpecialEligibilityType.FARMER);
     }
 
+    @Test
+    void updatesSpecialEligibilitiesWhenExistingEligibilityIsIncludedAgain() {
+        PolicySyncItemResult inserted = youthPolicyPersistenceService.syncPolicy(
+                item("policy-5", "0014002", "2026-01-01 00:00:00")
+        );
+
+        PolicySyncItemResult updated = youthPolicyPersistenceService.syncPolicy(
+                item("policy-5", "0014002,0014006", "2026-01-02 00:00:00")
+        );
+
+        assertThat(updated.status()).isEqualTo(PolicySyncStatus.UPDATED);
+        assertThat(updated.policyId()).isEqualTo(inserted.policyId());
+        assertThat(findSpecialEligibilities(updated.policyId()))
+                .containsExactlyInAnyOrder(
+                        SpecialEligibilityType.WOMAN,
+                        SpecialEligibilityType.FARMER
+                );
+    }
+
     private Set<SpecialEligibilityType> findSpecialEligibilities(Long policyId) {
         return policySpecialEligibilityRepository.findAll().stream()
                 .filter(eligibility -> eligibility.getPolicy().getId().equals(policyId))
