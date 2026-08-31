@@ -33,22 +33,22 @@ public class PersonalizedPolicyService {
     private final PersonalizedPolicyRanker personalizedPolicyRanker;
 
     public List<Policy> getPersonalizedPolicies(User user, int size) {
-        return findPolicies(user, size, false);
+        return findPolicies(user, size);
     }
 
     public List<Policy> getPolicyCards(User user, int size) {
-        return findPolicies(user, size, true);
+        return getPersonalizedPolicies(user, size);
     }
 
     public List<Policy> getPersonalizedPoliciesByCategory(User user, PolicyCategoryType category, int size) {
-        return findByCategory(user, category, size, false);
+        return findByCategory(user, category, size);
     }
 
     public List<Policy> getPolicyCardsByCategory(User user, PolicyCategoryType category, int size) {
-        return findByCategory(user, category, size, true);
+        return getPersonalizedPoliciesByCategory(user, category, size);
     }
 
-    private List<Policy> findPolicies(User user, int size, boolean matchedOnly) {
+    private List<Policy> findPolicies(User user, int size) {
         // TODO: 추후 캐싱 고려
         // TODO: 실제 정책 데이터와 추천 결과를 확인한 뒤 후보군 조회 기준 재조정
         List<Policy> candidates = policyRepository.findAllLatestPolicies(
@@ -72,15 +72,10 @@ public class PersonalizedPolicyService {
                         PageRequest.of(0, BEHAVIOR_HISTORY_SIZE)
                 )
         );
-        return rankPolicies(user, context, candidates, size, matchedOnly);
+        return personalizedPolicyRanker.rank(user, context, candidates, size);
     }
 
-    private List<Policy> findByCategory(
-            User user,
-            PolicyCategoryType category,
-            int size,
-            boolean matchedOnly
-    ) {
+    private List<Policy> findByCategory(User user, PolicyCategoryType category, int size) {
         List<UserInterest> interests = userInterestRepository.findAllByUser(user);
         boolean interestedCategory = interests.stream()
                 .anyMatch(interest -> interest.getCategory() == category);
@@ -112,18 +107,6 @@ public class PersonalizedPolicyService {
                         PageRequest.of(0, BEHAVIOR_HISTORY_SIZE)
                 )
         );
-        return rankPolicies(user, context, candidates, size, matchedOnly);
-    }
-
-    private List<Policy> rankPolicies(
-            User user,
-            PolicyRecommendationContext context,
-            List<Policy> candidates,
-            int size,
-            boolean matchedOnly
-    ) {
-        return matchedOnly
-                ? personalizedPolicyRanker.rankMatched(user, context, candidates, size)
-                : personalizedPolicyRanker.rank(user, context, candidates, size);
+        return personalizedPolicyRanker.rank(user, context, candidates, size);
     }
 }
