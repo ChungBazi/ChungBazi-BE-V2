@@ -10,8 +10,10 @@ import com.chungbazi.server.domain.policy.domain.entity.PolicyDetail;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
 import com.chungbazi.server.domain.policy.domain.type.PolicySubCategoryType;
 import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.mapper.YouthPolicyCategoryMapper;
+import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.mapper.YouthPolicyDateMapper;
 import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.mapper.YouthPolicyEntityMapper;
 import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.mapper.YouthPolicyRegionMapper;
+import com.chungbazi.server.domain.policy.domain.type.internal.ApplyPeriod;
 import com.chungbazi.server.domain.policy.domain.repository.PolicyDetailRepository;
 import com.chungbazi.server.domain.policy.domain.repository.PolicyRegionRepository;
 import com.chungbazi.server.domain.policy.domain.repository.policyRepository.PolicyRepository;
@@ -30,6 +32,7 @@ public class YouthPolicyPersistenceService {
 
     private final YouthPolicyEntityMapper policyEntityMapper;
     private final YouthPolicyCategoryMapper policyCategoryMapper;
+    private final YouthPolicyDateMapper policyDateMapper;
     private final YouthPolicyRegionMapper policyRegionMapper;
     private final PolicyRepository policyRepository;
     private final PolicyDetailRepository policyDetailRepository;
@@ -39,6 +42,7 @@ public class YouthPolicyPersistenceService {
     @Transactional
     public PolicySyncItemResult syncPolicy(YouthPolicyItem item) {
         String applyPeriodCode = item.aplyPrdSeCd() == null ? null : item.aplyPrdSeCd().trim();
+        ApplyPeriod applyPeriod = policyDateMapper.toApplyPeriod(item);
         String plcyNo = normalizePolicyNumber(item.plcyNo());
         if (plcyNo == null) {
             return PolicySyncItemResult.of(PolicySyncStatus.SKIPPED, null);
@@ -46,18 +50,20 @@ public class YouthPolicyPersistenceService {
 
         return policyRepository.findByPlcyNo(plcyNo)
                 .map(policy -> PolicySyncItemResult.of(
-                        syncExistingPolicy(policy, item, applyPeriodCode),
+                        syncExistingPolicy(policy, item, applyPeriodCode, applyPeriod),
                         policy.getId()
                 ))
-                .orElseGet(() -> syncNewPolicy(item, plcyNo, applyPeriodCode));
+                .orElseGet(() -> syncNewPolicy(item, plcyNo, applyPeriodCode, applyPeriod));
     }
 
     private PolicySyncItemResult syncNewPolicy(
             YouthPolicyItem item,
             String plcyNo,
-            String applyPeriodCode
+            String applyPeriodCode,
+            ApplyPeriod applyPeriod
     ) {
-        if (CLOSED_PERIOD_CODE.equals(applyPeriodCode)) {
+        if (CLOSED_PERIOD_CODE.equals(applyPeriodCode)
+                || applyPeriod.recruitmentStatus() == RecruitmentStatus.CLOSED) {
             return PolicySyncItemResult.of(PolicySyncStatus.SKIPPED_CLOSED, null);
         }
 
@@ -65,7 +71,7 @@ public class YouthPolicyPersistenceService {
 
         PolicySubCategoryType subCategory = policyCategoryMapper.toCategory(item);
 
-        Policy policy = policyEntityMapper.toPolicy(item, plcyNo, subCategory, regionMapping.national());
+        Policy policy = policyEntityMapper.toPolicy(item, plcyNo, subCategory, regionMapping.national(), applyPeriod);
         Policy savedPolicy = policyRepository.save(policy);
 
         policyDetailRepository.save(policyEntityMapper.toPolicyDetail(savedPolicy, item));
@@ -74,7 +80,12 @@ public class YouthPolicyPersistenceService {
         return PolicySyncItemResult.of(PolicySyncStatus.INSERTED, savedPolicy.getId());
     }
 
-    private PolicySyncStatus syncExistingPolicy(Policy policy, YouthPolicyItem item, String applyPeriodCode) {
+    private PolicySyncStatus syncExistingPolicy(
+            Policy policy,
+            YouthPolicyItem item,
+            String applyPeriodCode,
+            ApplyPeriod applyPeriod
+    ) {
         LocalDateTime sourceModifiedAt = policyEntityMapper.toSourceModifiedAt(item);
 
         //마감된 정책이면 기존 정책 상태만 CLOSED로 반영
@@ -96,7 +107,7 @@ public class YouthPolicyPersistenceService {
         PolicyRegionMapping regionMapping = policyRegionMapper.toRegionMapping(item.zipCd());
         PolicySubCategoryType subCategory = policyCategoryMapper.toCategory(item);
 
-        policyEntityMapper.updatePolicy(policy, item, subCategory, regionMapping.national());
+        policyEntityMapper.updatePolicy(policy, item, subCategory, regionMapping.national(), applyPeriod);
         syncPolicyDetail(policy, item);
         policyRegionRepository.deleteAllByPolicyId(policy.getId());
         policyRegionRepository.saveAll(policyRegionMapper.toPolicyRegions(policy, regionMapping));
