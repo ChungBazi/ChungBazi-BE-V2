@@ -12,6 +12,7 @@ import com.chungbazi.server.domain.policy.domain.repository.PolicyDetailReposito
 import com.chungbazi.server.domain.policy.domain.repository.PolicyLikeRepository;
 import com.chungbazi.server.domain.policy.domain.repository.RecentViewedPolicyRepository;
 import com.chungbazi.server.domain.policy.domain.repository.policyRepository.PolicyRepository;
+import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
 import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
 import com.chungbazi.server.domain.policy.exception.PolicyException;
@@ -51,8 +52,10 @@ public class PolicyDetailService {
         return policyDisplayMapper.toCardResponse(policy, likedPolicyIds);
     }
 
-    public PolicyCardListResponse getPolicyCards(User user) {
-        List<Policy> policies = personalizedPolicyService.getPersonalizedPolicyEntities(user, CARD_SIZE);
+    public PolicyCardListResponse getPolicyCards(User user, PolicyCategoryType category) {
+        List<Policy> policies = category == null
+                ? personalizedPolicyService.getPersonalizedPolicyEntities(user, CARD_SIZE)
+                : personalizedPolicyService.getPersonalizedPolicyEntities(user, category, CARD_SIZE);
 
         Set<Long> likedPolicyIds = policyListResponseAssembler.findLikedPolicyIds(user.getId(), policies);
 
