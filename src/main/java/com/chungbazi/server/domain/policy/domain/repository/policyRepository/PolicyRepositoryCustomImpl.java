@@ -47,43 +47,47 @@ public class PolicyRepositoryCustomImpl implements PolicyRepositoryCustom {
     @Override
     public long countVisibleUpcomingDeadlinePolicies(RecruitmentStatus closedStatus,
                                                      LocalDate today,
+                                                     LocalDate deadlineUntil,
                                                      SidoCode sidoCode,
                                                      String sigunguCode) {
         return count(basePredicate(null, closedStatus, sidoCode, sigunguCode)
-                .and(upcomingDeadline(today)));
+                .and(upcomingDeadline(today, deadlineUntil)));
     }
 
     @Override
     public long countVisibleUpcomingDeadlinePoliciesByCategory(PolicyCategoryType category,
                                                                RecruitmentStatus closedStatus,
                                                                LocalDate today,
+                                                               LocalDate deadlineUntil,
                                                                SidoCode sidoCode,
                                                                String sigunguCode) {
         return count(basePredicate(category, closedStatus, sidoCode, sigunguCode)
-                .and(upcomingDeadline(today)));
+                .and(upcomingDeadline(today, deadlineUntil)));
     }
 
     @Override
     public List<Policy> findAllUpcomingDeadlinePolicies(RecruitmentStatus closedStatus,
                                                         LocalDate today,
+                                                        LocalDate deadlineUntil,
                                                         SidoCode sidoCode,
                                                         String sigunguCode,
                                                         Pageable pageable) {
         return fetch(basePredicate(null, closedStatus, sidoCode, sigunguCode)
-                        .and(upcomingDeadline(today)),
+                        .and(upcomingDeadline(today, deadlineUntil)),
                 pageable, deadlineOrder());
     }
 
     @Override
     public List<Policy> findAllUpcomingDeadlinePoliciesAfter(RecruitmentStatus closedStatus,
                                                              LocalDate today,
+                                                             LocalDate deadlineUntil,
                                                              SidoCode sidoCode,
                                                              String sigunguCode,
                                                              LocalDate applyEndDate,
                                                              Long policyId,
                                                              Pageable pageable) {
         return fetch(basePredicate(null, closedStatus, sidoCode, sigunguCode)
-                        .and(upcomingDeadline(today))
+                        .and(upcomingDeadline(today, deadlineUntil))
                         .and(deadlineCursor(applyEndDate, policyId, false)),
                 pageable, deadlineOrder());
     }
@@ -92,11 +96,12 @@ public class PolicyRepositoryCustomImpl implements PolicyRepositoryCustom {
     public List<Policy> findUpcomingDeadlinePolicies(PolicyCategoryType category,
                                                      RecruitmentStatus closedStatus,
                                                      LocalDate today,
+                                                     LocalDate deadlineUntil,
                                                      SidoCode sidoCode,
                                                      String sigunguCode,
                                                      Pageable pageable) {
         return fetch(basePredicate(category, closedStatus, sidoCode, sigunguCode)
-                        .and(upcomingDeadline(today)),
+                        .and(upcomingDeadline(today, deadlineUntil)),
                 pageable, deadlineOrder());
     }
 
@@ -104,13 +109,14 @@ public class PolicyRepositoryCustomImpl implements PolicyRepositoryCustom {
     public List<Policy> findUpcomingDeadlinePoliciesAfter(PolicyCategoryType category,
                                                           RecruitmentStatus closedStatus,
                                                           LocalDate today,
+                                                          LocalDate deadlineUntil,
                                                           SidoCode sidoCode,
                                                           String sigunguCode,
                                                           LocalDate applyEndDate,
                                                           Long policyId,
                                                           Pageable pageable) {
         return fetch(basePredicate(category, closedStatus, sidoCode, sigunguCode)
-                        .and(upcomingDeadline(today))
+                        .and(upcomingDeadline(today, deadlineUntil))
                         .and(deadlineCursor(applyEndDate, policyId, false)),
                 pageable, deadlineOrder());
     }
@@ -377,9 +383,10 @@ public class PolicyRepositoryCustomImpl implements PolicyRepositoryCustom {
         );
     }
 
-    private BooleanExpression upcomingDeadline(LocalDate today) {
+    private BooleanExpression upcomingDeadline(LocalDate today, LocalDate deadlineUntil) {
         return policy.applyEndDate.isNotNull()
-                .and(policy.applyEndDate.goe(today));
+                .and(policy.applyEndDate.goe(today))
+                .and(policy.applyEndDate.loe(deadlineUntil));
     }
 
     private BooleanExpression latestCursor(LocalDateTime registeredAt, Long policyId) {

@@ -30,6 +30,7 @@ public interface PolicyRepositoryCustom {
     long countVisibleUpcomingDeadlinePolicies(
             RecruitmentStatus closedStatus,
             LocalDate today,
+            LocalDate deadlineUntil,
             SidoCode sidoCode,
             String sigunguCode
     );
@@ -38,6 +39,7 @@ public interface PolicyRepositoryCustom {
             PolicyCategoryType category,
             RecruitmentStatus closedStatus,
             LocalDate today,
+            LocalDate deadlineUntil,
             SidoCode sidoCode,
             String sigunguCode
     );
@@ -45,6 +47,7 @@ public interface PolicyRepositoryCustom {
     List<Policy> findAllUpcomingDeadlinePolicies(
             RecruitmentStatus closedStatus,
             LocalDate today,
+            LocalDate deadlineUntil,
             SidoCode sidoCode,
             String sigunguCode,
             Pageable pageable
@@ -53,6 +56,7 @@ public interface PolicyRepositoryCustom {
     List<Policy> findAllUpcomingDeadlinePoliciesAfter(
             RecruitmentStatus closedStatus,
             LocalDate today,
+            LocalDate deadlineUntil,
             SidoCode sidoCode,
             String sigunguCode,
             LocalDate applyEndDate,
@@ -64,6 +68,7 @@ public interface PolicyRepositoryCustom {
             PolicyCategoryType category,
             RecruitmentStatus closedStatus,
             LocalDate today,
+            LocalDate deadlineUntil,
             SidoCode sidoCode,
             String sigunguCode,
             Pageable pageable
@@ -73,6 +78,7 @@ public interface PolicyRepositoryCustom {
             PolicyCategoryType category,
             RecruitmentStatus closedStatus,
             LocalDate today,
+            LocalDate deadlineUntil,
             SidoCode sidoCode,
             String sigunguCode,
             LocalDate applyEndDate,
