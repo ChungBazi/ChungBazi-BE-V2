@@ -16,6 +16,7 @@ public enum PolicyErrorCode implements BaseErrorCode {
     INVALID_POLICY_CURSOR(HttpStatus.BAD_REQUEST, "POLICY4005", "유효하지 않은 정책 조회 커서입니다."),
     INVALID_SEARCH_KEYWORD(HttpStatus.BAD_REQUEST, "POLICY4006", "검색어를 입력해주세요."),
     INVALID_RECENT_SEARCH_KEYWORD_CURSOR(HttpStatus.BAD_REQUEST, "POLICY4007", "유효하지 않은 최근 검색어 조회 커서입니다."),
+    INVALID_POLICY_SPECIAL_ELIGIBILITY(HttpStatus.BAD_REQUEST, "POLICY4008", "유효하지 않은 정책 특화 요건입니다."),
     POLICY_NOT_FOUND(HttpStatus.NOT_FOUND, "POLICY4040", "정책을 찾을 수 없습니다."),
     RECENT_SEARCH_KEYWORD_NOT_FOUND( HttpStatus.NOT_FOUND, "POLICY4041", "최근 검색어를 찾을 수 없습니다."),
     LIKED_POLICY_NOT_FOUND(HttpStatus.NOT_FOUND, "POLICY4042", "찜한 정책을 찾을 수 없습니다."),

@@ -14,6 +14,7 @@ import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.ma
 import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.mapper.YouthPolicyRegionMapper;
 import com.chungbazi.server.domain.policy.domain.repository.PolicyDetailRepository;
 import com.chungbazi.server.domain.policy.domain.repository.PolicyRegionRepository;
+import com.chungbazi.server.domain.policy.domain.repository.PolicySpecialEligibilityRepository;
 import com.chungbazi.server.domain.policy.domain.repository.policyRepository.PolicyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -34,6 +35,7 @@ public class YouthPolicyPersistenceService {
     private final PolicyRepository policyRepository;
     private final PolicyDetailRepository policyDetailRepository;
     private final PolicyRegionRepository policyRegionRepository;
+    private final PolicySpecialEligibilityRepository policySpecialEligibilityRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
@@ -70,6 +72,7 @@ public class YouthPolicyPersistenceService {
 
         policyDetailRepository.save(policyEntityMapper.toPolicyDetail(savedPolicy, item));
         policyRegionRepository.saveAll(policyRegionMapper.toPolicyRegions(savedPolicy, regionMapping));
+        policySpecialEligibilityRepository.saveAll(policyEntityMapper.toPolicySpecialEligibilities(savedPolicy, item));
 
         return PolicySyncItemResult.of(PolicySyncStatus.INSERTED, savedPolicy.getId());
     }
@@ -100,6 +103,8 @@ public class YouthPolicyPersistenceService {
         syncPolicyDetail(policy, item);
         policyRegionRepository.deleteAllByPolicyId(policy.getId());
         policyRegionRepository.saveAll(policyRegionMapper.toPolicyRegions(policy, regionMapping));
+        policySpecialEligibilityRepository.deleteAllByPolicyId(policy.getId());
+        policySpecialEligibilityRepository.saveAll(policyEntityMapper.toPolicySpecialEligibilities(policy, item));
 
         //정책 정보 변경 알림 전송
         publishPolicyInformationChangedEvent(policy, sourceModifiedAt);
