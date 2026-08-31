@@ -134,21 +134,6 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
     );
 
     @Query("""
-            SELECT COUNT(policy)
-            FROM PolicyLike policyLike
-            JOIN policyLike.policy policy
-            WHERE policyLike.userId = :userId
-              AND policy.recruitmentStatus <> :closedStatus
-              AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
-              AND policy.applyEndDate = :targetDate
-            """)
-    Long countDeadlineLikedPoliciesByDate(
-            @Param("userId") Long userId,
-            @Param("closedStatus") RecruitmentStatus closedStatus,
-            @Param("targetDate") LocalDate targetDate
-    );
-
-    @Query("""
             SELECT policy
             FROM PolicyLike policyLike
             JOIN policyLike.policy policy
@@ -156,72 +141,12 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
               AND policy.recruitmentStatus <> :closedStatus
               AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
               AND policy.applyEndDate = :targetDate
-            ORDER BY policy.registeredAt DESC, policy.id DESC
+            ORDER BY policyLike.id DESC
             """)
-    List<Policy> findDeadlineLikedPoliciesByDateOrderByLatestFirst(
+    List<Policy> findDeadlineLikedPoliciesByDate(
             @Param("userId") Long userId,
-            @Param("closedStatus") RecruitmentStatus closedStatus,
             @Param("targetDate") LocalDate targetDate,
-            Pageable pageable
-    );
-
-    @Query("""
-            SELECT policy
-            FROM PolicyLike policyLike
-            JOIN policyLike.policy policy
-            WHERE policyLike.userId = :userId
-              AND policy.recruitmentStatus <> :closedStatus
-              AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
-              AND policy.applyEndDate = :targetDate
-              AND (
-                  policy.registeredAt < :registeredAt
-                  OR (policy.registeredAt = :registeredAt AND policy.id < :policyId)
-              )
-            ORDER BY policy.registeredAt DESC, policy.id DESC
-            """)
-    List<Policy> findDeadlineLikedPoliciesByDateOrderByLatestAfter(
-            @Param("userId") Long userId,
-            @Param("closedStatus") RecruitmentStatus closedStatus,
-            @Param("targetDate") LocalDate targetDate,
-            @Param("registeredAt") LocalDateTime registeredAt,
-            @Param("policyId") Long policyId,
-            Pageable pageable
-    );
-
-    @Query("""
-            SELECT policy
-            FROM PolicyLike policyLike
-            JOIN policyLike.policy policy
-            WHERE policyLike.userId = :userId
-              AND policy.recruitmentStatus <> :closedStatus
-              AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
-              AND policy.applyEndDate = :targetDate
-            ORDER BY policy.applyEndDate ASC, policy.id DESC
-            """)
-    List<Policy> findDeadlineLikedPoliciesByDateOrderByDeadlineFirst(
-            @Param("userId") Long userId,
-            @Param("closedStatus") RecruitmentStatus closedStatus,
-            @Param("targetDate") LocalDate targetDate,
-            Pageable pageable
-    );
-
-    @Query("""
-            SELECT policy
-            FROM PolicyLike policyLike
-            JOIN policyLike.policy policy
-            WHERE policyLike.userId = :userId
-              AND policy.recruitmentStatus <> :closedStatus
-              AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
-              AND policy.applyEndDate = :targetDate
-              AND policy.id < :policyId
-            ORDER BY policy.applyEndDate ASC, policy.id DESC
-            """)
-    List<Policy> findDeadlineLikedPoliciesByDateOrderByDeadlineAfter(
-            @Param("userId") Long userId,
-            @Param("closedStatus") RecruitmentStatus closedStatus,
-            @Param("targetDate") LocalDate targetDate,
-            @Param("policyId") Long policyId,
-            Pageable pageable
+            @Param("closedStatus") RecruitmentStatus closedStatus
     );
 
     @Query("""

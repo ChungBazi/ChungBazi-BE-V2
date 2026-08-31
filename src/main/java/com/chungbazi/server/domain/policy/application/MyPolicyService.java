@@ -67,71 +67,14 @@ public class MyPolicyService {
         return new MyPolicyDeadlineResponse(policySummaries);
     }
 
-    public PolicyListResponse getDeadlinePoliciesByDate(User user, LocalDate targetDate, PolicyListSortType sort, String cursor, int size) {
-        PolicySortType policySort = sort.getPolicySortType();
-
-        PolicyCursor decodedCursor = PolicyCursorParser.decode(cursor, policySort);
-        PageRequest pageRequest = PageRequest.of(0, size + 1);
-
-        List<Policy> fetchedPolicies = fetchDeadlinePoliciesByDate(
+    public PolicyListResponse getDeadlinePoliciesByDate(User user, LocalDate targetDate) {
+        List<Policy> policies = policyLikeRepository.findDeadlineLikedPoliciesByDate(
                 user.getId(),
                 targetDate,
-                policySort,
-                decodedCursor,
-                pageRequest
+                RecruitmentStatus.CLOSED
         );
 
-        Long totalCount = policyLikeRepository.countDeadlineLikedPoliciesByDate(
-                user.getId(),
-                RecruitmentStatus.CLOSED,
-                targetDate
-        );
-
-        return assembleLikedPolicyListResponse(
-                fetchedPolicies,
-                totalCount,
-                size,
-                policy -> encodeLikedPolicyCursor(policySort, policy)
-        );
-    }
-
-    private List<Policy> fetchDeadlinePoliciesByDate(Long userId, LocalDate targetDate, PolicySortType sort, PolicyCursor cursor, PageRequest pageRequest) {
-        if (sort == PolicySortType.DEADLINE) {
-            if (cursor == null) {
-                return policyLikeRepository.findDeadlineLikedPoliciesByDateOrderByDeadlineFirst(
-                        userId,
-                        RecruitmentStatus.CLOSED,
-                        targetDate,
-                        pageRequest
-                );
-            }
-
-            return policyLikeRepository.findDeadlineLikedPoliciesByDateOrderByDeadlineAfter(
-                    userId,
-                    RecruitmentStatus.CLOSED,
-                    targetDate,
-                    cursor.policyId(),
-                    pageRequest
-            );
-        }
-
-        if (cursor == null) {
-            return policyLikeRepository.findDeadlineLikedPoliciesByDateOrderByLatestFirst(
-                    userId,
-                    RecruitmentStatus.CLOSED,
-                    targetDate,
-                    pageRequest
-            );
-        }
-
-        return policyLikeRepository.findDeadlineLikedPoliciesByDateOrderByLatestAfter(
-                userId,
-                RecruitmentStatus.CLOSED,
-                targetDate,
-                cursor.registeredAt(),
-                cursor.policyId(),
-                pageRequest
-        );
+        return assembleLikedPolicyListResponse(policies, (long) policies.size(), null, false);
     }
 
     public PolicyListResponse getOpenEndedLikedPolicies(User user, String cursor, int size) {
