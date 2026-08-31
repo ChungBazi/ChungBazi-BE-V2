@@ -52,7 +52,10 @@ public class HomePolicyService {
         PageRequest sectionPageRequest = PageRequest.of(0, HOME_SECTION_SIZE);
 
         List<Policy> personalizedPolicies =
-                personalizedPolicyService.getPersonalizedPolicyEntities(user, HOME_SECTION_SIZE);
+                personalizedPolicyService.getPersonalizedPolicies(
+                        user,
+                        HOME_SECTION_SIZE
+                );
 
         List<Policy> recentViewedPolicies = fetchRecentViewedPolicies(user, null, sectionPageRequest)
                 .stream()
@@ -90,7 +93,7 @@ public class HomePolicyService {
     }
 
     public PersonalizedPolicyResponse getPersonalizedPolicies(User user, PolicyCategoryType category) {
-        List<Policy> policies = personalizedPolicyService.getPersonalizedPolicyEntities(
+        List<Policy> policies = personalizedPolicyService.getPersonalizedPoliciesByCategory(
                 user,
                 category,
                 PERSONALIZED_CATEGORY_SIZE

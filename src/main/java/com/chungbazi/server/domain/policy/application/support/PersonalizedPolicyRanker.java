@@ -26,8 +26,28 @@ public class PersonalizedPolicyRanker {
             List<Policy> candidates,
             int size
     ) {
+        return rankByMinimumScore(user, context, candidates, size, Integer.MIN_VALUE);
+    }
+
+    public List<Policy> rankMatched(
+            User user,
+            PolicyRecommendationContext context,
+            List<Policy> candidates,
+            int size
+    ) {
+        return rankByMinimumScore(user, context, candidates, size, 1);
+    }
+
+    private List<Policy> rankByMinimumScore(
+            User user,
+            PolicyRecommendationContext context,
+            List<Policy> candidates,
+            int size,
+            int minimumScore
+    ) {
         List<Policy> rankedPolicies = candidates.stream()
                 .filter(policy -> scorer.isEligible(user, policy))
+                .filter(policy -> scorer.score(user, context, policy) >= minimumScore)
                 .sorted(Comparator
                         .comparingInt((Policy policy) -> scorer.score(user, context, policy))
                         .reversed()

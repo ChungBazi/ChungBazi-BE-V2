@@ -162,7 +162,7 @@ public class PersonalizedPolicyRecommendationScenarioTest {
 
         // when
         List<Policy> result =
-                service.getPersonalizedPolicyEntities(user, 5);
+                service.getPersonalizedPolicies(user, 5);
 
         // then
         assertThat(result)
@@ -221,7 +221,7 @@ public class PersonalizedPolicyRecommendationScenarioTest {
         );
 
         // when
-        List<Policy> result = service.getPersonalizedPolicyEntities(user, 2);
+        List<Policy> result = service.getPersonalizedPolicies(user, 2);
 
         // then
         // 두 정책의 관심사 점수가 같고 소득 점수도 없으므로, 등록일이 최신인 정책이 먼저 나온다.

@@ -100,7 +100,7 @@ public class PersonalizedPolicyServiceTest {
         when(scorer.score(eq(user), any(PolicyRecommendationContext.class), eq(oldTie)))
                 .thenReturn(50);
 
-        List<Policy> result = service.getPersonalizedPolicyEntities(user, 3);
+        List<Policy> result = service.getPersonalizedPolicies(user, 3);
 
         assertThat(result)
                 .extracting(Policy::getId)
@@ -172,7 +172,7 @@ public class PersonalizedPolicyServiceTest {
             };
         });
 
-        List<Policy> result = service.getPersonalizedPolicyEntities(user, 4);
+        List<Policy> result = service.getPersonalizedPolicies(user, 4);
 
         // job4가 housing보다 점수는 높지만, 동일 카테고리 우선 노출 제한이 3개이므로 housing이 선택된다.
         assertThat(result)
@@ -193,7 +193,7 @@ public class PersonalizedPolicyServiceTest {
         when(userInterestRepository.findAllByUser(user))
                 .thenReturn(List.of(interest));
 
-        List<Policy> result = service.getPersonalizedPolicyEntities(
+        List<Policy> result = service.getPersonalizedPoliciesByCategory(
                 user,
                 PolicyCategoryType.HOUSING,
                 5
@@ -278,7 +278,7 @@ public class PersonalizedPolicyServiceTest {
 
         // when
         List<Policy> result =
-                service.getPersonalizedPolicyEntities(user, 3);
+                service.getPersonalizedPolicies(user, 3);
 
         // then
         assertThat(result)

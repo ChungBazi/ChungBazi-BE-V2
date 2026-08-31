@@ -54,8 +54,8 @@ public class PolicyDetailService {
 
     public PolicyCardListResponse getPolicyCards(User user, PolicyCategoryType category) {
         List<Policy> policies = category == null
-                ? personalizedPolicyService.getPersonalizedPolicyEntities(user, CARD_SIZE)
-                : personalizedPolicyService.getPersonalizedPolicyEntities(user, category, CARD_SIZE);
+                ? personalizedPolicyService.getPolicyCards(user, CARD_SIZE)
+                : personalizedPolicyService.getPolicyCardsByCategory(user, category, CARD_SIZE);
 
         Set<Long> likedPolicyIds = policyListResponseAssembler.findLikedPolicyIds(user.getId(), policies);
 
@@ -113,7 +113,7 @@ public class PolicyDetailService {
     }
 
     private List<Policy> findPersonalizedPolicies(User user, Policy policy) {
-        return personalizedPolicyService.getPersonalizedPolicyEntities(user, RELATED_POLICY_SIZE + 1)
+        return personalizedPolicyService.getPersonalizedPolicies(user, RELATED_POLICY_SIZE + 1)
                 .stream()
                 .filter(personalizedPolicy -> !personalizedPolicy.getId().equals(policy.getId()))
                 .limit(RELATED_POLICY_SIZE)
