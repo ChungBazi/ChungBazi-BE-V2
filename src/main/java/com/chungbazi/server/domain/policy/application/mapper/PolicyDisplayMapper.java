@@ -54,6 +54,12 @@ public class PolicyDisplayMapper {
         );
     }
 
+    public List<PolicyCardResponse> toCardResponses(List<Policy> policies, Set<Long> likedPolicyIds) {
+        return policies.stream()
+                .map(policy -> toCardResponse(policy, likedPolicyIds))
+                .toList();
+    }
+
     public PolicyDetailResponse toDetailResponse(
             Policy policy,
             PolicyDetail policyDetail,

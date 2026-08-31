@@ -1,5 +1,6 @@
 package com.chungbazi.server.domain.policy.api.docs;
 
+import com.chungbazi.server.domain.policy.api.dto.response.PolicyCardListResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyCardResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyDetailResponse;
 import com.chungbazi.server.domain.user.domain.User;
@@ -14,6 +15,16 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @Tag(name = "[Policy Detail]", description = "정책 상세 조회 / 찜 관련 API")
 public interface PolicyDetailDocs {
+
+    @Operation(
+            summary = "맞춤 정책 카드 목록 조회 API",
+            description = "현재 사용자에게 추천할 정책 카드 목록을 최대 20개 반환합니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "정책 카드 목록 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+    })
+    CommonResponse<PolicyCardListResponse> getPolicyCards(@CurrentUser User user);
 
     @Operation(
             summary = "정책 카드뉴스 조회 API",

@@ -1,8 +1,10 @@
 package com.chungbazi.server.domain.policy.application;
 
+import com.chungbazi.server.domain.policy.api.dto.response.PolicyCardListResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyCardResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyDetailResponse;
 import com.chungbazi.server.domain.policy.application.mapper.PolicyDisplayMapper;
+import com.chungbazi.server.domain.policy.application.mapper.PolicyListResponseAssembler;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.entity.PolicyDetail;
 import com.chungbazi.server.domain.policy.domain.entity.RecentViewedPolicy;
@@ -28,12 +30,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class PolicyDetailService {
 
     private static final int RELATED_POLICY_SIZE = 5;
+    private static final int CARD_SIZE = 20;
 
     private final PolicyRepository policyRepository;
     private final PolicyDetailRepository policyDetailRepository;
     private final PolicyLikeRepository policyLikeRepository;
     private final RecentViewedPolicyRepository recentViewedPolicyRepository;
     private final PolicyDisplayMapper policyDisplayMapper;
+    private final PolicyListResponseAssembler policyListResponseAssembler;
     private final PersonalizedPolicyService personalizedPolicyService;
 
     @Transactional
@@ -45,6 +49,16 @@ public class PolicyDetailService {
         Set<Long> likedPolicyIds = findLikedPolicyIds(user, policy, List.of(), List.of());
 
         return policyDisplayMapper.toCardResponse(policy, likedPolicyIds);
+    }
+
+    public PolicyCardListResponse getPolicyCards(User user) {
+        List<Policy> policies = personalizedPolicyService.getPersonalizedPolicyEntities(user, CARD_SIZE);
+
+        Set<Long> likedPolicyIds = policyListResponseAssembler.findLikedPolicyIds(user.getId(), policies);
+
+        List<PolicyCardResponse> policyCards = policyDisplayMapper.toCardResponses(policies, likedPolicyIds);
+
+        return PolicyCardListResponse.of(policyCards);
     }
 
     @Transactional
