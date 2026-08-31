@@ -5,20 +5,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.entity.PolicyLike;
 import com.chungbazi.server.domain.policy.domain.repository.policyRepository.PolicyRepository;
-import com.chungbazi.server.domain.policy.domain.type.IncomeConditionType;
 import com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus;
-import com.chungbazi.server.domain.policy.domain.type.PolicySubCategoryType;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
-import com.chungbazi.server.domain.policy.domain.type.RecruitmentType;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import com.chungbazi.server.fixture.PolicyFixture;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest(properties = "firebase.enabled=false")
@@ -84,32 +79,10 @@ class PolicyVisibilityRepositoryTest {
     }
 
     private Policy policy(String policyNumber, PolicyDisplayStatus displayStatus) {
-        Policy policy = Policy.createPolicy(
-                policyNumber,
-                "테스트 정책",
-                "요약",
-                "지원 내용",
-                "https://example.com",
-                PolicySubCategoryType.EMPLOYMENT_PREPARATION,
-                true,
-                LocalDate.of(2026, 1, 1),
-                LocalDate.of(2026, 12, 31),
-                "2026.01.01 ~ 2026.12.31",
-                RecruitmentType.FIXED_PERIOD,
-                RecruitmentStatus.OPEN,
-                null,
-                null,
-                null,
-                null,
-                IncomeConditionType.NO_LIMIT,
-                null,
-                null,
-                null,
-                "테스트 기관",
-                LocalDateTime.of(2026, 1, 1, 0, 0),
-                LocalDateTime.of(2026, 1, 1, 0, 0)
-        );
-        ReflectionTestUtils.setField(policy, "displayStatus", displayStatus);
-        return policy;
+        return PolicyFixture.policy()
+                .id(null)
+                .policyNumber(policyNumber)
+                .displayStatus(displayStatus)
+                .build();
     }
 }

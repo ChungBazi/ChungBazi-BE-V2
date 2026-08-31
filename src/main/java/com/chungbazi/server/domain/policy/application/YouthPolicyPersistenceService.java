@@ -89,7 +89,8 @@ public class YouthPolicyPersistenceService {
         LocalDateTime sourceModifiedAt = policyEntityMapper.toSourceModifiedAt(item);
 
         //마감된 정책이면 기존 정책 상태만 CLOSED로 반영
-        if (CLOSED_PERIOD_CODE.equals(applyPeriodCode)) {
+        if (CLOSED_PERIOD_CODE.equals(applyPeriodCode)
+                || applyPeriod.recruitmentStatus() == RecruitmentStatus.CLOSED) {
             if (policy.getRecruitmentStatus() == RecruitmentStatus.CLOSED
                     && !shouldUpdate(policy.getSourceModifiedAt(), sourceModifiedAt)) {
                 return PolicySyncStatus.UNCHANGED;

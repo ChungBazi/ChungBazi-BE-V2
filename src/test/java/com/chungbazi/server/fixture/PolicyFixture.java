@@ -2,6 +2,7 @@ package com.chungbazi.server.fixture;
 
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.type.IncomeConditionType;
+import com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus;
 import com.chungbazi.server.domain.policy.domain.type.PolicySubCategoryType;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentType;
@@ -21,8 +22,10 @@ public final class PolicyFixture {
     public static final class PolicyBuilder {
 
         private Long id = 1L;
+        private String policyNumber;
         private String title = "테스트 정책";
         private PolicySubCategoryType subCategory = PolicySubCategoryType.EMPLOYMENT_PREPARATION;
+        private PolicyDisplayStatus displayStatus = PolicyDisplayStatus.VISIBLE;
         private Integer minAge;
         private Integer maxAge;
         private IncomeConditionType incomeConditionType = IncomeConditionType.NO_LIMIT;
@@ -36,6 +39,11 @@ public final class PolicyFixture {
             return this;
         }
 
+        public PolicyBuilder policyNumber(String policyNumber) {
+            this.policyNumber = policyNumber;
+            return this;
+        }
+
         public PolicyBuilder title(String title) {
             this.title = title;
             return this;
@@ -43,6 +51,11 @@ public final class PolicyFixture {
 
         public PolicyBuilder subCategory(PolicySubCategoryType subCategory) {
             this.subCategory = subCategory;
+            return this;
+        }
+
+        public PolicyBuilder displayStatus(PolicyDisplayStatus displayStatus) {
+            this.displayStatus = displayStatus;
             return this;
         }
 
@@ -71,7 +84,7 @@ public final class PolicyFixture {
 
         public Policy build() {
             Policy policy = Policy.createPolicy(
-                    "TEST-" + id,
+                    policyNumber == null ? "TEST-" + id : policyNumber,
                     title,
                     null,
                     null,
@@ -97,6 +110,7 @@ public final class PolicyFixture {
             );
 
             ReflectionTestUtils.setField(policy, "id", id);
+            ReflectionTestUtils.setField(policy, "displayStatus", displayStatus);
             ReflectionTestUtils.setField(policy, "viewCount", viewCount);
             ReflectionTestUtils.setField(policy, "saveCount", saveCount);
             return policy;
