@@ -255,8 +255,4 @@ public class Policy extends BaseTimeEntity {
         this.recruitmentStatus = recruitmentStatus == null ? RecruitmentStatus.UNKNOWN : recruitmentStatus;
         this.sourceModifiedAt = sourceModifiedAt;
     }
-
-    public void hideExpired() {
-        this.displayStatus = PolicyDisplayStatus.HIDDEN_EXPIRED;
-    }
 }

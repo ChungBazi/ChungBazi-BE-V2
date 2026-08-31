@@ -1,6 +1,7 @@
 package com.chungbazi.server.domain.policy.domain.repository.policyRepository;
 
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
+import com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
 import java.time.LocalDate;
 import java.util.Collection;
@@ -50,4 +51,19 @@ public interface PolicyRepository extends JpaRepository<Policy, Long>, PolicyRep
               AND policy.saveCount > 0
             """)
     int decreaseSaveCount(@Param("policyId") Long policyId);
+
+    @Modifying
+    @Query("""
+            UPDATE Policy policy
+            SET policy.displayStatus = :hiddenStatus
+            WHERE policy.displayStatus = :visibleStatus
+              AND policy.recruitmentStatus = :closedStatus
+              AND policy.applyEndDate <= :thresholdDate
+            """)
+    int hideExpiredPolicies(
+            @Param("visibleStatus") PolicyDisplayStatus visibleStatus,
+            @Param("hiddenStatus") PolicyDisplayStatus hiddenStatus,
+            @Param("closedStatus") RecruitmentStatus closedStatus,
+            @Param("thresholdDate") LocalDate thresholdDate
+    );
 }
