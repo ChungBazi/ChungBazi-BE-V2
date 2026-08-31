@@ -19,6 +19,7 @@ public interface RecentViewedPolicyRepository extends JpaRepository<RecentViewed
             JOIN FETCH recentViewedPolicy.policy
             WHERE recentViewedPolicy.userId = :userId
               AND recentViewedPolicy.policy.recruitmentStatus <> :closedStatus
+              AND recentViewedPolicy.policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
               AND (
                     recentViewedPolicy.policy.national = true
                     OR EXISTS (
@@ -58,6 +59,7 @@ public interface RecentViewedPolicyRepository extends JpaRepository<RecentViewed
             JOIN FETCH recentViewedPolicy.policy
             WHERE recentViewedPolicy.userId = :userId
               AND recentViewedPolicy.policy.recruitmentStatus <> :closedStatus
+              AND recentViewedPolicy.policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
               AND (
                     recentViewedPolicy.policy.national = true
                     OR EXISTS (
@@ -105,6 +107,7 @@ public interface RecentViewedPolicyRepository extends JpaRepository<RecentViewed
             FROM RecentViewedPolicy recentViewedPolicy
             WHERE recentViewedPolicy.userId = :userId
               AND recentViewedPolicy.policy.recruitmentStatus <> :closedStatus
+              AND recentViewedPolicy.policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
               AND (
                     recentViewedPolicy.policy.national = true
                     OR EXISTS (

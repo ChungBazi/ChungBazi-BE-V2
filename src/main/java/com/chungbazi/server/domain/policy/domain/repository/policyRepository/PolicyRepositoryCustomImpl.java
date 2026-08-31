@@ -3,6 +3,7 @@ package com.chungbazi.server.domain.policy.domain.repository.policyRepository;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.application.PolicyPopularityCalculator;
 import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
+import com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus;
 import com.chungbazi.server.domain.policy.domain.type.PolicySortType;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
 import com.chungbazi.server.domain.policy.domain.type.SidoCode;
@@ -348,6 +349,7 @@ public class PolicyRepositoryCustomImpl implements PolicyRepositoryCustom {
                                             SidoCode sidoCode,
                                             String sigunguCode) {
         BooleanExpression predicate = policy.recruitmentStatus.ne(closedStatus)
+                .and(policy.displayStatus.eq(PolicyDisplayStatus.VISIBLE))
                 .and(visibleInRegion(sidoCode, sigunguCode));
 
         return category == null ? predicate : predicate.and(policy.category.eq(category));

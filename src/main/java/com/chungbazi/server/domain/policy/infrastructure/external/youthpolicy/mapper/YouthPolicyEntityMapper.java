@@ -24,9 +24,9 @@ public class YouthPolicyEntityMapper {
             YouthPolicyItem item,
             String plcyNo,
             PolicySubCategoryType subCategory,
-            boolean national
+            boolean national,
+            ApplyPeriod applyPeriod
     ) {
-        ApplyPeriod applyPeriod = dateMapper.toApplyPeriod(item);
         IncomeCondition incomeCondition = incomeMapper.toIncomeCondition(item);
 
         return Policy.createPolicy(
@@ -60,9 +60,9 @@ public class YouthPolicyEntityMapper {
             Policy policy,
             YouthPolicyItem item,
             PolicySubCategoryType subCategory,
-            boolean national
+            boolean national,
+            ApplyPeriod applyPeriod
     ) {
-        ApplyPeriod applyPeriod = dateMapper.toApplyPeriod(item);
         IncomeCondition incomeCondition = incomeMapper.toIncomeCondition(item);
 
         policy.updatePolicy(
