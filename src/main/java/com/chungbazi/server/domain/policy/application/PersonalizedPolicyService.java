@@ -40,6 +40,14 @@ public class PersonalizedPolicyService {
         return findPolicies(user, size, true);
     }
 
+    public List<Policy> getPersonalizedPoliciesByCategory(User user, PolicyCategoryType category, int size) {
+        return findByCategory(user, category, size, false);
+    }
+
+    public List<Policy> getPolicyCardsByCategory(User user, PolicyCategoryType category, int size) {
+        return findByCategory(user, category, size, true);
+    }
+
     private List<Policy> findPolicies(User user, int size, boolean matchedOnly) {
         // TODO: 추후 캐싱 고려
         // TODO: 실제 정책 데이터와 추천 결과를 확인한 뒤 후보군 조회 기준 재조정
@@ -65,14 +73,6 @@ public class PersonalizedPolicyService {
                 )
         );
         return rankPolicies(user, context, candidates, size, matchedOnly);
-    }
-
-    public List<Policy> getPersonalizedPoliciesByCategory(User user, PolicyCategoryType category, int size) {
-        return findByCategory(user, category, size, false);
-    }
-
-    public List<Policy> getPolicyCardsByCategory(User user, PolicyCategoryType category, int size) {
-        return findByCategory(user, category, size, true);
     }
 
     private List<Policy> findByCategory(
