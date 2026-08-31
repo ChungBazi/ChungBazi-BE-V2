@@ -95,6 +95,10 @@ public class Policy extends BaseTimeEntity {
     @Column(name = "recruitment_status", nullable = false, length = 20)
     private RecruitmentStatus recruitmentStatus = RecruitmentStatus.UNKNOWN;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "display_status", nullable = false, length = 20)
+    private PolicyDisplayStatus displayStatus = PolicyDisplayStatus.VISIBLE;
+
     @Column(name = "min_age")
     private Integer minAge;
 
@@ -250,5 +254,9 @@ public class Policy extends BaseTimeEntity {
     public void updateRecruitmentStatus(RecruitmentStatus recruitmentStatus, LocalDateTime sourceModifiedAt) {
         this.recruitmentStatus = recruitmentStatus == null ? RecruitmentStatus.UNKNOWN : recruitmentStatus;
         this.sourceModifiedAt = sourceModifiedAt;
+    }
+
+    public void hideExpired() {
+        this.displayStatus = PolicyDisplayStatus.HIDDEN_EXPIRED;
     }
 }
