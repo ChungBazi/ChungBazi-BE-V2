@@ -5,6 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PolicySpecialEligibilityRepository extends JpaRepository<PolicySpecialEligibility, Long> {
 
-
-
+    void deleteAllByPolicy_Id(Long policyId);
 }
