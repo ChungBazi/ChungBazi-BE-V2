@@ -17,14 +17,28 @@ public interface PolicyRepository extends JpaRepository<Policy, Long>, PolicyRep
 
     boolean existsByPlcyNo(String plcyNo);
 
-    List<Policy> findAllByApplyEndDateInAndRecruitmentStatusNot(
-            Collection<LocalDate> applyEndDates,
-            RecruitmentStatus recruitmentStatus
+    @Query("""
+            SELECT policy
+            FROM Policy policy
+            WHERE policy.applyEndDate IN :applyEndDates
+              AND policy.recruitmentStatus <> :closedStatus
+              AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
+            """)
+    List<Policy> findVisiblePoliciesByApplyEndDateIn(
+            @Param("applyEndDates") Collection<LocalDate> applyEndDates,
+            @Param("closedStatus") RecruitmentStatus closedStatus
     );
 
-    List<Policy> findAllByIdInAndRecruitmentStatusNot(
-            Collection<Long> policyIds,
-            RecruitmentStatus recruitmentStatus
+    @Query("""
+            SELECT policy
+            FROM Policy policy
+            WHERE policy.id IN :policyIds
+              AND policy.recruitmentStatus <> :closedStatus
+              AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
+            """)
+    List<Policy> findVisiblePoliciesByIdIn(
+            @Param("policyIds") Collection<Long> policyIds,
+            @Param("closedStatus") RecruitmentStatus closedStatus
     );
 
     @Modifying
@@ -32,6 +46,7 @@ public interface PolicyRepository extends JpaRepository<Policy, Long>, PolicyRep
             UPDATE Policy policy
             SET policy.viewCount = policy.viewCount + 1
             WHERE policy.id = :policyId
+              AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
             """)
     int increaseViewCount(@Param("policyId") Long policyId);
 

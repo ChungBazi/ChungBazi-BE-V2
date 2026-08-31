@@ -48,6 +48,7 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             JOIN FETCH policyLike.policy policy
             JOIN User user ON user.id = policyLike.userId
             WHERE policy.id IN :policyIds
+              AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
               AND user.deleted = false
             """)
     List<PolicyLike> findNotificationRecipientsByPolicyIds(
@@ -62,6 +63,7 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             WHERE policyLike.createdAt >= :likedFrom
               AND policyLike.createdAt < :likedUntil
               AND policy.recruitmentStatus <> :closedStatus
+              AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
               AND user.deleted = false
             """)
     List<PolicyLike> findPreparationReminderTargets(
@@ -76,6 +78,7 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             JOIN FETCH policyLike.policy
             WHERE policyLike.userId = :userId
               AND policyLike.policy.id = :policyId
+              AND policyLike.policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
             """)
     Optional<PolicyLike> findByUserIdAndPolicyIdWithPolicy(
             @Param("userId") Long userId,
@@ -100,8 +103,9 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
     @Query("""
             SELECT policyLike
             FROM PolicyLike policyLike
-            JOIN FETCH policyLike.policy
+            JOIN FETCH policyLike.policy policy
             WHERE policyLike.userId = :userId
+              AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
             ORDER BY policyLike.createdAt DESC
             """)
     List<PolicyLike> findRecentPolicyLikesWithPolicy(
@@ -115,6 +119,7 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             JOIN policyLike.policy policy
             WHERE policyLike.userId = :userId
               AND policy.recruitmentStatus <> :closedStatus
+              AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
               AND policy.recruitmentType <> :openEndedType
               AND policy.applyEndDate IS NOT NULL
               AND policy.applyEndDate >= :today
@@ -134,6 +139,7 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             JOIN policyLike.policy policy
             WHERE policyLike.userId = :userId
               AND policy.recruitmentStatus <> :closedStatus
+              AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
               AND policy.applyEndDate = :targetDate
             """)
     Long countDeadlineLikedPoliciesByDate(
@@ -148,6 +154,7 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             JOIN policyLike.policy policy
             WHERE policyLike.userId = :userId
               AND policy.recruitmentStatus <> :closedStatus
+              AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
               AND policy.applyEndDate = :targetDate
             ORDER BY policy.registeredAt DESC, policy.id DESC
             """)
@@ -164,6 +171,7 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             JOIN policyLike.policy policy
             WHERE policyLike.userId = :userId
               AND policy.recruitmentStatus <> :closedStatus
+              AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
               AND policy.applyEndDate = :targetDate
               AND (
                   policy.registeredAt < :registeredAt
@@ -186,6 +194,7 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             JOIN policyLike.policy policy
             WHERE policyLike.userId = :userId
               AND policy.recruitmentStatus <> :closedStatus
+              AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
               AND policy.applyEndDate = :targetDate
             ORDER BY policy.applyEndDate ASC, policy.id DESC
             """)
@@ -202,6 +211,7 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             JOIN policyLike.policy policy
             WHERE policyLike.userId = :userId
               AND policy.recruitmentStatus <> :closedStatus
+              AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
               AND policy.applyEndDate = :targetDate
               AND policy.id < :policyId
             ORDER BY policy.applyEndDate ASC, policy.id DESC
@@ -220,6 +230,7 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             JOIN policyLike.policy policy
             WHERE policyLike.userId = :userId
               AND policy.recruitmentStatus <> :closedStatus
+              AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
               AND policy.applyEndDate BETWEEN :startDate AND :endDate
             ORDER BY policy.applyEndDate ASC
             """)
@@ -236,6 +247,7 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             JOIN policyLike.policy policy
             WHERE policyLike.userId = :userId
               AND policy.recruitmentStatus <> :closedStatus
+              AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
               AND policy.recruitmentType = :recruitmentType
             """)
     Long countOpenEndedLikedPolicies(
@@ -250,6 +262,7 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             JOIN FETCH policyLike.policy policy
             WHERE policyLike.userId = :userId
               AND policy.recruitmentStatus <> :closedStatus
+              AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
               AND policy.recruitmentType = :recruitmentType
             ORDER BY policyLike.id DESC
             """)
@@ -266,6 +279,7 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             JOIN FETCH policyLike.policy policy
             WHERE policyLike.userId = :userId
               AND policy.recruitmentStatus <> :closedStatus
+              AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
               AND policy.recruitmentType = :recruitmentType
               AND policyLike.id < :policyLikeId
             ORDER BY policyLike.id DESC
@@ -284,6 +298,7 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             JOIN policyLike.policy policy
             WHERE policyLike.userId = :userId
               AND policy.recruitmentStatus <> :closedStatus
+              AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
               AND (:category IS NULL OR policy.category = :category)
             """)
     Long countMyLikedPolicies(
@@ -298,6 +313,7 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             JOIN policyLike.policy policy
             WHERE policyLike.userId = :userId
               AND policy.recruitmentStatus <> :closedStatus
+              AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
               AND (:category IS NULL OR policy.category = :category)
             ORDER BY policy.registeredAt DESC, policy.id DESC
             """)
@@ -314,6 +330,7 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             JOIN policyLike.policy policy
             WHERE policyLike.userId = :userId
               AND policy.recruitmentStatus <> :closedStatus
+              AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
               AND (:category IS NULL OR policy.category = :category)
               AND (
                   policy.registeredAt < :registeredAt
@@ -336,6 +353,7 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             JOIN policyLike.policy policy
             WHERE policyLike.userId = :userId
               AND policy.recruitmentStatus <> :closedStatus
+              AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
               AND (:category IS NULL OR policy.category = :category)
             ORDER BY
               CASE WHEN policy.recruitmentType = :openEndedType OR policy.applyEndDate IS NULL THEN 1 ELSE 0 END ASC,
@@ -356,6 +374,7 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             JOIN policyLike.policy policy
             WHERE policyLike.userId = :userId
               AND policy.recruitmentStatus <> :closedStatus
+              AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
               AND (:category IS NULL OR policy.category = :category)
               AND (
                   policy.applyEndDate > :applyEndDate
@@ -384,6 +403,7 @@ public interface PolicyLikeRepository extends JpaRepository<PolicyLike, Long> {
             JOIN policyLike.policy policy
             WHERE policyLike.userId = :userId
               AND policy.recruitmentStatus <> :closedStatus
+              AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
               AND (:category IS NULL OR policy.category = :category)
               AND (policy.recruitmentType = :openEndedType OR policy.applyEndDate IS NULL)
               AND policy.id < :policyId

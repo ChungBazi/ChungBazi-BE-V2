@@ -82,7 +82,7 @@ public class NotificationReminderService {
         LocalDate deadlineInThreeDays = today.plusDays(3);
 
         List<Policy> reminderTargetPolicies =
-                policyRepository.findAllByApplyEndDateInAndRecruitmentStatusNot(
+                policyRepository.findVisiblePoliciesByApplyEndDateIn(
                         List.of(deadlineInSevenDays, deadlineInThreeDays),
                         RecruitmentStatus.CLOSED
                 );
