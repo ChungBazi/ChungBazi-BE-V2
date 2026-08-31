@@ -11,6 +11,7 @@ import com.chungbazi.server.domain.policy.domain.type.*;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.domain.user.domain.UserInterest;
 import com.chungbazi.server.domain.user.infrastructure.UserInterestRepository;
+import com.chungbazi.server.fixture.PolicyFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,7 +19,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -100,11 +100,53 @@ public class PersonalizedPolicyServiceTest {
         when(scorer.score(eq(user), any(PolicyRecommendationContext.class), eq(oldTie)))
                 .thenReturn(50);
 
-        List<Policy> result = service.getPersonalizedPolicyEntities(user, 3);
+        List<Policy> result = service.getPersonalizedPolicies(user, 3);
 
         assertThat(result)
                 .extracting(Policy::getId)
                 .containsExactly(1L, 2L, 3L);
+    }
+
+    @Test
+    @DisplayName("추천 점수가 1점 미만인 정책은 추천 결과에서 제외한다")
+    void excludesPoliciesBelowMinimumRecommendationScore() {
+        User user = mock(User.class);
+        Policy matched = policy(
+                1L,
+                PolicySubCategoryType.EMPLOYMENT_PREPARATION,
+                LocalDateTime.of(2026, 8, 3, 0, 0)
+        );
+        Policy zeroScore = policy(
+                2L,
+                PolicySubCategoryType.WORK_LIFE,
+                LocalDateTime.of(2026, 8, 2, 0, 0)
+        );
+        Policy negativeScore = policy(
+                3L,
+                PolicySubCategoryType.STARTUP_BUSINESS,
+                LocalDateTime.of(2026, 8, 1, 0, 0)
+        );
+
+        prepareRecommendationData(
+                user,
+                List.of(matched, zeroScore, negativeScore),
+                List.of()
+        );
+
+        when(scorer.isEligible(eq(user), any(Policy.class)))
+                .thenReturn(true);
+        when(scorer.score(eq(user), any(PolicyRecommendationContext.class), eq(matched)))
+                .thenReturn(1);
+        when(scorer.score(eq(user), any(PolicyRecommendationContext.class), eq(zeroScore)))
+                .thenReturn(0);
+        when(scorer.score(eq(user), any(PolicyRecommendationContext.class), eq(negativeScore)))
+                .thenReturn(-1);
+
+        List<Policy> result = service.getPersonalizedPolicies(user, 3);
+
+        assertThat(result)
+                .extracting(Policy::getId)
+                .containsExactly(1L);
     }
 
     @Test
@@ -172,7 +214,7 @@ public class PersonalizedPolicyServiceTest {
             };
         });
 
-        List<Policy> result = service.getPersonalizedPolicyEntities(user, 4);
+        List<Policy> result = service.getPersonalizedPolicies(user, 4);
 
         // job4가 housing보다 점수는 높지만, 동일 카테고리 우선 노출 제한이 3개이므로 housing이 선택된다.
         assertThat(result)
@@ -193,7 +235,7 @@ public class PersonalizedPolicyServiceTest {
         when(userInterestRepository.findAllByUser(user))
                 .thenReturn(List.of(interest));
 
-        List<Policy> result = service.getPersonalizedPolicyEntities(
+        List<Policy> result = service.getPersonalizedPoliciesByCategory(
                 user,
                 PolicyCategoryType.HOUSING,
                 5
@@ -278,7 +320,7 @@ public class PersonalizedPolicyServiceTest {
 
         // when
         List<Policy> result =
-                service.getPersonalizedPolicyEntities(user, 3);
+                service.getPersonalizedPolicies(user, 3);
 
         // then
         assertThat(result)
@@ -316,32 +358,11 @@ public class PersonalizedPolicyServiceTest {
     }
 
     private Policy policy(Long id, PolicySubCategoryType subCategory, LocalDateTime registeredAt) {
-        Policy policy = Policy.createPolicy(
-                "P-" + id,
-                "테스트 정책 " + id,
-                null,
-                null,
-                null,
-                subCategory,
-                true,
-                null,
-                null,
-                null,
-                RecruitmentType.ALWAYS,
-                RecruitmentStatus.OPEN,
-                null,
-                null,
-                null,
-                null,
-                IncomeConditionType.NO_LIMIT,
-                null,
-                null,
-                null,
-                null,
-                registeredAt,
-                registeredAt
-        );
-        ReflectionTestUtils.setField(policy, "id", id);
-        return policy;
+        return PolicyFixture.policy()
+                .id(id)
+                .title("테스트 정책 " + id)
+                .subCategory(subCategory)
+                .registeredAt(registeredAt)
+                .build();
     }
 }

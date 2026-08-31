@@ -122,7 +122,7 @@ public class PersonalizedPolicyRecommendationScenarioTest {
                 .registeredAt(LocalDateTime.of(2026, 8, 4, 0, 0))
                 .build();
 
-        // 관심 분야와 관계없는 정책
+        // 관심 분야와 관계없는 0점 정책은 추천 결과에서 제외되어야 한다.
         Policy unrelatedPolicy = PolicyFixture.policy()
                 .id(4L)
                 .title("청년 주거 지원")
@@ -154,15 +154,10 @@ public class PersonalizedPolicyRecommendationScenarioTest {
                 PolicySubCategoryType.EMPLOYMENT_PREPARATION
         );
 
-        prepareRepositories(
-                user,
-                candidates,
-                List.of(interest)
-        );
+        prepareRepositories(user, candidates, List.of(interest));
 
         // when
-        List<Policy> result =
-                service.getPersonalizedPolicyEntities(user, 5);
+        List<Policy> result = service.getPersonalizedPolicies(user, 5);
 
         // then
         assertThat(result)
@@ -170,13 +165,15 @@ public class PersonalizedPolicyRecommendationScenarioTest {
                 .containsExactly(
                         1L, // 관심사 + 소득 일치
                         2L, // 관심사 일치, 소득 불일치
-                        3L, // 같은 관심 대분류
-                        4L  // 관심 분야와 무관
+                        3L  // 같은 관심 대분류
                 );
 
         assertThat(result)
                 .extracting(Policy::getId)
-                .doesNotContain(5L);
+                .doesNotContain(
+                        4L, // 개인화 점수 0점
+                        5L  // 나이 조건 불일치
+                );
     }
 
     @Test
@@ -221,7 +218,7 @@ public class PersonalizedPolicyRecommendationScenarioTest {
         );
 
         // when
-        List<Policy> result = service.getPersonalizedPolicyEntities(user, 2);
+        List<Policy> result = service.getPersonalizedPolicies(user, 2);
 
         // then
         // 두 정책의 관심사 점수가 같고 소득 점수도 없으므로, 등록일이 최신인 정책이 먼저 나온다.

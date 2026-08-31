@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 public class PersonalizedPolicyRanker {
 
     private static final int MAX_SAME_CATEGORY_COUNT = 3;
+    private static final int MINIMUM_RECOMMENDATION_SCORE = 1;
 
     private final PersonalizedPolicyScorer scorer;
 
@@ -28,6 +29,7 @@ public class PersonalizedPolicyRanker {
     ) {
         List<Policy> rankedPolicies = candidates.stream()
                 .filter(policy -> scorer.isEligible(user, policy))
+                .filter(policy -> scorer.score(user, context, policy) >= MINIMUM_RECOMMENDATION_SCORE)
                 .sorted(Comparator
                         .comparingInt((Policy policy) -> scorer.score(user, context, policy))
                         .reversed()
