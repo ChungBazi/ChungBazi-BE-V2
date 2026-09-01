@@ -10,7 +10,10 @@ import com.chungbazi.server.domain.policy.domain.repository.policyRepository.Pol
 import com.chungbazi.server.domain.policy.domain.type.*;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.domain.user.domain.UserInterest;
+import com.chungbazi.server.domain.user.domain.UserSpecialEligibility;
+import com.chungbazi.server.domain.user.domain.type.SpecialEligibilityType;
 import com.chungbazi.server.domain.user.infrastructure.UserInterestRepository;
+import com.chungbazi.server.domain.user.infrastructure.UserSpecialEligibilityRepository;
 import com.chungbazi.server.fixture.PolicyFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -36,6 +40,9 @@ public class PersonalizedPolicyServiceTest {
 
     @Mock
     private UserInterestRepository userInterestRepository;
+
+    @Mock
+    private UserSpecialEligibilityRepository userSpecialEligibilityRepository;
 
     @Mock
     private PolicyLikeRepository policyLikeRepository;
@@ -53,6 +60,7 @@ public class PersonalizedPolicyServiceTest {
         service = new PersonalizedPolicyService(
                 policyRepository,
                 userInterestRepository,
+                userSpecialEligibilityRepository,
                 policyLikeRepository,
                 recentViewedPolicyRepository,
                 new PersonalizedPolicyRanker(scorer)
@@ -280,11 +288,12 @@ public class PersonalizedPolicyServiceTest {
                 LocalDateTime.of(2026, 8, 1, 0, 0)
         );
 
-        when(policyRepository.findAllLatestPolicies(
+        when(policyRepository.findEligiblePolicies(
+                isNull(),
                 eq(RecruitmentStatus.CLOSED),
                 isNull(),
                 isNull(),
-                any(Pageable.class)
+                eq(Set.of(SpecialEligibilityType.NONE))
         )).thenReturn(List.of(
                 policy1,
                 policy2,
@@ -295,6 +304,12 @@ public class PersonalizedPolicyServiceTest {
 
         when(userInterestRepository.findAllByUser(user))
                 .thenReturn(List.of());
+
+        when(userSpecialEligibilityRepository.findAllByUser(user))
+                .thenReturn(List.of(UserSpecialEligibility.create(
+                        user,
+                        SpecialEligibilityType.NONE
+                )));
 
         when(policyLikeRepository.findRecentPolicyLikesWithPolicy(
                 eq(1L),
@@ -333,15 +348,22 @@ public class PersonalizedPolicyServiceTest {
             List<Policy> candidates,
             List<UserInterest> interests
     ) {
-        when(policyRepository.findAllLatestPolicies(
+        when(policyRepository.findEligiblePolicies(
+                isNull(),
                 any(),
                 any(),
                 any(),
-                any(Pageable.class)
+                eq(Set.of(SpecialEligibilityType.NONE))
         )).thenReturn(candidates);
 
         when(userInterestRepository.findAllByUser(user))
                 .thenReturn(interests);
+
+        when(userSpecialEligibilityRepository.findAllByUser(user))
+                .thenReturn(List.of(UserSpecialEligibility.create(
+                        user,
+                        SpecialEligibilityType.NONE
+                )));
 
         when(policyLikeRepository.findRecentPolicyLikesWithPolicy(
                 any(),
