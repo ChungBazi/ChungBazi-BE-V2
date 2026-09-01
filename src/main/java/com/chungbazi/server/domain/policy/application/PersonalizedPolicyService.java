@@ -2,6 +2,7 @@ package com.chungbazi.server.domain.policy.application;
 
 import com.chungbazi.server.domain.policy.application.dto.PolicyRecommendationContext;
 import com.chungbazi.server.domain.policy.application.support.PersonalizedPolicyRanker;
+import com.chungbazi.server.domain.policy.application.support.RecentSearchPolicyScoreCalculator;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.repository.PolicyLikeRepository;
 import com.chungbazi.server.domain.policy.domain.repository.RecentViewedPolicyRepository;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -36,6 +38,7 @@ public class PersonalizedPolicyService {
     private final UserSpecialEligibilityRepository userSpecialEligibilityRepository;
     private final PolicyLikeRepository policyLikeRepository;
     private final RecentViewedPolicyRepository recentViewedPolicyRepository;
+    private final RecentSearchPolicyScoreCalculator recentSearchPolicyScoreCalculator;
     private final PersonalizedPolicyRanker personalizedPolicyRanker;
 
     public List<Policy> getPersonalizedPolicies(User user, int size) {
@@ -116,7 +119,14 @@ public class PersonalizedPolicyService {
                 recentViewedPolicyRepository.findRecentViewedPolicyEvents(
                         user.getId(),
                         PageRequest.of(0, RECENT_VIEW_SIZE)
-                )
+                ),
+                findRecentSearchScores(user)
         );
+    }
+
+    private Map<Long, Integer> findRecentSearchScores(User user) {
+        return user.isSearchKeywordAutoSaveEnabled()
+                ? recentSearchPolicyScoreCalculator.calculateScores(user.getId())
+                : Map.of();
     }
 }

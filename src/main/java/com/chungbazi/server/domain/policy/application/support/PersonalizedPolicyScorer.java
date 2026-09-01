@@ -61,6 +61,10 @@ public class PersonalizedPolicyScorer {
                             RECENT_VIEWED_SCORE_PER_AFFINITY
                     )
             ),
+            RecommendationRule.of(
+                    "RECENT_SEARCH",
+                    input -> input.context().recentSearchScore(input.policy().getId())
+            ),
             RecommendationRule.fixed(
                     "ALREADY_VIEWED_POLICY",
                     RECENT_VIEWED_POLICY_PENALTY,

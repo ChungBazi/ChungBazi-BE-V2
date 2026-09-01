@@ -18,12 +18,22 @@ public record PolicyRecommendationContext(
         Map<PolicyCategoryType, Long> interestCategoryCounts,
         Map<PolicySubCategoryType, Double> likedSubCategoryAffinities,
         Map<PolicySubCategoryType, Double> recentViewedSubCategoryAffinities,
-        Set<Long> recentViewedPolicyIds
+        Set<Long> recentViewedPolicyIds,
+        Map<Long, Integer> recentSearchScores
 ) {
     public static PolicyRecommendationContext of(
             List<UserInterest> interests,
             List<PolicyLike> likes,
             List<RecentViewedPolicy> recentViews
+    ) {
+        return of(interests, likes, recentViews, Map.of());
+    }
+
+    public static PolicyRecommendationContext of(
+            List<UserInterest> interests,
+            List<PolicyLike> likes,
+            List<RecentViewedPolicy> recentViews,
+            Map<Long, Integer> recentSearchScores
     ) {
         Set<PolicySubCategoryType> interestSubCategories = toInterestSubCategories(interests);
 
@@ -37,6 +47,9 @@ public record PolicyRecommendationContext(
                         recentViews.stream().map(view -> view.getPolicy().getSubCategory()).toList()
                 ))
                 .recentViewedPolicyIds(toRecentViewedPolicyIds(recentViews))
+                .recentSearchScores(recentSearchScores == null
+                        ? Map.of()
+                        : Map.copyOf(recentSearchScores))
                 .build();
     }
 
@@ -76,6 +89,10 @@ public record PolicyRecommendationContext(
 
     public boolean hasRecentlyViewedPolicy(Long policyId) {
         return recentViewedPolicyIds.contains(policyId);
+    }
+
+    public int recentSearchScore(Long policyId) {
+        return recentSearchScores == null ? 0 : recentSearchScores.getOrDefault(policyId, 0);
     }
 
     private static Set<PolicySubCategoryType> toInterestSubCategories(

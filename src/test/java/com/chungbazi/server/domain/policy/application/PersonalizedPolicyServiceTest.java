@@ -3,6 +3,7 @@ package com.chungbazi.server.domain.policy.application;
 import com.chungbazi.server.domain.policy.application.dto.PolicyRecommendationContext;
 import com.chungbazi.server.domain.policy.application.support.PersonalizedPolicyRanker;
 import com.chungbazi.server.domain.policy.application.support.PersonalizedPolicyScorer;
+import com.chungbazi.server.domain.policy.application.support.RecentSearchPolicyScoreCalculator;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.repository.PolicyLikeRepository;
 import com.chungbazi.server.domain.policy.domain.repository.RecentViewedPolicyRepository;
@@ -51,6 +52,9 @@ public class PersonalizedPolicyServiceTest {
     private RecentViewedPolicyRepository recentViewedPolicyRepository;
 
     @Mock
+    private RecentSearchPolicyScoreCalculator recentSearchPolicyScoreCalculator;
+
+    @Mock
     private PersonalizedPolicyScorer scorer;
 
     private PersonalizedPolicyService service;
@@ -63,6 +67,7 @@ public class PersonalizedPolicyServiceTest {
                 userSpecialEligibilityRepository,
                 policyLikeRepository,
                 recentViewedPolicyRepository,
+                recentSearchPolicyScoreCalculator,
                 new PersonalizedPolicyRanker(scorer)
         );
     }

@@ -73,6 +73,30 @@ public class PersonalizedPolicyScorerTest {
     }
 
     @Test
+    @DisplayName("최근 검색어 관련도 점수를 추천 점수에 반영한다")
+    void addsRecentSearchScore() {
+        User user = mock(User.class);
+        Policy policy = mock(Policy.class);
+
+        when(policy.getId()).thenReturn(1L);
+        when(policy.getCategory()).thenReturn(PolicyCategoryType.JOB_STARTUP);
+        when(policy.getSubCategory()).thenReturn(
+                PolicySubCategoryType.EMPLOYMENT_PREPARATION
+        );
+
+        PolicyRecommendationContext context = PolicyRecommendationContext.builder()
+                .interestSubCategories(Set.of())
+                .interestCategoryCounts(Map.of())
+                .likedSubCategoryAffinities(Map.of())
+                .recentViewedSubCategoryAffinities(Map.of())
+                .recentViewedPolicyIds(Set.of())
+                .recentSearchScores(Map.of(1L, 12))
+                .build();
+
+        assertThat(scorer.score(user, context, policy)).isEqualTo(12);
+    }
+
+    @Test
     @DisplayName("정책의 연령 조건을 만족하지 않으면 추천 대상에서 제외한다")
     void excludesPolicyWhenAgeDoesNotMatch() {
         User user = mock(User.class);
