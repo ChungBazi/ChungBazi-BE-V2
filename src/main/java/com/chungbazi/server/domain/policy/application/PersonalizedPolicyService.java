@@ -10,24 +10,29 @@ import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.domain.user.domain.UserInterest;
+import com.chungbazi.server.domain.user.domain.UserSpecialEligibility;
+import com.chungbazi.server.domain.user.domain.type.SpecialEligibilityType;
 import com.chungbazi.server.domain.user.infrastructure.UserInterestRepository;
+import com.chungbazi.server.domain.user.infrastructure.UserSpecialEligibilityRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PersonalizedPolicyService {
 
-    private static final int CANDIDATE_SIZE = 300;
     private static final int BEHAVIOR_HISTORY_SIZE = 50;
 
     private final PolicyRepository policyRepository;
     private final UserInterestRepository userInterestRepository;
+    private final UserSpecialEligibilityRepository userSpecialEligibilityRepository;
     private final PolicyLikeRepository policyLikeRepository;
     private final RecentViewedPolicyRepository recentViewedPolicyRepository;
     private final PersonalizedPolicyRanker personalizedPolicyRanker;
@@ -49,29 +54,18 @@ public class PersonalizedPolicyService {
     }
 
     private List<Policy> findPolicies(User user, int size) {
-        // TODO: 추후 캐싱 고려
-        // TODO: 실제 정책 데이터와 추천 결과를 확인한 뒤 후보군 조회 기준 재조정
-        List<Policy> candidates = policyRepository.findAllLatestPolicies(
+        List<UserInterest> interests = userInterestRepository.findAllByUser(user);
+        Set<SpecialEligibilityType> eligibilityTypes = findSpecialEligibilityTypes(user);
+
+        List<Policy> candidates = policyRepository.findEligiblePolicies(
+                null,
                 RecruitmentStatus.CLOSED,
                 user.getSidoCode(),
                 user.getSigunguCode(),
-                PageRequest.of(0, CANDIDATE_SIZE)
+                eligibilityTypes
         );
 
-        PolicyRecommendationContext context = PolicyRecommendationContext.of(
-                userInterestRepository.findAllByUser(user),
-                policyLikeRepository.findRecentPolicyLikesWithPolicy(
-                        user.getId(),
-                        PageRequest.of(0, BEHAVIOR_HISTORY_SIZE)
-                ),
-                recentViewedPolicyRepository.findRecentViewedPolicies(
-                        user.getId(),
-                        RecruitmentStatus.CLOSED,
-                        user.getSidoCode(),
-                        user.getSigunguCode(),
-                        PageRequest.of(0, BEHAVIOR_HISTORY_SIZE)
-                )
-        );
+        PolicyRecommendationContext context = createRecommendationContext(user, interests);
         return personalizedPolicyRanker.rank(user, context, candidates, size);
     }
 
@@ -85,15 +79,34 @@ public class PersonalizedPolicyService {
             return List.of();
         }
 
-        List<Policy> candidates = policyRepository.findLatestPolicies(
+        Set<SpecialEligibilityType> eligibilityTypes = findSpecialEligibilityTypes(user);
+
+        List<Policy> candidates = policyRepository.findEligiblePolicies(
                 category,
                 RecruitmentStatus.CLOSED,
                 user.getSidoCode(),
                 user.getSigunguCode(),
-                PageRequest.of(0, CANDIDATE_SIZE)
+                eligibilityTypes
         );
 
-        PolicyRecommendationContext context = PolicyRecommendationContext.of(
+        PolicyRecommendationContext context = createRecommendationContext(user, interests);
+        return personalizedPolicyRanker.rank(user, context, candidates, size);
+    }
+
+    private Set<SpecialEligibilityType> findSpecialEligibilityTypes(User user) {
+        Set<SpecialEligibilityType> eligibilityTypes = userSpecialEligibilityRepository
+                .findAllByUser(user)
+                .stream()
+                .map(UserSpecialEligibility::getEligibilityType)
+                .collect(Collectors.toSet());
+
+        return eligibilityTypes.isEmpty()
+                ? Set.of(SpecialEligibilityType.NONE)
+                : eligibilityTypes;
+    }
+
+    private PolicyRecommendationContext createRecommendationContext(User user, List<UserInterest> interests) {
+        return PolicyRecommendationContext.of(
                 interests,
                 policyLikeRepository.findRecentPolicyLikesWithPolicy(
                         user.getId(),
@@ -107,6 +120,5 @@ public class PersonalizedPolicyService {
                         PageRequest.of(0, BEHAVIOR_HISTORY_SIZE)
                 )
         );
-        return personalizedPolicyRanker.rank(user, context, candidates, size);
     }
 }

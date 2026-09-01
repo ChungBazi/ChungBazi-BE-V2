@@ -7,6 +7,7 @@ import com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus;
 import com.chungbazi.server.domain.policy.domain.type.PolicySortType;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
 import com.chungbazi.server.domain.policy.domain.type.SidoCode;
+import com.chungbazi.server.domain.user.domain.type.SpecialEligibilityType;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.NumberExpression;
@@ -18,16 +19,36 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 import static com.chungbazi.server.domain.policy.domain.entity.QPolicy.policy;
 import static com.chungbazi.server.domain.policy.domain.entity.QPolicyRegion.policyRegion;
+import static com.chungbazi.server.domain.policy.domain.entity.QPolicySpecialEligibility.policySpecialEligibility;
 
 @Repository
 @RequiredArgsConstructor
 public class PolicyRepositoryCustomImpl implements PolicyRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
+
+    @Override
+    public List<Policy> findEligiblePolicies(
+            PolicyCategoryType category,
+            RecruitmentStatus closedStatus,
+            SidoCode sidoCode,
+            String sigunguCode,
+            Set<SpecialEligibilityType> userEligibilityTypes
+    ) {
+        return queryFactory
+                .selectFrom(policy)
+                .where(
+                        basePredicate(category, closedStatus, sidoCode, sigunguCode)
+                                .and(matchesSpecialEligibility(userEligibilityTypes))
+                )
+                .fetch();
+    }
 
     @Override
     public long countVisiblePoliciesByCategory(PolicyCategoryType category,
@@ -359,6 +380,22 @@ public class PolicyRepositoryCustomImpl implements PolicyRepositoryCustom {
                 .and(visibleInRegion(sidoCode, sigunguCode));
 
         return category == null ? predicate : predicate.and(policy.category.eq(category));
+    }
+
+    private BooleanExpression matchesSpecialEligibility(Set<SpecialEligibilityType> userEligibilityTypes) {
+        Set<SpecialEligibilityType> visibleEligibilityTypes = EnumSet.of(SpecialEligibilityType.NONE);
+
+        if (userEligibilityTypes != null) {
+            visibleEligibilityTypes.addAll(userEligibilityTypes);
+        }
+
+        return JPAExpressions.selectOne()
+                .from(policySpecialEligibility)
+                .where(
+                        policySpecialEligibility.policy.eq(policy),
+                        policySpecialEligibility.eligibilityType.in(visibleEligibilityTypes)
+                )
+                .exists();
     }
 
     private BooleanExpression visibleInRegion(SidoCode sidoCode, String sigunguCode) {
