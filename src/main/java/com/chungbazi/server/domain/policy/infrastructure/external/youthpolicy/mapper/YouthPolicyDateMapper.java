@@ -8,6 +8,7 @@ import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentType;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +19,7 @@ public class YouthPolicyDateMapper {
     static final String FIXED_PERIOD_CODE = "0057001";
     static final String ALWAYS_OPEN_CODE = "0057002";
     static final String CLOSED_CODE = "0057003";
+    private static final int ALWAYS_OPEN_THRESHOLD_DAYS = 1000;
 
     private final YouthPolicyDateParser dateParser;
 
@@ -127,13 +129,7 @@ public class YouthPolicyDateMapper {
         if (dateRange == null) {
             return new ApplyPeriod(null, null, periodText, null, RecruitmentStatus.UNKNOWN);
         }
-        return new ApplyPeriod(
-                dateRange.startDate(),
-                dateRange.endDate(),
-                periodText,
-                null,
-                RecruitmentStatus.UNKNOWN
-        );
+        return createDatedPeriod(dateRange, periodText, null);
     }
 
     private ApplyPeriod createDatedPeriod(
@@ -141,6 +137,16 @@ public class YouthPolicyDateMapper {
             String periodText,
             RecruitmentType recruitmentType
     ) {
+        if (isAlwaysOpenPeriod(dateRange)) {
+            return new ApplyPeriod(
+                    null,
+                    null,
+                    periodText,
+                    RecruitmentType.ALWAYS,
+                    RecruitmentStatus.OPEN
+            );
+        }
+
         return new ApplyPeriod(
                 dateRange.startDate(),
                 dateRange.endDate(),
@@ -148,6 +154,10 @@ public class YouthPolicyDateMapper {
                 recruitmentType,
                 resolveDatedStatus(dateRange)
         );
+    }
+
+    private boolean isAlwaysOpenPeriod(DateRange dateRange) {
+        return ChronoUnit.DAYS.between(dateRange.startDate(), dateRange.endDate()) >= ALWAYS_OPEN_THRESHOLD_DAYS;
     }
 
     private RecruitmentStatus resolveDatedStatus(DateRange dateRange) {
