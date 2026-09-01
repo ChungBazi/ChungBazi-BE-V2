@@ -45,13 +45,20 @@ public class MyPolicyController implements MyPolicyDocs {
     @GetMapping("/deadline/date")
     public CommonResponse<PolicyListResponse> getDeadlinePoliciesByDate(
             @CurrentUser User user,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate targetDate,
-            @RequestParam(defaultValue = "LATEST") PolicyListSortType sort,
-            @RequestParam(required = false) String cursor,
-            @RequestParam(defaultValue = "20") int size
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate targetDate
     ) {
 
-        return CommonResponse.onSuccess(myPolicyService.getDeadlinePoliciesByDate(user, targetDate, sort, cursor, size));
+        return CommonResponse.onSuccess(myPolicyService.getDeadlinePoliciesByDate(user, targetDate));
+    }
+
+    @Override
+    @GetMapping("/deadline/upcoming")
+    public CommonResponse<PolicyListResponse> getUpcomingDeadlinePoliciesWithinTwoWeeks(
+            @CurrentUser User user,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate targetDate
+    ) {
+
+        return CommonResponse.onSuccess(myPolicyService.getUpcomingDeadlinePoliciesWithinTwoWeeks(user, targetDate));
     }
 
     @Override

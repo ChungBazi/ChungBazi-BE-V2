@@ -8,6 +8,7 @@ import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentType;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public final class PolicyFixture {
@@ -32,6 +33,8 @@ public final class PolicyFixture {
         private String incomeDescription;
         private int viewCount;
         private int saveCount;
+        private LocalDate applyEndDate;
+        private RecruitmentType recruitmentType = RecruitmentType.ALWAYS;
         private LocalDateTime registeredAt = LocalDateTime.of(2026, 1, 1, 0, 0);
 
         public PolicyBuilder id(Long id) {
@@ -77,6 +80,16 @@ public final class PolicyFixture {
             return this;
         }
 
+        public PolicyBuilder applyEndDate(LocalDate applyEndDate) {
+            this.applyEndDate = applyEndDate;
+            return this;
+        }
+
+        public PolicyBuilder recruitmentType(RecruitmentType recruitmentType) {
+            this.recruitmentType = recruitmentType;
+            return this;
+        }
+
         public PolicyBuilder registeredAt(LocalDateTime registeredAt) {
             this.registeredAt = registeredAt;
             return this;
@@ -92,9 +105,9 @@ public final class PolicyFixture {
                     subCategory,
                     true,
                     null,
+                    applyEndDate,
                     null,
-                    null,
-                    RecruitmentType.ALWAYS,
+                    recruitmentType,
                     RecruitmentStatus.OPEN,
                     minAge,
                     maxAge,
