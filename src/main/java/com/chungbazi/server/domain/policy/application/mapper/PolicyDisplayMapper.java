@@ -28,6 +28,7 @@ public class PolicyDisplayMapper {
                 policy.getCategory().getDescription(),
                 formatDDay(policy),
                 policy.getTitle(),
+                formatRegisteredDate(policy),
                 policy.getViewCount(),
                 likedPolicyIds.contains(policy.getId())
         );
@@ -102,6 +103,10 @@ public class PolicyDisplayMapper {
             referenceUrls.add(policyDetail.getReferenceUrl2());
         }
         return referenceUrls;
+    }
+
+    private LocalDate formatRegisteredDate(Policy policy) {
+        return policy.getRegisteredAt() == null ? null : policy.getRegisteredAt().toLocalDate();
     }
 
     private List<PolicyDetailResponse.PolicySummary> toDetailSummaries(
