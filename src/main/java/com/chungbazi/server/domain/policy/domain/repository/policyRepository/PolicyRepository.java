@@ -20,6 +20,16 @@ public interface PolicyRepository extends JpaRepository<Policy, Long>, PolicyRep
     @Query("""
             SELECT policy
             FROM Policy policy
+            WHERE policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
+              AND policy.recruitmentStatus <> :closedStatus
+            """)
+    List<Policy> findAllSearchablePolicies(
+            @Param("closedStatus") RecruitmentStatus closedStatus
+    );
+
+    @Query("""
+            SELECT policy
+            FROM Policy policy
             WHERE policy.applyEndDate IN :applyEndDates
               AND policy.recruitmentStatus <> :closedStatus
               AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
