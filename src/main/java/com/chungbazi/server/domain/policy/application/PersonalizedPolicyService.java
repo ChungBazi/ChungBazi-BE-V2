@@ -28,7 +28,8 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class PersonalizedPolicyService {
 
-    private static final int BEHAVIOR_HISTORY_SIZE = 50;
+    private static final int RECENT_LIKE_SIZE = 5;
+    private static final int RECENT_VIEW_SIZE = 50;
 
     private final PolicyRepository policyRepository;
     private final UserInterestRepository userInterestRepository;
@@ -110,14 +111,11 @@ public class PersonalizedPolicyService {
                 interests,
                 policyLikeRepository.findRecentPolicyLikesWithPolicy(
                         user.getId(),
-                        PageRequest.of(0, BEHAVIOR_HISTORY_SIZE)
+                        PageRequest.of(0, RECENT_LIKE_SIZE)
                 ),
-                recentViewedPolicyRepository.findRecentViewedPolicies(
+                recentViewedPolicyRepository.findRecentViewedPolicyEvents(
                         user.getId(),
-                        RecruitmentStatus.CLOSED,
-                        user.getSidoCode(),
-                        user.getSigunguCode(),
-                        PageRequest.of(0, BEHAVIOR_HISTORY_SIZE)
+                        PageRequest.of(0, RECENT_VIEW_SIZE)
                 )
         );
     }

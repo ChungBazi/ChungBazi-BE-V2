@@ -18,6 +18,18 @@ public interface RecentViewedPolicyRepository extends JpaRepository<RecentViewed
             FROM RecentViewedPolicy recentViewedPolicy
             JOIN FETCH recentViewedPolicy.policy
             WHERE recentViewedPolicy.userId = :userId
+            ORDER BY recentViewedPolicy.viewedAt DESC, recentViewedPolicy.id DESC
+            """)
+    List<RecentViewedPolicy> findRecentViewedPolicyEvents(
+            @Param("userId") Long userId,
+            Pageable pageable
+    );
+
+    @Query("""
+            SELECT recentViewedPolicy
+            FROM RecentViewedPolicy recentViewedPolicy
+            JOIN FETCH recentViewedPolicy.policy
+            WHERE recentViewedPolicy.userId = :userId
               AND recentViewedPolicy.policy.recruitmentStatus <> :closedStatus
               AND recentViewedPolicy.policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
               AND (

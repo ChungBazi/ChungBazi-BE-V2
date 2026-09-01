@@ -262,11 +262,8 @@ public class PersonalizedPolicyRecommendationScenarioTest {
                 any(Pageable.class)
         )).thenReturn(List.of());
 
-        when(recentViewedPolicyRepository.findRecentViewedPolicies(
+        when(recentViewedPolicyRepository.findRecentViewedPolicyEvents(
                 eq(1L),
-                eq(RecruitmentStatus.CLOSED),
-                isNull(),
-                isNull(),
                 any(Pageable.class)
         )).thenReturn(List.of());
     }
