@@ -27,10 +27,7 @@ public class PolicySearchIndexRefreshEventListener {
     private final LucenePolicySearchIndex policySearchIndex;
 
     @Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
-    @TransactionalEventListener(
-            phase = TransactionPhase.AFTER_COMMIT,
-            fallbackExecution = true
-    )
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     public void handle(PolicySearchIndexRefreshEvent event) {
         List<Policy> changedPolicies = policyRepository.findAllById(event.changedPolicyIds());
         List<PolicySearchDocument> activePolicies = changedPolicies.stream()
@@ -56,7 +53,7 @@ public class PolicySearchIndexRefreshEventListener {
                     removedPolicyIds.size()
             );
         } catch (IOException exception) {
-            // 인덱스 갱신 실패가 이미 완료된 정책 동기화 결과를 되돌리지 않도록 예외를 전파하지 않는다.
+            // 인덱스 갱신 실패가 이미 완료된 정책 동기화 결과를 되돌리지 않도록 예외 전파 X
             log.warn("정책 검색 인덱스 증분 갱신 실패", exception);
         }
     }

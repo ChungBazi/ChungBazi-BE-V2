@@ -70,10 +70,7 @@ public class LucenePolicySearchIndex {
         searcherManager.maybeRefreshBlocking();
     }
 
-    /**
-     * 변경된 활성 정책은 추가 또는 교체하고, 더 이상 검색할 수 없는 정책은 삭제한다.
-     * 여러 변경을 처리한 뒤 commit과 refresh를 한 번만 수행한다.
-     */
+    // 변경된 활성 정책은 추가 또는 교체하고, 더 이상 검색할 수 없는 정책은 삭제
     public synchronized void synchronize(
             List<PolicySearchDocument> activePolicies,
             List<Long> removedPolicyIds
@@ -89,6 +86,7 @@ public class LucenePolicySearchIndex {
             writer.deleteDocuments(new Term(POLICY_ID, policyId.toString()));
         }
 
+        // 여러 변경을 처리한 뒤 commit과 refresh를 한 번만 수행
         writer.commit();
         searcherManager.maybeRefreshBlocking();
     }
