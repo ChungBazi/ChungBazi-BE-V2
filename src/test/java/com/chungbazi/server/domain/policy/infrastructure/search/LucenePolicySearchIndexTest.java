@@ -48,6 +48,33 @@ class LucenePolicySearchIndexTest {
         assertThat(searchIndex.search("창업", 0)).isEmpty();
     }
 
+    @Test
+    @DisplayName("변경된 정책은 교체하고 검색할 수 없는 정책은 삭제한다")
+    void synchronizesChangedPolicies() throws Exception {
+        searchIndex.rebuild(List.of(
+                policy(1L, "청년 창업 지원", "기존 내용"),
+                policy(2L, "청년 월세 지원", "주거비 지원")
+        ));
+
+        searchIndex.synchronize(
+                List.of(
+                        policy(1L, "청년 취업 지원", "변경된 내용"),
+                        policy(3L, "청년 자격증 지원", "응시료 지원")
+                ),
+                List.of(2L)
+        );
+
+        assertThat(searchIndex.search("창업", 10)).isEmpty();
+        assertThat(searchIndex.search("취업", 10))
+                .extracting(PolicySearchResult::policyId)
+                .containsExactly(1L);
+        assertThat(searchIndex.search("월세", 10)).isEmpty();
+        assertThat(searchIndex.search("자격증", 10))
+                .extracting(PolicySearchResult::policyId)
+                .containsExactly(3L);
+        assertThat(searchIndex.documentCount()).isEqualTo(2);
+    }
+
     private PolicySearchDocument policy(Long policyId, String title, String summary) {
         return PolicySearchDocument.builder()
                 .policyId(policyId)

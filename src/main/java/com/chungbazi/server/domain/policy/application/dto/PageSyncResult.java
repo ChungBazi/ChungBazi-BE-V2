@@ -10,9 +10,11 @@ public record PageSyncResult (
             int skippedCount,
             int invalidRegionCount,
             int invalidCategoryCount,
-            List<Long> insertedPolicyIds
+            List<Long> insertedPolicyIds,
+            List<Long> changedPolicyIds
 ) {
     public PageSyncResult {
         insertedPolicyIds = List.copyOf(insertedPolicyIds);
+        changedPolicyIds = List.copyOf(changedPolicyIds);
     }
 }

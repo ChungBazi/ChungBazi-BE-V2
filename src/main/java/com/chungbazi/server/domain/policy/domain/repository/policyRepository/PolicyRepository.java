@@ -91,4 +91,17 @@ public interface PolicyRepository extends JpaRepository<Policy, Long>, PolicyRep
             @Param("closedStatus") RecruitmentStatus closedStatus,
             @Param("thresholdDate") LocalDate thresholdDate
     );
+
+    @Query("""
+            SELECT policy.id
+            FROM Policy policy
+            WHERE policy.displayStatus = :visibleStatus
+              AND policy.recruitmentStatus = :closedStatus
+              AND policy.applyEndDate <= :thresholdDate
+            """)
+    List<Long> findExpiredPolicyIdsToHide(
+            @Param("visibleStatus") PolicyDisplayStatus visibleStatus,
+            @Param("closedStatus") RecruitmentStatus closedStatus,
+            @Param("thresholdDate") LocalDate thresholdDate
+    );
 }

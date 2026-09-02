@@ -5,6 +5,7 @@ import com.chungbazi.server.domain.policy.application.dto.PolicySyncItemResult;
 import com.chungbazi.server.domain.policy.application.dto.PolicySyncStatus;
 import com.chungbazi.server.domain.policy.application.dto.SyncResult;
 import com.chungbazi.server.domain.policy.application.event.NewPoliciesRegisteredEvent;
+import com.chungbazi.server.domain.policy.application.event.PolicySearchIndexRefreshEvent;
 import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
 import com.chungbazi.server.domain.policy.exception.PolicyException;
 import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.client.YouthPolicyClient;
@@ -42,6 +43,7 @@ public class YouthPolicySyncService {
         int unchangedCount = 0;
         int skippedCount = 0;
         List<Long> insertedPolicyIds = new ArrayList<>();
+        List<Long> changedPolicyIds = new ArrayList<>();
 
         while (true) {
             long fetchStartTime = System.currentTimeMillis();
@@ -70,6 +72,7 @@ public class YouthPolicySyncService {
             unchangedCount += pageSyncResult.unchangedCount();
             skippedCount += pageSyncResult.skippedCount();
             insertedPolicyIds.addAll(pageSyncResult.insertedPolicyIds());
+            changedPolicyIds.addAll(pageSyncResult.changedPolicyIds());
 
             log.info(
                     "해당 페이지의 정책 동기화가 완료되었습니다. page={}, fetched={}, inserted={}, updated={}, unchanged={}, skipped={}, invalidRegion={}, invalidCategory={}, fetchElapsedMillis={}, persistElapsedMillis={}",
@@ -96,6 +99,9 @@ public class YouthPolicySyncService {
         //새로운 정책 추천 알림 발송
         publishNewPoliciesRegisteredEvent(insertedPolicyIds);
 
+        // 인덱스 갱신
+        publishPolicySearchIndexRefreshEvent(changedPolicyIds);
+
         return new SyncResult(totalFetchedCount, insertedCount, updatedCount, unchangedCount, skippedCount, System.currentTimeMillis() - totalStartTime);
     }
 
@@ -108,6 +114,7 @@ public class YouthPolicySyncService {
         int invalidRegionCount = 0;
         int invalidCategoryCount = 0;
         List<Long> insertedPolicyIds = new ArrayList<>();
+        List<Long> changedPolicyIds = new ArrayList<>();
 
         //추후 배치처리?
         for (YouthPolicyItem item : items) {
@@ -118,8 +125,12 @@ public class YouthPolicySyncService {
                     case INSERTED -> {
                         insertedCount++;
                         insertedPolicyIds.add(syncResult.policyId());
+                        changedPolicyIds.add(syncResult.policyId());
                     }
-                    case UPDATED -> updatedCount++;
+                    case UPDATED -> {
+                        updatedCount++;
+                        changedPolicyIds.add(syncResult.policyId());
+                    }
                     case UNCHANGED -> unchangedCount++;
                     case SKIPPED, SKIPPED_CLOSED -> skippedCount++;
                 }
@@ -159,8 +170,16 @@ public class YouthPolicySyncService {
                 skippedCount,
                 invalidRegionCount,
                 invalidCategoryCount,
-                insertedPolicyIds
+                insertedPolicyIds,
+                changedPolicyIds
         );
+    }
+
+    private void publishPolicySearchIndexRefreshEvent(List<Long> changedPolicyIds) {
+        if (changedPolicyIds.isEmpty()) {
+            return;
+        }
+        eventPublisher.publishEvent(PolicySearchIndexRefreshEvent.of(changedPolicyIds));
     }
 
     private void publishNewPoliciesRegisteredEvent(List<Long> insertedPolicyIds) {

@@ -3,12 +3,14 @@ package com.chungbazi.server.domain.policy.application;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.chungbazi.server.domain.policy.application.dto.PolicySyncItemResult;
 import com.chungbazi.server.domain.policy.application.dto.PolicySyncStatus;
 import com.chungbazi.server.domain.policy.application.dto.SyncResult;
 import com.chungbazi.server.domain.policy.application.event.NewPoliciesRegisteredEvent;
+import com.chungbazi.server.domain.policy.application.event.PolicySearchIndexRefreshEvent;
 import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.client.YouthPolicyClient;
 import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.client.dto.YouthPolicyItem;
 import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.client.dto.YouthPolicyListResponse;
@@ -52,10 +54,23 @@ class YouthPolicySyncServiceTest {
         assertThat(result.insertedCount()).isEqualTo(1);
         assertThat(result.updatedCount()).isEqualTo(1);
 
-        ArgumentCaptor<NewPoliciesRegisteredEvent> eventCaptor =
-                ArgumentCaptor.forClass(NewPoliciesRegisteredEvent.class);
-        verify(eventPublisher).publishEvent(eventCaptor.capture());
-        assertThat(eventCaptor.getValue().policyIds()).containsExactly(10L);
+        ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
+        verify(eventPublisher, times(2)).publishEvent(eventCaptor.capture());
+
+        NewPoliciesRegisteredEvent newPoliciesEvent = eventCaptor.getAllValues().stream()
+                .filter(NewPoliciesRegisteredEvent.class::isInstance)
+                .map(NewPoliciesRegisteredEvent.class::cast)
+                .findFirst()
+                .orElseThrow();
+
+        PolicySearchIndexRefreshEvent searchIndexEvent = eventCaptor.getAllValues().stream()
+                .filter(PolicySearchIndexRefreshEvent.class::isInstance)
+                .map(PolicySearchIndexRefreshEvent.class::cast)
+                .findFirst()
+                .orElseThrow();
+
+        assertThat(newPoliciesEvent.policyIds()).containsExactly(10L);
+        assertThat(searchIndexEvent.changedPolicyIds()).containsExactly(10L, 20L);
     }
 
     @Test

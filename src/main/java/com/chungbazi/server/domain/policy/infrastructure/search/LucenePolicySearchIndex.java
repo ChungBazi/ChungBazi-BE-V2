@@ -15,6 +15,7 @@ import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.StoredFields;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -65,6 +66,29 @@ public class LucenePolicySearchIndex {
         for (PolicySearchDocument policy : policies) {
             writer.addDocument(toDocument(policy));
         }
+        writer.commit();
+        searcherManager.maybeRefreshBlocking();
+    }
+
+    /**
+     * 변경된 활성 정책은 추가 또는 교체하고, 더 이상 검색할 수 없는 정책은 삭제한다.
+     * 여러 변경을 처리한 뒤 commit과 refresh를 한 번만 수행한다.
+     */
+    public synchronized void synchronize(
+            List<PolicySearchDocument> activePolicies,
+            List<Long> removedPolicyIds
+    ) throws IOException {
+        for (PolicySearchDocument policy : activePolicies) {
+            writer.updateDocument(
+                    new Term(POLICY_ID, policy.policyId().toString()),
+                    toDocument(policy)
+            );
+        }
+
+        for (Long policyId : removedPolicyIds) {
+            writer.deleteDocuments(new Term(POLICY_ID, policyId.toString()));
+        }
+
         writer.commit();
         searcherManager.maybeRefreshBlocking();
     }
