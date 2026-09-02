@@ -73,12 +73,6 @@ public class NotificationReminderMapper {
         );
     }
 
-    public List<NotificationPushMessage> toPushMessages(List<Notification> notifications) {
-        return notifications.stream()
-                .map(NotificationPushMessage::from)
-                .toList();
-    }
-
     public List<NotificationPushMessage> toRepresentativePushMessages(
             List<Notification> notifications,
             List<PolicyLike> policyLikes

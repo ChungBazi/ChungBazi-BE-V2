@@ -71,7 +71,10 @@ public class NotificationReminderService {
         notificationRepository.saveAll(notifications);
         if (!notifications.isEmpty()) {
             eventPublisher.publishEvent(PolicyReminderNotificationsCreatedEvent.of(
-                    notificationReminderMapper.toPushMessages(notifications)
+                    notificationReminderMapper.toRepresentativePushMessages(
+                            notifications,
+                            recipients
+                    )
             ));
         }
         return creationResult(targets, notifications.size());
@@ -137,7 +140,10 @@ public class NotificationReminderService {
 
         if (!notifications.isEmpty()) {
             eventPublisher.publishEvent(PolicyReminderNotificationsCreatedEvent.of(
-                    notificationReminderMapper.toPushMessages(notifications)
+                    notificationReminderMapper.toRepresentativePushMessages(
+                            notifications,
+                            targets
+                    )
             ));
         }
 
