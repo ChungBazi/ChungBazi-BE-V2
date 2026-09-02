@@ -6,16 +6,15 @@ import com.chungbazi.server.domain.notification.domain.type.NotificationCategory
 import com.chungbazi.server.domain.notification.domain.type.NotificationType;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.user.domain.User;
-import org.springframework.stereotype.Component;
-
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.stereotype.Component;
 
 @Component
 public class InterestPolicyNotificationMapper {
 
-    private static final String TITLE = "관심 분야에 새 정책이 생겼어요!";
+    private static final String TITLE_FORMAT = "%s에 정책이 등록됐어요";
     private static final String MESSAGE =
             "관심 있게 보고 있는 분야에서 받을 수 있는 새로운 지원을 확인해보세요.";
 
@@ -24,7 +23,7 @@ public class InterestPolicyNotificationMapper {
                 user.getId(),
                 NotificationCategory.CHUNGBAZI,
                 NotificationType.INTEREST_POLICY,
-                TITLE,
+                TITLE_FORMAT.formatted(policy.getSubCategory().getDescription()),
                 MESSAGE,
                 policy.getId()
         );
