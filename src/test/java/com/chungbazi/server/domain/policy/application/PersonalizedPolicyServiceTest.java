@@ -118,6 +118,22 @@ public class PersonalizedPolicyServiceTest {
         assertThat(result)
                 .extracting(Policy::getId)
                 .containsExactly(1L, 2L, 3L);
+
+        verify(scorer).score(
+                eq(user),
+                any(PolicyRecommendationContext.class),
+                eq(highest)
+        );
+        verify(scorer).score(
+                eq(user),
+                any(PolicyRecommendationContext.class),
+                eq(recentTie)
+        );
+        verify(scorer).score(
+                eq(user),
+                any(PolicyRecommendationContext.class),
+                eq(oldTie)
+        );
     }
 
     @Test
