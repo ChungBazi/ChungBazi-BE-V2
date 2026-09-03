@@ -10,6 +10,7 @@ import com.chungbazi.server.domain.policy.domain.type.SidoCode;
 import com.chungbazi.server.domain.user.domain.type.SpecialEligibilityType;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -30,6 +31,8 @@ import static com.chungbazi.server.domain.policy.domain.entity.QPolicySpecialEli
 @Repository
 @RequiredArgsConstructor
 public class PolicyRepositoryCustomImpl implements PolicyRepositoryCustom {
+
+    private static final int FULL_TEXT_MIN_KEYWORD_LENGTH = 2;
 
     private final JPAQueryFactory queryFactory;
 
@@ -347,10 +350,34 @@ public class PolicyRepositoryCustomImpl implements PolicyRepositoryCustom {
     }
 
     private BooleanExpression keywordPredicate(String keyword) {
+        if (keyword.codePointCount(0, keyword.length()) < FULL_TEXT_MIN_KEYWORD_LENGTH) {
+            return likeKeywordPredicate(keyword);
+        }
+
+        String phraseKeyword = toBooleanPhrase(keyword);
+        NumberExpression<Double> relevance = Expressions.numberTemplate(
+                Double.class,
+                "function('match_against_boolean_phrase', {0}, {1}, {2}, {3})",
+                policy.title,
+                policy.summary,
+                policy.supportContent,
+                phraseKeyword
+        );
+        return relevance.gt(0.0);
+    }
+
+    private BooleanExpression likeKeywordPredicate(String keyword) {
         return policy.title.containsIgnoreCase(keyword)
                 .or(policy.summary.containsIgnoreCase(keyword))
                 .or(policy.supportContent.containsIgnoreCase(keyword))
                 .or(policy.organizationName.containsIgnoreCase(keyword));
+    }
+
+    private String toBooleanPhrase(String keyword) {
+        String escapedKeyword = keyword
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"");
+        return "\"" + escapedKeyword + "\"";
     }
 
     private BooleanExpression cursorPredicate(
