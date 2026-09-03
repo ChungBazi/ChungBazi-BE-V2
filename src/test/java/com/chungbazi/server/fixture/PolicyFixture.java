@@ -35,6 +35,7 @@ public final class PolicyFixture {
         private int saveCount;
         private LocalDate applyEndDate;
         private RecruitmentType recruitmentType = RecruitmentType.ALWAYS;
+        private RecruitmentStatus recruitmentStatus = RecruitmentStatus.OPEN;
         private LocalDateTime registeredAt = LocalDateTime.of(2026, 1, 1, 0, 0);
 
         public PolicyBuilder id(Long id) {
@@ -90,6 +91,11 @@ public final class PolicyFixture {
             return this;
         }
 
+        public PolicyBuilder recruitmentStatus(RecruitmentStatus recruitmentStatus) {
+            this.recruitmentStatus = recruitmentStatus;
+            return this;
+        }
+
         public PolicyBuilder registeredAt(LocalDateTime registeredAt) {
             this.registeredAt = registeredAt;
             return this;
@@ -108,7 +114,7 @@ public final class PolicyFixture {
                     applyEndDate,
                     null,
                     recruitmentType,
-                    RecruitmentStatus.OPEN,
+                    recruitmentStatus,
                     minAge,
                     maxAge,
                     null,

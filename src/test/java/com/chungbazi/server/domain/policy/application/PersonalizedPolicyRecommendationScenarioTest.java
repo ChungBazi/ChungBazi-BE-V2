@@ -3,6 +3,7 @@ package com.chungbazi.server.domain.policy.application;
 import com.chungbazi.server.domain.policy.application.support.PersonalizedPolicyScorer;
 import com.chungbazi.server.domain.policy.application.support.PersonalizedPolicyRanker;
 import com.chungbazi.server.domain.policy.application.support.PolicyIncomeMatcher;
+import com.chungbazi.server.domain.policy.application.support.RecentSearchPolicyScoreCalculator;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.repository.PolicyLikeRepository;
 import com.chungbazi.server.domain.policy.domain.repository.RecentViewedPolicyRepository;
@@ -55,6 +56,9 @@ public class PersonalizedPolicyRecommendationScenarioTest {
     @Mock
     private RecentViewedPolicyRepository recentViewedPolicyRepository;
 
+    @Mock
+    private RecentSearchPolicyScoreCalculator recentSearchPolicyScoreCalculator;
+
     private PersonalizedPolicyService service;
 
     @BeforeEach
@@ -69,6 +73,7 @@ public class PersonalizedPolicyRecommendationScenarioTest {
                 userSpecialEligibilityRepository,
                 policyLikeRepository,
                 recentViewedPolicyRepository,
+                recentSearchPolicyScoreCalculator,
                 new PersonalizedPolicyRanker(scorer)
         );
     }
@@ -262,11 +267,8 @@ public class PersonalizedPolicyRecommendationScenarioTest {
                 any(Pageable.class)
         )).thenReturn(List.of());
 
-        when(recentViewedPolicyRepository.findRecentViewedPolicies(
+        when(recentViewedPolicyRepository.findRecentViewedPolicyEvents(
                 eq(1L),
-                eq(RecruitmentStatus.CLOSED),
-                isNull(),
-                isNull(),
                 any(Pageable.class)
         )).thenReturn(List.of());
     }

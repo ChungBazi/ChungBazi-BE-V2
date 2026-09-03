@@ -3,6 +3,7 @@ package com.chungbazi.server.domain.policy.application;
 import com.chungbazi.server.domain.policy.application.dto.PolicyRecommendationContext;
 import com.chungbazi.server.domain.policy.application.support.PersonalizedPolicyRanker;
 import com.chungbazi.server.domain.policy.application.support.PersonalizedPolicyScorer;
+import com.chungbazi.server.domain.policy.application.support.RecentSearchPolicyScoreCalculator;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.repository.PolicyLikeRepository;
 import com.chungbazi.server.domain.policy.domain.repository.RecentViewedPolicyRepository;
@@ -51,6 +52,9 @@ public class PersonalizedPolicyServiceTest {
     private RecentViewedPolicyRepository recentViewedPolicyRepository;
 
     @Mock
+    private RecentSearchPolicyScoreCalculator recentSearchPolicyScoreCalculator;
+
+    @Mock
     private PersonalizedPolicyScorer scorer;
 
     private PersonalizedPolicyService service;
@@ -63,6 +67,7 @@ public class PersonalizedPolicyServiceTest {
                 userSpecialEligibilityRepository,
                 policyLikeRepository,
                 recentViewedPolicyRepository,
+                recentSearchPolicyScoreCalculator,
                 new PersonalizedPolicyRanker(scorer)
         );
     }
@@ -113,6 +118,22 @@ public class PersonalizedPolicyServiceTest {
         assertThat(result)
                 .extracting(Policy::getId)
                 .containsExactly(1L, 2L, 3L);
+
+        verify(scorer).score(
+                eq(user),
+                any(PolicyRecommendationContext.class),
+                eq(highest)
+        );
+        verify(scorer).score(
+                eq(user),
+                any(PolicyRecommendationContext.class),
+                eq(recentTie)
+        );
+        verify(scorer).score(
+                eq(user),
+                any(PolicyRecommendationContext.class),
+                eq(oldTie)
+        );
     }
 
     @Test
@@ -316,11 +337,8 @@ public class PersonalizedPolicyServiceTest {
                 any(Pageable.class)
         )).thenReturn(List.of());
 
-        when(recentViewedPolicyRepository.findRecentViewedPolicies(
+        when(recentViewedPolicyRepository.findRecentViewedPolicyEvents(
                 eq(1L),
-                eq(RecruitmentStatus.CLOSED),
-                isNull(),
-                isNull(),
                 any(Pageable.class)
         )).thenReturn(List.of());
 
@@ -370,10 +388,7 @@ public class PersonalizedPolicyServiceTest {
                 any(Pageable.class)
         )).thenReturn(List.of());
 
-        when(recentViewedPolicyRepository.findRecentViewedPolicies(
-                any(),
-                any(),
-                any(),
+        when(recentViewedPolicyRepository.findRecentViewedPolicyEvents(
                 any(),
                 any(Pageable.class)
         )).thenReturn(List.of());

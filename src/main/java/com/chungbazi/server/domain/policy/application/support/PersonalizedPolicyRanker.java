@@ -1,6 +1,7 @@
 package com.chungbazi.server.domain.policy.application.support;
 
 import com.chungbazi.server.domain.policy.application.dto.PolicyRecommendationContext;
+import com.chungbazi.server.domain.policy.application.dto.ScoredPolicy;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
 import com.chungbazi.server.domain.user.domain.User;
@@ -29,11 +30,16 @@ public class PersonalizedPolicyRanker {
     ) {
         List<Policy> rankedPolicies = candidates.stream()
                 .filter(policy -> scorer.isEligible(user, policy))
-                .filter(policy -> scorer.score(user, context, policy) >= MINIMUM_RECOMMENDATION_SCORE)
+                .map(policy -> ScoredPolicy.of(policy, scorer.score(user, context, policy)))
+                .filter(scoredPolicy -> scoredPolicy.score() >= MINIMUM_RECOMMENDATION_SCORE)
                 .sorted(Comparator
-                        .comparingInt((Policy policy) -> scorer.score(user, context, policy))
+                        .comparingInt(ScoredPolicy::score)
                         .reversed()
-                        .thenComparing(Policy::getRegisteredAt, Comparator.reverseOrder()))
+                        .thenComparing(
+                                scoredPolicy -> scoredPolicy.policy().getRegisteredAt(),
+                                Comparator.reverseOrder()
+                        ))
+                .map(ScoredPolicy::policy)
                 .toList();
 
         if (context.interestCategoryCounts().size() <= 1) {

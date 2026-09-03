@@ -20,6 +20,16 @@ public interface PolicyRepository extends JpaRepository<Policy, Long>, PolicyRep
     @Query("""
             SELECT policy
             FROM Policy policy
+            WHERE policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
+              AND policy.recruitmentStatus <> :closedStatus
+            """)
+    List<Policy> findAllSearchablePolicies(
+            @Param("closedStatus") RecruitmentStatus closedStatus
+    );
+
+    @Query("""
+            SELECT policy
+            FROM Policy policy
             WHERE policy.applyEndDate IN :applyEndDates
               AND policy.recruitmentStatus <> :closedStatus
               AND policy.displayStatus = com.chungbazi.server.domain.policy.domain.type.PolicyDisplayStatus.VISIBLE
@@ -78,6 +88,19 @@ public interface PolicyRepository extends JpaRepository<Policy, Long>, PolicyRep
     int hideExpiredPolicies(
             @Param("visibleStatus") PolicyDisplayStatus visibleStatus,
             @Param("hiddenStatus") PolicyDisplayStatus hiddenStatus,
+            @Param("closedStatus") RecruitmentStatus closedStatus,
+            @Param("thresholdDate") LocalDate thresholdDate
+    );
+
+    @Query("""
+            SELECT policy.id
+            FROM Policy policy
+            WHERE policy.displayStatus = :visibleStatus
+              AND policy.recruitmentStatus = :closedStatus
+              AND policy.applyEndDate <= :thresholdDate
+            """)
+    List<Long> findExpiredPolicyIdsToHide(
+            @Param("visibleStatus") PolicyDisplayStatus visibleStatus,
             @Param("closedStatus") RecruitmentStatus closedStatus,
             @Param("thresholdDate") LocalDate thresholdDate
     );

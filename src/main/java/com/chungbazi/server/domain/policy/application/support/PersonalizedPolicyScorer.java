@@ -18,11 +18,13 @@ public class PersonalizedPolicyScorer {
 
     private static final int INTEREST_SUB_CATEGORY_SCORE = 35;
     private static final int INTEREST_CATEGORY_COUNT_SCORE = 10;
-    private static final int LIKED_SUB_CATEGORY_SCORE = 30;
+    private static final int LIKED_SUB_CATEGORY_MAX_SCORE = 30;
+    private static final double LIKED_SCORE_PER_AFFINITY = 10.0;
     private static final int EDUCATION_SCORE = 8;
     private static final int EMPLOYMENT_SCORE = 10;
     private static final int INCOME_MATCH_SCORE = 10;
-    private static final int RECENT_VIEWED_SUB_CATEGORY_SCORE = 10;
+    private static final int RECENT_VIEWED_SUB_CATEGORY_MAX_SCORE = 10;
+    private static final double RECENT_VIEWED_SCORE_PER_AFFINITY = 3.0;
     // 최근 본 정책 조회 섹션과 겹치지 않게 페널티 부여
     private static final int RECENT_VIEWED_POLICY_PENALTY = -15;
 
@@ -33,10 +35,13 @@ public class PersonalizedPolicyScorer {
                     "INTEREST",
                     this::interestScore
             ),
-            RecommendationRule.fixed(
+            RecommendationRule.of(
                     "LIKED_SUB_CATEGORY",
-                    LIKED_SUB_CATEGORY_SCORE,
-                    input -> input.context().hasLikedSubCategory(input.policy().getSubCategory())
+                    input -> input.context().likedSubCategoryScore(
+                            input.policy().getSubCategory(),
+                            LIKED_SUB_CATEGORY_MAX_SCORE,
+                            LIKED_SCORE_PER_AFFINITY
+                    )
             ),
             RecommendationRule.fixed(
                     "EDUCATION_MATCH",
@@ -48,10 +53,17 @@ public class PersonalizedPolicyScorer {
                     EMPLOYMENT_SCORE,
                     input -> matchesEmployment(input.user(), input.policy())
             ),
-            RecommendationRule.fixed(
+            RecommendationRule.of(
                     "RECENT_VIEWED_SUB_CATEGORY",
-                    RECENT_VIEWED_SUB_CATEGORY_SCORE,
-                    input -> input.context().hasRecentlyViewedSubCategory(input.policy().getSubCategory())
+                    input -> input.context().recentViewedSubCategoryScore(
+                            input.policy().getSubCategory(),
+                            RECENT_VIEWED_SUB_CATEGORY_MAX_SCORE,
+                            RECENT_VIEWED_SCORE_PER_AFFINITY
+                    )
+            ),
+            RecommendationRule.of(
+                    "RECENT_SEARCH",
+                    input -> input.context().recentSearchScore(input.policy().getId())
             ),
             RecommendationRule.fixed(
                     "ALREADY_VIEWED_POLICY",
