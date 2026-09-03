@@ -288,12 +288,10 @@ public class PolicyRepositoryCustomImpl implements PolicyRepositoryCustom {
     public long countSearchPolicies(
             String keyword,
             PolicyCategoryType category,
-            RecruitmentStatus closedStatus,
-            SidoCode sidoCode,
-            String sigunguCode
+            RecruitmentStatus closedStatus
     ) {
         return count(
-                basePredicate(category, closedStatus, sidoCode, sigunguCode)
+                searchBasePredicate(category, closedStatus)
                         .and(keywordPredicate(keyword))
         );
     }
@@ -304,14 +302,12 @@ public class PolicyRepositoryCustomImpl implements PolicyRepositoryCustom {
             PolicyCategoryType category,
             PolicySortType sort,
             RecruitmentStatus closedStatus,
-            SidoCode sidoCode,
-            String sigunguCode,
             LocalDateTime registeredAt,
             LocalDate applyEndDate,
             Long policyId,
             Pageable pageable
     ) {
-        BooleanExpression predicate = basePredicate(category, closedStatus, sidoCode, sigunguCode)
+        BooleanExpression predicate = searchBasePredicate(category, closedStatus)
                 .and(keywordPredicate(keyword));
 
         if (policyId != null) {
@@ -329,15 +325,13 @@ public class PolicyRepositoryCustomImpl implements PolicyRepositoryCustom {
     public List<String> findSearchSuggestions(
             String keyword,
             RecruitmentStatus closedStatus,
-            SidoCode sidoCode,
-            String sigunguCode,
             int limit
     ) {
         return queryFactory
                 .select(policy.title)
                 .from(policy)
                 .where(
-                        basePredicate(null, closedStatus, sidoCode, sigunguCode)
+                        searchBasePredicate(null, closedStatus)
                                 .and(policy.title.containsIgnoreCase(keyword))
                 )
                 .orderBy(policy.registeredAt.desc(), policy.id.desc())
@@ -405,6 +399,16 @@ public class PolicyRepositoryCustomImpl implements PolicyRepositoryCustom {
         BooleanExpression predicate = policy.recruitmentStatus.ne(closedStatus)
                 .and(policy.displayStatus.eq(PolicyDisplayStatus.VISIBLE))
                 .and(visibleInRegion(sidoCode, sigunguCode));
+
+        return category == null ? predicate : predicate.and(policy.category.eq(category));
+    }
+
+    private BooleanExpression searchBasePredicate(
+            PolicyCategoryType category,
+            RecruitmentStatus closedStatus
+    ) {
+        BooleanExpression predicate = policy.recruitmentStatus.ne(closedStatus)
+                .and(policy.displayStatus.eq(PolicyDisplayStatus.VISIBLE));
 
         return category == null ? predicate : predicate.and(policy.category.eq(category));
     }
