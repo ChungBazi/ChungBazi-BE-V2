@@ -43,29 +43,43 @@ public interface MyPolicyDocs {
             summary = "현재 날짜에 마감되는 정책 조회 API",
             description = """
                     사용자가 확인하고 싶은 날짜의 찜한 정책을 조회하는 API입니다. \n
+                    해당 날짜에 마감되는 정책을 최근 찜한 순으로 전체 조회합니다.
 
                     ### Query Parameter
                     - `targetDate`: 사용자가 확인하고 싶은 날짜로, YYYY-MM-DD 형식입니다.
-                    - `sort`: `LATEST`(최신순), `DEADLINE`(마감순)
-                    - `cursor`: 최초 요청에서는 생략하고, 다음 요청부터 응답의 `nextCursor`를 전달합니다.
-                    - `size`: 한 번에 조회할 정책 수(기본 20, 최대 50)
                     """
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "현재 날짜에 마감되는 찜한 정책 조회 성공"),
-            @ApiResponse(responseCode = "400", description = "잘못된 날짜, 정렬 또는 커서"),
+            @ApiResponse(responseCode = "400", description = "잘못된 날짜"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
     })
     CommonResponse<PolicyListResponse> getDeadlinePoliciesByDate(
             @CurrentUser User user,
             @Parameter(description = "사용자가 확인하고 싶은 날짜", example = "2026-08-06", required = true)
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate targetDate,
-            @Parameter(description = "정렬 기준", example = "LATEST")
-            @RequestParam(defaultValue = "LATEST") PolicyListSortType sort,
-            @Parameter(description = "이전 응답에서 받은 다음 페이지 커서")
-            @RequestParam(required = false) String cursor,
-            @Parameter(description = "조회 개수", example = "20")
-            @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate targetDate
+    );
+
+    @Operation(
+            summary = "2주 이내 마감되는 찜한 정책 조회 API",
+            description = """
+                    사용자가 확인하고 싶은 날짜를 기준으로 2주 이내에 마감되는 찜한 정책을 조회하는 API입니다. \n
+                    기준일 당일 마감 정책부터 기준일 14일 뒤에 마감되는 정책까지 조회합니다.
+                    마감일이 가까운 순으로 조회하며, 같은 마감일이면 최근 찜한 순으로 조회합니다.
+
+                    ### Query Parameter
+                    - `targetDate`: 사용자가 확인하고 싶은 기준 날짜로, YYYY-MM-DD 형식입니다.
+                    """
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "2주 이내 마감되는 찜한 정책 조회 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 날짜"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+    })
+    CommonResponse<PolicyListResponse> getUpcomingDeadlinePoliciesWithinTwoWeeks(
+            @CurrentUser User user,
+            @Parameter(description = "사용자가 확인하고 싶은 기준 날짜", example = "2026-08-06", required = true)
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate targetDate
     );
 
     @Operation(

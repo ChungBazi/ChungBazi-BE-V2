@@ -16,23 +16,40 @@ import java.util.stream.Collectors;
 public record PolicyRecommendationContext(
         Set<PolicySubCategoryType> interestSubCategories,
         Map<PolicyCategoryType, Long> interestCategoryCounts,
-        Set<PolicySubCategoryType> likedSubCategories,
-        Set<PolicySubCategoryType> recentViewedSubCategories,
-        Set<Long> recentViewedPolicyIds
+        Map<PolicySubCategoryType, Double> likedSubCategoryAffinities,
+        Map<PolicySubCategoryType, Double> recentViewedSubCategoryAffinities,
+        Set<Long> recentViewedPolicyIds,
+        Map<Long, Integer> recentSearchScores
 ) {
     public static PolicyRecommendationContext of(
             List<UserInterest> interests,
             List<PolicyLike> likes,
             List<RecentViewedPolicy> recentViews
     ) {
+        return of(interests, likes, recentViews, Map.of());
+    }
+
+    public static PolicyRecommendationContext of(
+            List<UserInterest> interests,
+            List<PolicyLike> likes,
+            List<RecentViewedPolicy> recentViews,
+            Map<Long, Integer> recentSearchScores
+    ) {
         Set<PolicySubCategoryType> interestSubCategories = toInterestSubCategories(interests);
 
         return PolicyRecommendationContext.builder()
                 .interestSubCategories(interestSubCategories)
                 .interestCategoryCounts(toInterestCategoryCounts(interestSubCategories))
-                .likedSubCategories(toLikedSubCategories(likes))
-                .recentViewedSubCategories(toRecentViewedSubCategories(recentViews))
+                .likedSubCategoryAffinities(toSubCategoryAffinities(
+                        likes.stream().map(like -> like.getPolicy().getSubCategory()).toList()
+                ))
+                .recentViewedSubCategoryAffinities(toSubCategoryAffinities(
+                        recentViews.stream().map(view -> view.getPolicy().getSubCategory()).toList()
+                ))
                 .recentViewedPolicyIds(toRecentViewedPolicyIds(recentViews))
+                .recentSearchScores(recentSearchScores == null
+                        ? Map.of()
+                        : Map.copyOf(recentSearchScores))
                 .build();
     }
 
@@ -44,16 +61,38 @@ public record PolicyRecommendationContext(
         return interestCategoryCounts.getOrDefault(category, 0L).intValue();
     }
 
-    public boolean hasLikedSubCategory(PolicySubCategoryType subCategory) {
-        return likedSubCategories.contains(subCategory);
+    public int likedSubCategoryScore(
+            PolicySubCategoryType subCategory,
+            int maxScore,
+            double scorePerAffinity
+    ) {
+        return affinityScore(
+                likedSubCategoryAffinities,
+                subCategory,
+                maxScore,
+                scorePerAffinity
+        );
     }
 
-    public boolean hasRecentlyViewedSubCategory(PolicySubCategoryType subCategory) {
-        return recentViewedSubCategories.contains(subCategory);
+    public int recentViewedSubCategoryScore(
+            PolicySubCategoryType subCategory,
+            int maxScore,
+            double scorePerAffinity
+    ) {
+        return affinityScore(
+                recentViewedSubCategoryAffinities,
+                subCategory,
+                maxScore,
+                scorePerAffinity
+        );
     }
 
     public boolean hasRecentlyViewedPolicy(Long policyId) {
         return recentViewedPolicyIds.contains(policyId);
+    }
+
+    public int recentSearchScore(Long policyId) {
+        return recentSearchScores == null ? 0 : recentSearchScores.getOrDefault(policyId, 0);
     }
 
     private static Set<PolicySubCategoryType> toInterestSubCategories(
@@ -74,25 +113,37 @@ public record PolicyRecommendationContext(
                 ));
     }
 
-    private static Set<PolicySubCategoryType> toLikedSubCategories(
-            List<PolicyLike> likes
+    private static Map<PolicySubCategoryType, Double> toSubCategoryAffinities(
+            List<PolicySubCategoryType> subCategories
     ) {
-        return likes.stream()
-                .map(like -> like.getPolicy().getSubCategory())
-                .collect(Collectors.toSet());
+        Map<PolicySubCategoryType, Double> affinities = new java.util.EnumMap<>(
+                PolicySubCategoryType.class
+        );
+        for (int rank = 0; rank < subCategories.size(); rank++) {
+            PolicySubCategoryType subCategory = subCategories.get(rank);
+            double recencyWeight = Math.exp(-rank / 10.0);
+            affinities.merge(subCategory, recencyWeight, Double::sum);
+        }
+        return Map.copyOf(affinities);
     }
 
-    private static Set<PolicySubCategoryType> toRecentViewedSubCategories(
-            List<RecentViewedPolicy> recentViews
+    private int affinityScore(
+            Map<PolicySubCategoryType, Double> affinities,
+            PolicySubCategoryType subCategory,
+            int maxScore,
+            double scorePerAffinity
     ) {
-        return recentViews.stream()
-                .map(recentView -> recentView.getPolicy().getSubCategory())
-                .collect(Collectors.toSet());
+        if (affinities == null || affinities.isEmpty() || subCategory == null || maxScore <= 0 || scorePerAffinity <= 0) {
+            return 0;
+        }
+        double affinity = affinities.getOrDefault(subCategory, 0.0);
+        if (affinity <= 0) {
+            return 0;
+        }
+        return (int) Math.round(Math.min(maxScore, affinity * scorePerAffinity));
     }
 
-    private static Set<Long> toRecentViewedPolicyIds(
-            List<RecentViewedPolicy> recentViews
-    ) {
+    private static Set<Long> toRecentViewedPolicyIds(List<RecentViewedPolicy> recentViews) {
         return recentViews.stream()
                 .map(recentView -> recentView.getPolicy().getId())
                 .collect(Collectors.toSet());

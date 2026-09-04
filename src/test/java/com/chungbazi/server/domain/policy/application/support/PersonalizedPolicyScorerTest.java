@@ -48,11 +48,13 @@ public class PersonalizedPolicyScorerTest {
                                 PolicyCategoryType.JOB_STARTUP,
                                 1L
                         ))
-                        .likedSubCategories(Set.of(
-                                PolicySubCategoryType.EMPLOYMENT_PREPARATION
+                        .likedSubCategoryAffinities(Map.of(
+                                PolicySubCategoryType.EMPLOYMENT_PREPARATION,
+                                1.0
                         ))
-                        .recentViewedSubCategories(Set.of(
-                                PolicySubCategoryType.EMPLOYMENT_PREPARATION
+                        .recentViewedSubCategoryAffinities(Map.of(
+                                PolicySubCategoryType.EMPLOYMENT_PREPARATION,
+                                1.0
                         ))
                         .recentViewedPolicyIds(Set.of(1L))
                         .build();
@@ -62,12 +64,36 @@ public class PersonalizedPolicyScorerTest {
         /*
          * 관심 소분류  +35
          * 관심 대분류 개수 1개  +10
-         * 찜한 소분류  +30
-         * 최근 조회한 소분류  +10
+         * 찜한 소분류  +10
+         * 최근 조회한 소분류  +3
          * 이미 조회한 동일 정책  -15
-         * 합계  70
+         * 합계  43
          */
-        assertThat(result).isEqualTo(70);
+        assertThat(result).isEqualTo(43);
+    }
+
+    @Test
+    @DisplayName("최근 검색어 관련도 점수를 추천 점수에 반영한다")
+    void addsRecentSearchScore() {
+        User user = mock(User.class);
+        Policy policy = mock(Policy.class);
+
+        when(policy.getId()).thenReturn(1L);
+        when(policy.getCategory()).thenReturn(PolicyCategoryType.JOB_STARTUP);
+        when(policy.getSubCategory()).thenReturn(
+                PolicySubCategoryType.EMPLOYMENT_PREPARATION
+        );
+
+        PolicyRecommendationContext context = PolicyRecommendationContext.builder()
+                .interestSubCategories(Set.of())
+                .interestCategoryCounts(Map.of())
+                .likedSubCategoryAffinities(Map.of())
+                .recentViewedSubCategoryAffinities(Map.of())
+                .recentViewedPolicyIds(Set.of())
+                .recentSearchScores(Map.of(1L, 12))
+                .build();
+
+        assertThat(scorer.score(user, context, policy)).isEqualTo(12);
     }
 
     @Test

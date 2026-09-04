@@ -38,6 +38,7 @@ public class HomePolicyService {
 
     private static final int HOME_SECTION_SIZE = 5;
     private static final int PERSONALIZED_CATEGORY_SIZE = 5;
+    private static final int UPCOMING_DEADLINE_DAYS = 50;
     private static final ZoneId SERVICE_ZONE_ID = ZoneId.of("Asia/Seoul");
 
     private final PolicyRepository policyRepository;
@@ -52,7 +53,10 @@ public class HomePolicyService {
         PageRequest sectionPageRequest = PageRequest.of(0, HOME_SECTION_SIZE);
 
         List<Policy> personalizedPolicies =
-                personalizedPolicyService.getPersonalizedPolicyEntities(user, HOME_SECTION_SIZE);
+                personalizedPolicyService.getPersonalizedPolicies(
+                        user,
+                        HOME_SECTION_SIZE
+                );
 
         List<Policy> recentViewedPolicies = fetchRecentViewedPolicies(user, null, sectionPageRequest)
                 .stream()
@@ -69,6 +73,7 @@ public class HomePolicyService {
                 null,
                 null,
                 today,
+                today.plusDays(UPCOMING_DEADLINE_DAYS),
                 sectionPageRequest
         );
         List<Policy> latestPolicies = fetchLatestPolicies(
@@ -90,7 +95,7 @@ public class HomePolicyService {
     }
 
     public PersonalizedPolicyResponse getPersonalizedPolicies(User user, PolicyCategoryType category) {
-        List<Policy> policies = personalizedPolicyService.getPersonalizedPolicyEntities(
+        List<Policy> policies = personalizedPolicyService.getPersonalizedPoliciesByCategory(
                 user,
                 category,
                 PERSONALIZED_CATEGORY_SIZE
@@ -234,17 +239,20 @@ public class HomePolicyService {
         }
 
         LocalDate today = LocalDate.now(SERVICE_ZONE_ID);
+        LocalDate deadlineUntil = today.plusDays(UPCOMING_DEADLINE_DAYS);
         List<Policy> fetchedPolicies = fetchUpcomingDeadlinePolicies(
                 user,
                 category,
                 decodedCursor,
                 today,
+                deadlineUntil,
                 PageRequest.of(0, size + 1)
         );
         long totalCount = category == null
                 ? policyRepository.countVisibleUpcomingDeadlinePolicies(
                         RecruitmentStatus.CLOSED,
                         today,
+                        deadlineUntil,
                         user.getSidoCode(),
                         user.getSigunguCode()
                 )
@@ -252,6 +260,7 @@ public class HomePolicyService {
                         category,
                         RecruitmentStatus.CLOSED,
                         today,
+                        deadlineUntil,
                         user.getSidoCode(),
                         user.getSigunguCode()
                 );
@@ -444,6 +453,7 @@ public class HomePolicyService {
             PolicyCategoryType category,
             PolicyCursor cursor,
             LocalDate today,
+            LocalDate deadlineUntil,
             PageRequest pageRequest
     ) {
         if (category == null) {
@@ -451,6 +461,7 @@ public class HomePolicyService {
                 return policyRepository.findAllUpcomingDeadlinePolicies(
                         RecruitmentStatus.CLOSED,
                         today,
+                        deadlineUntil,
                         user.getSidoCode(),
                         user.getSigunguCode(),
                         pageRequest
@@ -459,6 +470,7 @@ public class HomePolicyService {
             return policyRepository.findAllUpcomingDeadlinePoliciesAfter(
                     RecruitmentStatus.CLOSED,
                     today,
+                    deadlineUntil,
                     user.getSidoCode(),
                     user.getSigunguCode(),
                     cursor.applyEndDate(),
@@ -472,6 +484,7 @@ public class HomePolicyService {
                     category,
                     RecruitmentStatus.CLOSED,
                     today,
+                    deadlineUntil,
                     user.getSidoCode(),
                     user.getSigunguCode(),
                     pageRequest
@@ -481,6 +494,7 @@ public class HomePolicyService {
                 category,
                 RecruitmentStatus.CLOSED,
                 today,
+                deadlineUntil,
                 user.getSidoCode(),
                 user.getSigunguCode(),
                 cursor.applyEndDate(),

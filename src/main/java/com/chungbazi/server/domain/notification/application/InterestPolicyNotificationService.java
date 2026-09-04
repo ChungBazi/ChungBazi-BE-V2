@@ -44,7 +44,7 @@ public class InterestPolicyNotificationService {
     private final ApplicationEventPublisher eventPublisher;
 
     public void createInterestPolicyNotifications(NewPoliciesRegisteredEvent event) {
-        List<Policy> newPolicies = policyRepository.findAllByIdInAndRecruitmentStatusNot(
+        List<Policy> newPolicies = policyRepository.findVisiblePoliciesByIdIn(
                 event.policyIds(),
                 RecruitmentStatus.CLOSED
         );

@@ -1,6 +1,7 @@
 package com.chungbazi.server.domain.policy.application.support;
 
 import com.chungbazi.server.domain.policy.application.dto.PolicyRecommendationContext;
+import com.chungbazi.server.domain.policy.application.dto.ScoredPolicy;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
 import com.chungbazi.server.domain.user.domain.User;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Component;
 public class PersonalizedPolicyRanker {
 
     private static final int MAX_SAME_CATEGORY_COUNT = 3;
+    private static final int MINIMUM_RECOMMENDATION_SCORE = 1;
 
     private final PersonalizedPolicyScorer scorer;
 
@@ -28,10 +30,16 @@ public class PersonalizedPolicyRanker {
     ) {
         List<Policy> rankedPolicies = candidates.stream()
                 .filter(policy -> scorer.isEligible(user, policy))
+                .map(policy -> ScoredPolicy.of(policy, scorer.score(user, context, policy)))
+                .filter(scoredPolicy -> scoredPolicy.score() >= MINIMUM_RECOMMENDATION_SCORE)
                 .sorted(Comparator
-                        .comparingInt((Policy policy) -> scorer.score(user, context, policy))
+                        .comparingInt(ScoredPolicy::score)
                         .reversed()
-                        .thenComparing(Policy::getRegisteredAt, Comparator.reverseOrder()))
+                        .thenComparing(
+                                scoredPolicy -> scoredPolicy.policy().getRegisteredAt(),
+                                Comparator.reverseOrder()
+                        ))
+                .map(ScoredPolicy::policy)
                 .toList();
 
         if (context.interestCategoryCounts().size() <= 1) {

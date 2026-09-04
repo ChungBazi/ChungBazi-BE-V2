@@ -1,12 +1,14 @@
 package com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.mapper;
 
 import com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.client.dto.YouthPolicyItem;
+import com.chungbazi.server.domain.policy.domain.entity.PolicySpecialEligibility;
 import com.chungbazi.server.domain.policy.domain.type.internal.ApplyPeriod;
 import com.chungbazi.server.domain.policy.domain.type.internal.IncomeCondition;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.entity.PolicyDetail;
 import com.chungbazi.server.domain.policy.domain.type.PolicySubCategoryType;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -22,9 +24,9 @@ public class YouthPolicyEntityMapper {
             YouthPolicyItem item,
             String plcyNo,
             PolicySubCategoryType subCategory,
-            boolean national
+            boolean national,
+            ApplyPeriod applyPeriod
     ) {
-        ApplyPeriod applyPeriod = dateMapper.toApplyPeriod(item);
         IncomeCondition incomeCondition = incomeMapper.toIncomeCondition(item);
 
         return Policy.createPolicy(
@@ -58,9 +60,9 @@ public class YouthPolicyEntityMapper {
             Policy policy,
             YouthPolicyItem item,
             PolicySubCategoryType subCategory,
-            boolean national
+            boolean national,
+            ApplyPeriod applyPeriod
     ) {
-        ApplyPeriod applyPeriod = dateMapper.toApplyPeriod(item);
         IncomeCondition incomeCondition = incomeMapper.toIncomeCondition(item);
 
         policy.updatePolicy(
@@ -113,6 +115,12 @@ public class YouthPolicyEntityMapper {
                 YouthPolicyTextUtils.trimToNull(item.refUrlAddr1()),
                 YouthPolicyTextUtils.trimToNull(item.refUrlAddr2())
         );
+    }
+
+    public List<PolicySpecialEligibility> toPolicySpecialEligibilities(Policy policy, YouthPolicyItem item) {
+        return codeMapper.toSpecialEligibilityTypes(item.sbizCd()).stream()
+                .map(eligibilityType -> PolicySpecialEligibility.create(policy, eligibilityType))
+                .toList();
     }
 
     public LocalDateTime toSourceModifiedAt(YouthPolicyItem item) {

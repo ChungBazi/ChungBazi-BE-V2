@@ -5,6 +5,7 @@ import com.chungbazi.server.domain.policy.domain.type.EmploymentCode;
 import com.chungbazi.server.domain.policy.domain.type.PolicySubCategoryType;
 import com.chungbazi.server.domain.policy.domain.type.SidoCode;
 import com.chungbazi.server.domain.user.domain.type.IncomeLevel;
+import com.chungbazi.server.domain.user.domain.type.SpecialEligibilityType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
@@ -35,6 +36,12 @@ public record UserPolicyRequest(
                 description = "관심 정책 분야 목록. 3개 이상 선택해야 합니다.",
                 example = "[\"EMPLOYMENT_PREPARATION\", \"WORK_LIFE\", \"STARTUP_BUSINESS\"]"
         )
-        Set<PolicySubCategoryType> interestCategories
+        Set<PolicySubCategoryType> interestCategories,
+
+        @Schema(
+                description = "특별 지원 자격 목록. NONE은 다른 값과 함께 선택할 수 없습니다.",
+                example = "[\"WOMAN\", \"LOCAL_TALENT\"]"
+        )
+        Set<SpecialEligibilityType> specialEligibilities
 ) {
 }

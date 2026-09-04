@@ -52,7 +52,7 @@ public class PersonalizedPolicyNotificationService {
     private final ApplicationEventPublisher eventPublisher;
 
     public void createPersonalizedPolicyNotifications(NewPoliciesRegisteredEvent event) {
-        List<Policy> newPolicies = policyRepository.findAllByIdInAndRecruitmentStatusNot(
+        List<Policy> newPolicies = policyRepository.findVisiblePoliciesByIdIn(
                 event.policyIds(),
                 RecruitmentStatus.CLOSED
         );

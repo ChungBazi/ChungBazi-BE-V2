@@ -21,4 +21,19 @@ public record NotificationPushMessage(
                 notification.getPolicyId()
         );
     }
+
+    public static NotificationPushMessage from(
+            Notification notification,
+            String pushTitle,
+            String pushMessage
+    ) {
+        return new NotificationPushMessage(
+                notification.getId(),
+                notification.getUserId(),
+                notification.getCategory(),
+                pushTitle,
+                pushMessage,
+                notification.getPolicyId()
+        );
+    }
 }

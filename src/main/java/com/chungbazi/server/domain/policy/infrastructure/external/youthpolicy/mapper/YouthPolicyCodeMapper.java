@@ -2,6 +2,12 @@ package com.chungbazi.server.domain.policy.infrastructure.external.youthpolicy.m
 
 import com.chungbazi.server.domain.policy.domain.type.EducationCode;
 import com.chungbazi.server.domain.policy.domain.type.EmploymentCode;
+import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
+import com.chungbazi.server.domain.policy.exception.PolicyException;
+import com.chungbazi.server.domain.user.domain.type.SpecialEligibilityType;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -30,6 +36,42 @@ public class YouthPolicyCodeMapper {
             case "0013008", "0013009" -> EmploymentCode.ETC_OR_NONE; //영농종사자, 기타 -> 기타/해당없음
             case "0013010" -> EmploymentCode.NONE_RESTRICT; //제한없음
             case null, default -> null;
+        };
+    }
+
+    public Set<SpecialEligibilityType> toSpecialEligibilityTypes(String sbizCd) {
+        String normalizedCode = YouthPolicyTextUtils.trimToNull(sbizCd);
+        if (normalizedCode == null) {
+            return Set.of(SpecialEligibilityType.NONE);
+        }
+
+        Set<SpecialEligibilityType> eligibilityTypes = Arrays.stream(normalizedCode.split(",", -1))
+                .map(YouthPolicyTextUtils::trimToNull)
+                .map(this::toSpecialEligibilityType)
+                .collect(Collectors.toSet());
+
+        if (eligibilityTypes.isEmpty()) {
+            return Set.of(SpecialEligibilityType.NONE);
+        }
+
+        if (eligibilityTypes.size() > 1) {
+            eligibilityTypes.remove(SpecialEligibilityType.NONE);
+        }
+        return eligibilityTypes;
+    }
+
+    private SpecialEligibilityType toSpecialEligibilityType(String sbizCd) {
+        return switch (sbizCd) {
+            case "0014001" -> SpecialEligibilityType.SME_EMPLOYEE; //중소기업
+            case "0014002" -> SpecialEligibilityType.WOMAN; //여성
+            case "0014003" -> SpecialEligibilityType.BASIC_LIVELIHOOD_RECIPIENT; //기초생활수급자
+            case "0014004" -> SpecialEligibilityType.SINGLE_PARENT_FAMILY; //한부모가정
+            case "0014005" -> SpecialEligibilityType.PERSON_WITH_DISABILITY; //장애인
+            case "0014006" -> SpecialEligibilityType.FARMER; //농업인
+            case "0014007" -> SpecialEligibilityType.MILITARY_PERSONNEL; //군인
+            case "0014008" -> SpecialEligibilityType.LOCAL_TALENT; //지역 인재
+            case "0014009", "0014010" -> SpecialEligibilityType.NONE; //기타, 제한없음
+            case null, default -> throw new PolicyException(PolicyErrorCode.INVALID_POLICY_SPECIAL_ELIGIBILITY);
         };
     }
 }

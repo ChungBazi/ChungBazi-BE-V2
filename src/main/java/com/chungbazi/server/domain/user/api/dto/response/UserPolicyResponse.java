@@ -6,6 +6,7 @@ import com.chungbazi.server.domain.policy.domain.type.PolicySubCategoryType;
 import com.chungbazi.server.domain.policy.domain.type.SidoCode;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.domain.user.domain.type.IncomeLevel;
+import com.chungbazi.server.domain.user.domain.type.SpecialEligibilityType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
@@ -36,11 +37,15 @@ public record UserPolicyResponse(
                 description = "관심 정책 분야 목록",
                 example = "[\"EMPLOYMENT_PREPARATION\", \"WORK_LIFE\", \"STARTUP_BUSINESS\"]"
         )
-        Set<PolicySubCategoryType> interestCategories
+        Set<PolicySubCategoryType> interestCategories,
+
+        @Schema(description = "특별 지원 자격 목록", example = "[\"WOMAN\", \"LOCAL_TALENT\"]")
+        Set<SpecialEligibilityType> specialEligibilities
 ) {
     public static UserPolicyResponse of(
             User user,
-            Set<PolicySubCategoryType> interestCategories
+            Set<PolicySubCategoryType> interestCategories,
+            Set<SpecialEligibilityType> specialEligibilities
     ) {
         return UserPolicyResponse.builder()
                 .birth(user.getBirth())
@@ -50,6 +55,7 @@ public record UserPolicyResponse(
                 .employmentCode(user.getEmploymentCode())
                 .incomeLevel(user.getIncomeLevel())
                 .interestCategories(interestCategories)
+                .specialEligibilities(specialEligibilities)
                 .build();
     }
 }

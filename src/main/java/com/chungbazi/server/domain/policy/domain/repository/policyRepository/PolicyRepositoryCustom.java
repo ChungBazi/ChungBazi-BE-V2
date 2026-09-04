@@ -5,14 +5,24 @@ import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
 import com.chungbazi.server.domain.policy.domain.type.PolicySortType;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
 import com.chungbazi.server.domain.policy.domain.type.SidoCode;
+import com.chungbazi.server.domain.user.domain.type.SpecialEligibilityType;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 public interface PolicyRepositoryCustom {
+
+    List<Policy> findEligiblePolicies(
+            PolicyCategoryType category,
+            RecruitmentStatus closedStatus,
+            SidoCode sidoCode,
+            String sigunguCode,
+            Set<SpecialEligibilityType> userEligibilityTypes
+    );
 
     long countVisiblePoliciesByCategory(
             PolicyCategoryType category,
@@ -30,6 +40,7 @@ public interface PolicyRepositoryCustom {
     long countVisibleUpcomingDeadlinePolicies(
             RecruitmentStatus closedStatus,
             LocalDate today,
+            LocalDate deadlineUntil,
             SidoCode sidoCode,
             String sigunguCode
     );
@@ -38,6 +49,7 @@ public interface PolicyRepositoryCustom {
             PolicyCategoryType category,
             RecruitmentStatus closedStatus,
             LocalDate today,
+            LocalDate deadlineUntil,
             SidoCode sidoCode,
             String sigunguCode
     );
@@ -45,6 +57,7 @@ public interface PolicyRepositoryCustom {
     List<Policy> findAllUpcomingDeadlinePolicies(
             RecruitmentStatus closedStatus,
             LocalDate today,
+            LocalDate deadlineUntil,
             SidoCode sidoCode,
             String sigunguCode,
             Pageable pageable
@@ -53,6 +66,7 @@ public interface PolicyRepositoryCustom {
     List<Policy> findAllUpcomingDeadlinePoliciesAfter(
             RecruitmentStatus closedStatus,
             LocalDate today,
+            LocalDate deadlineUntil,
             SidoCode sidoCode,
             String sigunguCode,
             LocalDate applyEndDate,
@@ -64,6 +78,7 @@ public interface PolicyRepositoryCustom {
             PolicyCategoryType category,
             RecruitmentStatus closedStatus,
             LocalDate today,
+            LocalDate deadlineUntil,
             SidoCode sidoCode,
             String sigunguCode,
             Pageable pageable
@@ -73,6 +88,7 @@ public interface PolicyRepositoryCustom {
             PolicyCategoryType category,
             RecruitmentStatus closedStatus,
             LocalDate today,
+            LocalDate deadlineUntil,
             SidoCode sidoCode,
             String sigunguCode,
             LocalDate applyEndDate,

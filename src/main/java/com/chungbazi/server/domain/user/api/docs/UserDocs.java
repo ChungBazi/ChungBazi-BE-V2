@@ -31,6 +31,7 @@ public interface UserDocs {
                     - `employmentCode`: 현재 취업 상태 코드
                     - `incomeLevel`: 소득 구간
                     - `interestCategories`: 관심 정책 분야 목록. 3개 이상 선택 필수
+                    - `specialEligibilities`: 특별 지원 자격 목록. 1개 이상 선택 필수
 
                     ### ResponseBody
                     ---
@@ -41,6 +42,10 @@ public interface UserDocs {
             @ApiResponse(
                     responseCode = "200",
                     description = "온보딩이 성공적으로 완료됐습니다."
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "USER4010: 특별 지원 자격 미선택 / USER4011: '해당 없음'과 다른 자격 동시 선택"
             )
     })
     CommonResponse<UserOnboardingResponse> saveUserOnboarding(
@@ -79,12 +84,17 @@ public interface UserDocs {
                     - `employmentCode`: 현재 취업 상태 코드
                     - `incomeLevel`: 소득 구간
                     - `interestCategories`: 관심 정책 분야 목록. 3개 이상 선택 필수
+                    - `specialEligibilities`: 특별 지원 자격 목록. 1개 이상 선택 필수
                     """
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
                     description = "정책 추천 기준이 성공적으로 수정됐습니다."
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "USER4010: 특별 지원 자격 미선택 / USER4011: '해당 없음'과 다른 자격 동시 선택"
             )
     })
     CommonResponse<String> updateUserPolicy(
@@ -122,6 +132,7 @@ public interface UserDocs {
                 - `employmentCode`: 현재 취업 상태 코드
                 - `incomeLevel`: 소득 구간
                 - `interestCategories`: 관심 정책 분야 목록
+                - `specialEligibilities`: 특별 지원 자격 목록. 해당 사항 없으면 `NONE`
                 """
     )
     @ApiResponses(value = {

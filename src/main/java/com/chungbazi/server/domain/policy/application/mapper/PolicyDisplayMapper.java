@@ -28,6 +28,7 @@ public class PolicyDisplayMapper {
                 policy.getCategory().getDescription(),
                 formatDDay(policy),
                 policy.getTitle(),
+                formatRegisteredDate(policy),
                 policy.getViewCount(),
                 likedPolicyIds.contains(policy.getId())
         );
@@ -54,6 +55,12 @@ public class PolicyDisplayMapper {
         );
     }
 
+    public List<PolicyCardResponse> toCardResponses(List<Policy> policies, Set<Long> likedPolicyIds) {
+        return policies.stream()
+                .map(policy -> toCardResponse(policy, likedPolicyIds))
+                .toList();
+    }
+
     public PolicyDetailResponse toDetailResponse(
             Policy policy,
             PolicyDetail policyDetail,
@@ -73,6 +80,7 @@ public class PolicyDisplayMapper {
                 policyDetail == null ? null : policyDetail.getEligibilityDescription(),
                 formatApplyPeriod(policy),
                 policy.getSupportContent(),
+                policy.getApplyUrl(),
                 policyDetail == null ? null : policyDetail.getApplicationMethod(),
                 policyDetail == null ? null : policyDetail.getSubmittedDocument(),
                 policyDetail == null ? null : policyDetail.getScreeningMethod(),
@@ -95,6 +103,10 @@ public class PolicyDisplayMapper {
             referenceUrls.add(policyDetail.getReferenceUrl2());
         }
         return referenceUrls;
+    }
+
+    private LocalDate formatRegisteredDate(Policy policy) {
+        return policy.getRegisteredAt() == null ? null : policy.getRegisteredAt().toLocalDate();
     }
 
     private List<PolicyDetailResponse.PolicySummary> toDetailSummaries(

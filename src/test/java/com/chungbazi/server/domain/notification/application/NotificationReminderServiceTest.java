@@ -120,7 +120,10 @@ class NotificationReminderServiceTest {
                 .willReturn(newNotification);
         given(notificationReminderMapper.toPreparationNotification(duplicateTarget))
                 .willReturn(duplicateNotification);
-        given(notificationReminderMapper.toPushMessages(List.of(newNotification)))
+        given(notificationReminderMapper.toRepresentativePushMessages(
+                List.of(newNotification),
+                List.of(newTarget, duplicateTarget)
+        ))
                 .willReturn(pushMessages);
 
         PreparationReminderCreationResult result =

@@ -1,8 +1,10 @@
 package com.chungbazi.server.domain.policy.application;
 
+import com.chungbazi.server.domain.policy.api.dto.response.PolicyCardListResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyCardResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyDetailResponse;
 import com.chungbazi.server.domain.policy.application.mapper.PolicyDisplayMapper;
+import com.chungbazi.server.domain.policy.application.mapper.PolicyListResponseAssembler;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.entity.PolicyDetail;
 import com.chungbazi.server.domain.policy.domain.entity.RecentViewedPolicy;
@@ -10,6 +12,7 @@ import com.chungbazi.server.domain.policy.domain.repository.PolicyDetailReposito
 import com.chungbazi.server.domain.policy.domain.repository.PolicyLikeRepository;
 import com.chungbazi.server.domain.policy.domain.repository.RecentViewedPolicyRepository;
 import com.chungbazi.server.domain.policy.domain.repository.policyRepository.PolicyRepository;
+import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
 import com.chungbazi.server.domain.policy.domain.type.RecruitmentStatus;
 import com.chungbazi.server.domain.policy.exception.PolicyErrorCode;
 import com.chungbazi.server.domain.policy.exception.PolicyException;
@@ -28,12 +31,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class PolicyDetailService {
 
     private static final int RELATED_POLICY_SIZE = 5;
+    private static final int CARD_SIZE = 20;
 
     private final PolicyRepository policyRepository;
     private final PolicyDetailRepository policyDetailRepository;
     private final PolicyLikeRepository policyLikeRepository;
     private final RecentViewedPolicyRepository recentViewedPolicyRepository;
     private final PolicyDisplayMapper policyDisplayMapper;
+    private final PolicyListResponseAssembler policyListResponseAssembler;
     private final PersonalizedPolicyService personalizedPolicyService;
 
     @Transactional
@@ -45,6 +50,18 @@ public class PolicyDetailService {
         Set<Long> likedPolicyIds = findLikedPolicyIds(user, policy, List.of(), List.of());
 
         return policyDisplayMapper.toCardResponse(policy, likedPolicyIds);
+    }
+
+    public PolicyCardListResponse getPolicyCards(User user, PolicyCategoryType category) {
+        List<Policy> policies = category == null
+                ? personalizedPolicyService.getPolicyCards(user, CARD_SIZE)
+                : personalizedPolicyService.getPolicyCardsByCategory(user, category, CARD_SIZE);
+
+        Set<Long> likedPolicyIds = policyListResponseAssembler.findLikedPolicyIds(user.getId(), policies);
+
+        List<PolicyCardResponse> policyCards = policyDisplayMapper.toCardResponses(policies, likedPolicyIds);
+
+        return PolicyCardListResponse.of(policyCards);
     }
 
     @Transactional
@@ -96,7 +113,7 @@ public class PolicyDetailService {
     }
 
     private List<Policy> findPersonalizedPolicies(User user, Policy policy) {
-        return personalizedPolicyService.getPersonalizedPolicyEntities(user, RELATED_POLICY_SIZE + 1)
+        return personalizedPolicyService.getPersonalizedPolicies(user, RELATED_POLICY_SIZE + 1)
                 .stream()
                 .filter(personalizedPolicy -> !personalizedPolicy.getId().equals(policy.getId()))
                 .limit(RELATED_POLICY_SIZE)

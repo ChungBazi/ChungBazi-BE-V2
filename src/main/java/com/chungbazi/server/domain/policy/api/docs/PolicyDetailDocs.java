@@ -1,7 +1,9 @@
 package com.chungbazi.server.domain.policy.api.docs;
 
+import com.chungbazi.server.domain.policy.api.dto.response.PolicyCardListResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyCardResponse;
 import com.chungbazi.server.domain.policy.api.dto.response.PolicyDetailResponse;
+import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.global.common.CommonResponse;
 import com.chungbazi.server.global.resolver.CurrentUser;
@@ -11,9 +13,32 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "[Policy Detail]", description = "정책 상세 조회 / 찜 관련 API")
 public interface PolicyDetailDocs {
+
+    @Operation(
+            summary = "맞춤 정책 카드 목록 조회 API",
+            description = """
+                    현재 사용자에게 추천할 정책 카드 목록을 최대 20개 반환합니다.
+                    - `category` 미입력: 전체 관심 분야 기준으로 조회
+                    - `category` 입력: 해당 관심 분야 기준으로 조회
+                    - 사용자가 선택하지 않은 관심 분야: 빈 목록 반환
+                    """
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "정책 카드 목록 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+    })
+    CommonResponse<PolicyCardListResponse> getPolicyCards(
+            @CurrentUser User user,
+            @Parameter(
+                    description = "정책 분야. 생략하면 전체 관심 분야를 기준으로 조회",
+                    example = "JOB_STARTUP"
+            )
+            @RequestParam(required = false) PolicyCategoryType category
+    );
 
     @Operation(
             summary = "정책 카드뉴스 조회 API",

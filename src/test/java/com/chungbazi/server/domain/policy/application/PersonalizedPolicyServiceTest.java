@@ -3,6 +3,7 @@ package com.chungbazi.server.domain.policy.application;
 import com.chungbazi.server.domain.policy.application.dto.PolicyRecommendationContext;
 import com.chungbazi.server.domain.policy.application.support.PersonalizedPolicyRanker;
 import com.chungbazi.server.domain.policy.application.support.PersonalizedPolicyScorer;
+import com.chungbazi.server.domain.policy.application.support.RecentSearchPolicyScoreCalculator;
 import com.chungbazi.server.domain.policy.domain.entity.Policy;
 import com.chungbazi.server.domain.policy.domain.repository.PolicyLikeRepository;
 import com.chungbazi.server.domain.policy.domain.repository.RecentViewedPolicyRepository;
@@ -10,7 +11,11 @@ import com.chungbazi.server.domain.policy.domain.repository.policyRepository.Pol
 import com.chungbazi.server.domain.policy.domain.type.*;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.domain.user.domain.UserInterest;
+import com.chungbazi.server.domain.user.domain.UserSpecialEligibility;
+import com.chungbazi.server.domain.user.domain.type.SpecialEligibilityType;
 import com.chungbazi.server.domain.user.infrastructure.UserInterestRepository;
+import com.chungbazi.server.domain.user.infrastructure.UserSpecialEligibilityRepository;
+import com.chungbazi.server.fixture.PolicyFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,10 +23,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,10 +43,16 @@ public class PersonalizedPolicyServiceTest {
     private UserInterestRepository userInterestRepository;
 
     @Mock
+    private UserSpecialEligibilityRepository userSpecialEligibilityRepository;
+
+    @Mock
     private PolicyLikeRepository policyLikeRepository;
 
     @Mock
     private RecentViewedPolicyRepository recentViewedPolicyRepository;
+
+    @Mock
+    private RecentSearchPolicyScoreCalculator recentSearchPolicyScoreCalculator;
 
     @Mock
     private PersonalizedPolicyScorer scorer;
@@ -53,8 +64,10 @@ public class PersonalizedPolicyServiceTest {
         service = new PersonalizedPolicyService(
                 policyRepository,
                 userInterestRepository,
+                userSpecialEligibilityRepository,
                 policyLikeRepository,
                 recentViewedPolicyRepository,
+                recentSearchPolicyScoreCalculator,
                 new PersonalizedPolicyRanker(scorer)
         );
     }
@@ -100,11 +113,69 @@ public class PersonalizedPolicyServiceTest {
         when(scorer.score(eq(user), any(PolicyRecommendationContext.class), eq(oldTie)))
                 .thenReturn(50);
 
-        List<Policy> result = service.getPersonalizedPolicyEntities(user, 3);
+        List<Policy> result = service.getPersonalizedPolicies(user, 3);
 
         assertThat(result)
                 .extracting(Policy::getId)
                 .containsExactly(1L, 2L, 3L);
+
+        verify(scorer).score(
+                eq(user),
+                any(PolicyRecommendationContext.class),
+                eq(highest)
+        );
+        verify(scorer).score(
+                eq(user),
+                any(PolicyRecommendationContext.class),
+                eq(recentTie)
+        );
+        verify(scorer).score(
+                eq(user),
+                any(PolicyRecommendationContext.class),
+                eq(oldTie)
+        );
+    }
+
+    @Test
+    @DisplayName("추천 점수가 1점 미만인 정책은 추천 결과에서 제외한다")
+    void excludesPoliciesBelowMinimumRecommendationScore() {
+        User user = mock(User.class);
+        Policy matched = policy(
+                1L,
+                PolicySubCategoryType.EMPLOYMENT_PREPARATION,
+                LocalDateTime.of(2026, 8, 3, 0, 0)
+        );
+        Policy zeroScore = policy(
+                2L,
+                PolicySubCategoryType.WORK_LIFE,
+                LocalDateTime.of(2026, 8, 2, 0, 0)
+        );
+        Policy negativeScore = policy(
+                3L,
+                PolicySubCategoryType.STARTUP_BUSINESS,
+                LocalDateTime.of(2026, 8, 1, 0, 0)
+        );
+
+        prepareRecommendationData(
+                user,
+                List.of(matched, zeroScore, negativeScore),
+                List.of()
+        );
+
+        when(scorer.isEligible(eq(user), any(Policy.class)))
+                .thenReturn(true);
+        when(scorer.score(eq(user), any(PolicyRecommendationContext.class), eq(matched)))
+                .thenReturn(1);
+        when(scorer.score(eq(user), any(PolicyRecommendationContext.class), eq(zeroScore)))
+                .thenReturn(0);
+        when(scorer.score(eq(user), any(PolicyRecommendationContext.class), eq(negativeScore)))
+                .thenReturn(-1);
+
+        List<Policy> result = service.getPersonalizedPolicies(user, 3);
+
+        assertThat(result)
+                .extracting(Policy::getId)
+                .containsExactly(1L);
     }
 
     @Test
@@ -172,7 +243,7 @@ public class PersonalizedPolicyServiceTest {
             };
         });
 
-        List<Policy> result = service.getPersonalizedPolicyEntities(user, 4);
+        List<Policy> result = service.getPersonalizedPolicies(user, 4);
 
         // job4가 housing보다 점수는 높지만, 동일 카테고리 우선 노출 제한이 3개이므로 housing이 선택된다.
         assertThat(result)
@@ -193,7 +264,7 @@ public class PersonalizedPolicyServiceTest {
         when(userInterestRepository.findAllByUser(user))
                 .thenReturn(List.of(interest));
 
-        List<Policy> result = service.getPersonalizedPolicyEntities(
+        List<Policy> result = service.getPersonalizedPoliciesByCategory(
                 user,
                 PolicyCategoryType.HOUSING,
                 5
@@ -238,11 +309,12 @@ public class PersonalizedPolicyServiceTest {
                 LocalDateTime.of(2026, 8, 1, 0, 0)
         );
 
-        when(policyRepository.findAllLatestPolicies(
+        when(policyRepository.findEligiblePolicies(
+                isNull(),
                 eq(RecruitmentStatus.CLOSED),
                 isNull(),
                 isNull(),
-                any(Pageable.class)
+                eq(Set.of(SpecialEligibilityType.NONE))
         )).thenReturn(List.of(
                 policy1,
                 policy2,
@@ -254,16 +326,19 @@ public class PersonalizedPolicyServiceTest {
         when(userInterestRepository.findAllByUser(user))
                 .thenReturn(List.of());
 
+        when(userSpecialEligibilityRepository.findAllByUser(user))
+                .thenReturn(List.of(UserSpecialEligibility.create(
+                        user,
+                        SpecialEligibilityType.NONE
+                )));
+
         when(policyLikeRepository.findRecentPolicyLikesWithPolicy(
                 eq(1L),
                 any(Pageable.class)
         )).thenReturn(List.of());
 
-        when(recentViewedPolicyRepository.findRecentViewedPolicies(
+        when(recentViewedPolicyRepository.findRecentViewedPolicyEvents(
                 eq(1L),
-                eq(RecruitmentStatus.CLOSED),
-                isNull(),
-                isNull(),
                 any(Pageable.class)
         )).thenReturn(List.of());
 
@@ -278,7 +353,7 @@ public class PersonalizedPolicyServiceTest {
 
         // when
         List<Policy> result =
-                service.getPersonalizedPolicyEntities(user, 3);
+                service.getPersonalizedPolicies(user, 3);
 
         // then
         assertThat(result)
@@ -291,57 +366,40 @@ public class PersonalizedPolicyServiceTest {
             List<Policy> candidates,
             List<UserInterest> interests
     ) {
-        when(policyRepository.findAllLatestPolicies(
+        when(policyRepository.findEligiblePolicies(
+                isNull(),
                 any(),
                 any(),
                 any(),
-                any(Pageable.class)
+                eq(Set.of(SpecialEligibilityType.NONE))
         )).thenReturn(candidates);
 
         when(userInterestRepository.findAllByUser(user))
                 .thenReturn(interests);
+
+        when(userSpecialEligibilityRepository.findAllByUser(user))
+                .thenReturn(List.of(UserSpecialEligibility.create(
+                        user,
+                        SpecialEligibilityType.NONE
+                )));
 
         when(policyLikeRepository.findRecentPolicyLikesWithPolicy(
                 any(),
                 any(Pageable.class)
         )).thenReturn(List.of());
 
-        when(recentViewedPolicyRepository.findRecentViewedPolicies(
-                any(),
-                any(),
-                any(),
+        when(recentViewedPolicyRepository.findRecentViewedPolicyEvents(
                 any(),
                 any(Pageable.class)
         )).thenReturn(List.of());
     }
 
     private Policy policy(Long id, PolicySubCategoryType subCategory, LocalDateTime registeredAt) {
-        Policy policy = Policy.createPolicy(
-                "P-" + id,
-                "테스트 정책 " + id,
-                null,
-                null,
-                null,
-                subCategory,
-                true,
-                null,
-                null,
-                null,
-                RecruitmentType.ALWAYS,
-                RecruitmentStatus.OPEN,
-                null,
-                null,
-                null,
-                null,
-                IncomeConditionType.NO_LIMIT,
-                null,
-                null,
-                null,
-                null,
-                registeredAt,
-                registeredAt
-        );
-        ReflectionTestUtils.setField(policy, "id", id);
-        return policy;
+        return PolicyFixture.policy()
+                .id(id)
+                .title("테스트 정책 " + id)
+                .subCategory(subCategory)
+                .registeredAt(registeredAt)
+                .build();
     }
 }

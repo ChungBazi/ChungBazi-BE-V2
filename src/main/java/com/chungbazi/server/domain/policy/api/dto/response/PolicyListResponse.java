@@ -2,6 +2,7 @@ package com.chungbazi.server.domain.policy.api.dto.response;
 
 import com.chungbazi.server.domain.policy.domain.type.PolicyCategoryType;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.LocalDate;
 import java.util.List;
 
 @Schema(description = "분야별 정책 무한스크롤 응답")
@@ -35,6 +36,9 @@ public record PolicyListResponse(
 
             @Schema(description = "정책 제목", example = "청년 일자리 도약 장려금")
             String title,
+
+            @Schema(description = "정책 등록 일자", example = "2026-08-31")
+            LocalDate registeredDate,
 
             @Schema(description = "조회수", example = "153")
             int viewCount,
