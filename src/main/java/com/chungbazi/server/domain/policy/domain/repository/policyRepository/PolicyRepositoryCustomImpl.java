@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import static com.chungbazi.server.domain.policy.domain.entity.QPolicy.policy;
 import static com.chungbazi.server.domain.policy.domain.entity.QPolicyRegion.policyRegion;
@@ -32,7 +33,7 @@ import static com.chungbazi.server.domain.policy.domain.entity.QPolicySpecialEli
 @RequiredArgsConstructor
 public class PolicyRepositoryCustomImpl implements PolicyRepositoryCustom {
 
-    private static final int FULL_TEXT_MIN_KEYWORD_LENGTH = 2;
+    private static final Pattern FULL_TEXT_KEYWORD_PATTERN = Pattern.compile("[가-힣]{2,}");
 
     private final JPAQueryFactory queryFactory;
 
@@ -344,17 +345,24 @@ public class PolicyRepositoryCustomImpl implements PolicyRepositoryCustom {
     }
 
     private BooleanExpression keywordPredicate(String keyword) {
-        if (keyword.codePointCount(0, keyword.length()) < FULL_TEXT_MIN_KEYWORD_LENGTH) {
+        // 영문, 공백, 특수문자, 한 글자 -> 기존 LIKE로 검색
+        if (!FULL_TEXT_KEYWORD_PATTERN.matcher(keyword).matches()) {
             return likeKeywordPredicate(keyword);
         }
+        // FULLTEXT 조건과 원본 문자열 포함 조건(LIKE)을 모두 만족하는 정책 검색
+        return fullTextKeywordPredicate(keyword)
+                .and(likeKeywordPredicate(keyword));
+    }
 
+    private BooleanExpression fullTextKeywordPredicate(String keyword) {
         String phraseKeyword = toBooleanPhrase(keyword);
         NumberExpression<Double> relevance = Expressions.numberTemplate(
                 Double.class,
-                "function('match_against_boolean_phrase', {0}, {1}, {2}, {3})",
+                "function('match_against_boolean_phrase', {0}, {1}, {2}, {3}, {4})",
                 policy.title,
                 policy.summary,
                 policy.supportContent,
+                policy.organizationName,
                 phraseKeyword
         );
         return relevance.gt(0.0);
