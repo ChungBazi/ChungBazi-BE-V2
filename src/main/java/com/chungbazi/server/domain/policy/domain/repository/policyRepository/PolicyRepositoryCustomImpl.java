@@ -10,6 +10,7 @@ import com.chungbazi.server.domain.policy.domain.type.SidoCode;
 import com.chungbazi.server.domain.user.domain.type.SpecialEligibilityType;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -22,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import static com.chungbazi.server.domain.policy.domain.entity.QPolicy.policy;
 import static com.chungbazi.server.domain.policy.domain.entity.QPolicyRegion.policyRegion;
@@ -30,6 +32,8 @@ import static com.chungbazi.server.domain.policy.domain.entity.QPolicySpecialEli
 @Repository
 @RequiredArgsConstructor
 public class PolicyRepositoryCustomImpl implements PolicyRepositoryCustom {
+
+    private static final Pattern FULL_TEXT_KEYWORD_PATTERN = Pattern.compile("[가-힣]{2,}");
 
     private final JPAQueryFactory queryFactory;
 
@@ -285,12 +289,10 @@ public class PolicyRepositoryCustomImpl implements PolicyRepositoryCustom {
     public long countSearchPolicies(
             String keyword,
             PolicyCategoryType category,
-            RecruitmentStatus closedStatus,
-            SidoCode sidoCode,
-            String sigunguCode
+            RecruitmentStatus closedStatus
     ) {
         return count(
-                basePredicate(category, closedStatus, sidoCode, sigunguCode)
+                searchBasePredicate(category, closedStatus)
                         .and(keywordPredicate(keyword))
         );
     }
@@ -301,14 +303,12 @@ public class PolicyRepositoryCustomImpl implements PolicyRepositoryCustom {
             PolicyCategoryType category,
             PolicySortType sort,
             RecruitmentStatus closedStatus,
-            SidoCode sidoCode,
-            String sigunguCode,
             LocalDateTime registeredAt,
             LocalDate applyEndDate,
             Long policyId,
             Pageable pageable
     ) {
-        BooleanExpression predicate = basePredicate(category, closedStatus, sidoCode, sigunguCode)
+        BooleanExpression predicate = searchBasePredicate(category, closedStatus)
                 .and(keywordPredicate(keyword));
 
         if (policyId != null) {
@@ -326,15 +326,13 @@ public class PolicyRepositoryCustomImpl implements PolicyRepositoryCustom {
     public List<String> findSearchSuggestions(
             String keyword,
             RecruitmentStatus closedStatus,
-            SidoCode sidoCode,
-            String sigunguCode,
             int limit
     ) {
         return queryFactory
                 .select(policy.title)
                 .from(policy)
                 .where(
-                        basePredicate(null, closedStatus, sidoCode, sigunguCode)
+                        searchBasePredicate(null, closedStatus)
                                 .and(policy.title.containsIgnoreCase(keyword))
                 )
                 .orderBy(policy.registeredAt.desc(), policy.id.desc())
@@ -347,10 +345,41 @@ public class PolicyRepositoryCustomImpl implements PolicyRepositoryCustom {
     }
 
     private BooleanExpression keywordPredicate(String keyword) {
+        // 영문, 공백, 특수문자, 한 글자 -> 기존 LIKE로 검색
+        if (!FULL_TEXT_KEYWORD_PATTERN.matcher(keyword).matches()) {
+            return likeKeywordPredicate(keyword);
+        }
+        // FULLTEXT 조건과 원본 문자열 포함 조건(LIKE)을 모두 만족하는 정책 검색
+        return fullTextKeywordPredicate(keyword)
+                .and(likeKeywordPredicate(keyword));
+    }
+
+    private BooleanExpression fullTextKeywordPredicate(String keyword) {
+        String phraseKeyword = toBooleanPhrase(keyword);
+        NumberExpression<Double> relevance = Expressions.numberTemplate(
+                Double.class,
+                "function('match_against_boolean_phrase', {0}, {1}, {2}, {3}, {4})",
+                policy.title,
+                policy.summary,
+                policy.supportContent,
+                policy.organizationName,
+                phraseKeyword
+        );
+        return relevance.gt(0.0);
+    }
+
+    private BooleanExpression likeKeywordPredicate(String keyword) {
         return policy.title.containsIgnoreCase(keyword)
                 .or(policy.summary.containsIgnoreCase(keyword))
                 .or(policy.supportContent.containsIgnoreCase(keyword))
                 .or(policy.organizationName.containsIgnoreCase(keyword));
+    }
+
+    private String toBooleanPhrase(String keyword) {
+        String escapedKeyword = keyword
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"");
+        return "\"" + escapedKeyword + "\"";
     }
 
     private BooleanExpression cursorPredicate(
@@ -378,6 +407,16 @@ public class PolicyRepositoryCustomImpl implements PolicyRepositoryCustom {
         BooleanExpression predicate = policy.recruitmentStatus.ne(closedStatus)
                 .and(policy.displayStatus.eq(PolicyDisplayStatus.VISIBLE))
                 .and(visibleInRegion(sidoCode, sigunguCode));
+
+        return category == null ? predicate : predicate.and(policy.category.eq(category));
+    }
+
+    private BooleanExpression searchBasePredicate(
+            PolicyCategoryType category,
+            RecruitmentStatus closedStatus
+    ) {
+        BooleanExpression predicate = policy.recruitmentStatus.ne(closedStatus)
+                .and(policy.displayStatus.eq(PolicyDisplayStatus.VISIBLE));
 
         return category == null ? predicate : predicate.and(policy.category.eq(category));
     }

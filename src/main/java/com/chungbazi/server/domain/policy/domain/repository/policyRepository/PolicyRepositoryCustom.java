@@ -193,13 +193,10 @@ public interface PolicyRepositoryCustom {
             Pageable pageable
     );
 
-
     long countSearchPolicies(
             String keyword,
             PolicyCategoryType category,
-            RecruitmentStatus closedStatus,
-            SidoCode sidoCode,
-            String sigunguCode
+            RecruitmentStatus closedStatus
     );
 
     List<Policy> searchPolicies(
@@ -207,8 +204,6 @@ public interface PolicyRepositoryCustom {
             PolicyCategoryType category,
             PolicySortType sort,
             RecruitmentStatus closedStatus,
-            SidoCode sidoCode,
-            String sigunguCode,
             LocalDateTime registeredAt,
             LocalDate applyEndDate,
             Long policyId,
@@ -218,8 +213,6 @@ public interface PolicyRepositoryCustom {
     List<String> findSearchSuggestions(
             String keyword,
             RecruitmentStatus closedStatus,
-            SidoCode sidoCode,
-            String sigunguCode,
             int limit
     );
 }
