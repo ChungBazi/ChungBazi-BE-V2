@@ -60,8 +60,6 @@ public class PolicySearchService {
                 category,
                 policySort,
                 RecruitmentStatus.CLOSED,
-                user.getSidoCode(),
-                user.getSigunguCode(),
                 decodedCursor == null ? null : decodedCursor.registeredAt(),
                 decodedCursor == null ? null : decodedCursor.applyEndDate(),
                 decodedCursor == null ? null : decodedCursor.policyId(),
@@ -71,9 +69,7 @@ public class PolicySearchService {
         long totalCount = policyRepository.countSearchPolicies(
                 normalizedKeyword,
                 category,
-                RecruitmentStatus.CLOSED,
-                user.getSidoCode(),
-                user.getSigunguCode()
+                RecruitmentStatus.CLOSED
         );
         return policyListResponseAssembler.assemble(user, policySort, fetchedPolicies, totalCount, size);
     }
@@ -92,11 +88,8 @@ public class PolicySearchService {
         List<String> policyKeywordSuggestions = policyRepository.findSearchSuggestions(
                 normalizedKeyword,
                 RecruitmentStatus.CLOSED,
-                user.getSidoCode(),
-                user.getSigunguCode(),
                 SEARCH_SUGGESTION_LIMIT
         );
-
         return SearchSuggestionResponse.of(recentKeywordSuggestions, policyKeywordSuggestions);
     }
 
