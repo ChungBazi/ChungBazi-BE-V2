@@ -7,6 +7,8 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
+import com.chungbazi.server.domain.auth.exception.AuthException;
+import com.chungbazi.server.domain.auth.exception.code.AuthErrorCode;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
@@ -104,6 +106,25 @@ class RequestLoggingFilterTest {
         assertThat(event.getLevel()).isEqualTo(Level.ERROR);
         assertThat(keyValues(event))
                 .containsEntry("status", HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    }
+
+    @Test
+    void logsExpiredTokenAsUnauthorized() {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/user/me");
+        request.setContextPath("/api");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        assertThatThrownBy(() -> filter.doFilter(request, response, (servletRequest, servletResponse) -> {
+            throw new AuthException(AuthErrorCode.EXPIRED_TOKEN);
+        })).isInstanceOf(AuthException.class);
+
+        ILoggingEvent event = assertSingleEvent();
+
+        assertThat(event.getLevel()).isEqualTo(Level.INFO);
+        assertThat(keyValues(event))
+                .containsEntry("method", "GET")
+                .containsEntry("uri", "/api/v1/user/me")
+                .containsEntry("status", HttpServletResponse.SC_UNAUTHORIZED);
     }
 
     private ILoggingEvent assertSingleEvent() {
