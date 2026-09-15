@@ -1,5 +1,6 @@
 package com.chungbazi.server.global.logging;
 
+import com.chungbazi.server.global.common.code.exception.GeneralException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,19 +33,26 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         String requestId = UUID.randomUUID().toString();
         String previousRequestId = MDC.get(REQUEST_ID_MDC_KEY);
         long startedAt = System.nanoTime();
-        boolean failedBeforeResponse = false;
+        Integer exceptionStatus = null;
 
         MDC.put(REQUEST_ID_MDC_KEY, requestId);
         response.setHeader(REQUEST_ID_HEADER, requestId);
 
         try {
             filterChain.doFilter(request, response);
+        } catch (GeneralException exception) {
+            // 토큰 만료 등 예외에 정의된 HTTP 상태로 로깅
+            exceptionStatus = exception.getErrorReasonHttpStatus()
+                    .getHttpStatus()
+                    .value();
+            throw exception;
         } catch (IOException | ServletException | RuntimeException exception) {
-            failedBeforeResponse = true;
+            // 그 외 처리되지 않은 예외
+            exceptionStatus = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
             throw exception;
         } finally {
-            int status = failedBeforeResponse
-                    ? HttpServletResponse.SC_INTERNAL_SERVER_ERROR
+            int status = exceptionStatus != null
+                    ? exceptionStatus
                     : response.getStatus();
             long durationMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startedAt);
 
