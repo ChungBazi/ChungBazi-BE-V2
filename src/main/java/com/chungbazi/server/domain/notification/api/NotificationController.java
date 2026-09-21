@@ -2,6 +2,7 @@ package com.chungbazi.server.domain.notification.api;
 
 import com.chungbazi.server.domain.notification.api.docs.NotificationDocs;
 import com.chungbazi.server.domain.notification.api.dto.response.NotificationListResponse;
+import com.chungbazi.server.domain.notification.api.dto.response.NotificationUnreadStatusResponse;
 import com.chungbazi.server.domain.notification.application.NotificationService;
 import com.chungbazi.server.domain.notification.domain.type.NotificationCategory;
 import com.chungbazi.server.domain.user.domain.User;
@@ -26,6 +27,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class NotificationController implements NotificationDocs {
 
     private final NotificationService notificationService;
+
+    @Override
+    @GetMapping("/unread-status")
+    public CommonResponse<NotificationUnreadStatusResponse> getUnreadNotificationStatus(
+            @CurrentUser User user
+    ) {
+        return CommonResponse.onSuccess(
+                NotificationUnreadStatusResponse.of(
+                        notificationService.hasUnreadNotification(user)
+                )
+        );
+    }
 
     @Override
     @GetMapping
