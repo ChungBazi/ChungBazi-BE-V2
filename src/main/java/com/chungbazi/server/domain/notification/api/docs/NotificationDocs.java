@@ -1,6 +1,7 @@
 package com.chungbazi.server.domain.notification.api.docs;
 
 import com.chungbazi.server.domain.notification.api.dto.response.NotificationListResponse;
+import com.chungbazi.server.domain.notification.api.dto.response.NotificationUnreadStatusResponse;
 import com.chungbazi.server.domain.notification.domain.type.NotificationCategory;
 import com.chungbazi.server.domain.user.domain.User;
 import com.chungbazi.server.global.common.CommonResponse;
@@ -17,6 +18,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "[Notification]", description = "알림 관련 API")
 public interface NotificationDocs {
+
+    @Operation(
+            summary = "읽지 않은 알림 존재 여부 조회 API",
+            description = "현재 사용자에게 읽지 않은 알림이 하나 이상 존재하는지 조회합니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "읽지 않은 알림 존재 여부 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+    })
+    CommonResponse<NotificationUnreadStatusResponse> getUnreadNotificationStatus(
+            @CurrentUser User user
+    );
 
     @Operation(
             summary = "알림 목록 조회 API",
