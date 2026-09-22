@@ -24,6 +24,8 @@ springdoc:
 
 jwt:
   secret: test-secret-key-test-secret-key-test-secret-key
+  issuer: chungbazi-test
+  audience: chungbazi-test-api
   access-exp: 3600000
   refresh-exp: 604800000
 
